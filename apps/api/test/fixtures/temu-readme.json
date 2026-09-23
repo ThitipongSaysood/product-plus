@@ -1,0 +1,23 @@
+{
+  "_unconfirmed": "from README, not a real run",
+  "_source": "apivault_labs/temu-product-scraper README field table + output example + handoff §7 (all Temu actors returned 0 rows on 2026-09-24)",
+  "items": [
+    {
+      "success": true,
+      "title": "Silicone Sport Band Compatible with Apple Watch 41mm 45mm 49mm Ultra 2 Series 9",
+      "productId": "601099512345678",
+      "productUrl": "https://www.temu.com/goods.html?goods_id=601099512345678",
+      "imageUrl": "https://img.kwcdn.com/product/abc.jpg",
+      "images": ["https://img.kwcdn.com/product/abc.jpg", "https://img.kwcdn.com/product/def.jpg"],
+      "category": "Cell Phones & Accessories > Smart Watch Bands",
+      "priceUsd": 5.89,
+      "originalPriceUsd": 12.99,
+      "soldCountText": "10K+ sold",
+      "soldCountInt": 10000,
+      "soldCountIsBucket": true,
+      "shopName": "Northstar",
+      "isTrending": true,
+      "demandScore": 78
+    }
+  ]
+}

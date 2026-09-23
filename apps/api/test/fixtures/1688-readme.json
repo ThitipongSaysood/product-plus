@@ -1,0 +1,20 @@
+{
+  "_unconfirmed": "from README, not a real run",
+  "_source": "zen-studio/1688-wholesale-scraper README output example + handoff §7",
+  "items": [
+    {
+      "offerId": "927875250705",
+      "title": "适用苹果手表表带真皮 42/44/45mm",
+      "detailUrl": "https://detail.1688.com/offer/927875250705.html",
+      "price": { "min": 7.58, "max": 9.0, "currency": "CNY" },
+      "priceTiers": [{ "price": 9.0 }],
+      "images": ["https://cbu01.alicdn.com/img/ibank/O1CN01HTCT63.jpg"],
+      "recentSoldCount": 12000,
+      "soldDisplay": "全网10万+件",
+      "categoryPath": "数码、电脑 > 手机配件 > 手机保护套",
+      "categoryName": "手机保护套",
+      "supplier": { "companyName": "深圳某某科技", "shopUrl": "http://shop.1688.com" }
+    },
+    { "offerId": "111", "title": "text only sold", "saledCountStr": "5万+", "detailUrl": "https://detail.1688.com/offer/111.html" }
+  ]
+}

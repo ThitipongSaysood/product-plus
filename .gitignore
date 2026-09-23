@@ -1,0 +1,12 @@
+node_modules
+.next
+dist
+.env
+.env.local
+*.tsbuildinfo
+.pglite
+.DS_Store
+coverage
+
+# AI agent private notes
+/.agents/private/

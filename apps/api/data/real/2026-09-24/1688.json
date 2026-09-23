@@ -1,0 +1,2358 @@
+{
+  "_source": "zen-studio/1688-wholesale-scraper · run RZ1IY5i0w1MsIHFxw · dataset bC8lt6pv2Sbcm4k0L · keyword 苹果手表表带 · 2026-09-24 · projected fields: offerId,title,detailUrl,images,videoUrl,price,quantityPrices,categoryPath,categoryName,categoryId,topCategoryId,recentSoldCount,soldDisplay,saledCount,saledCountStr,orderCount,sourceKeyword,supplier.companyName,supplier.shopUrl,minOrderQuantity,unit",
+  "items": [
+    {
+      "offerId": "988711880619",
+      "title": "适用苹果手表iWatch Ultra SE系列女士14mm三珠不锈钢金属表带",
+      "detailUrl": "https://detail.1688.com/offer/988711880619.html",
+      "images": [
+        "https://cbu01.alicdn.com/img/ibank/O1CN015Jufdt1LLfFcH5LN7_!!2221037331283-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01xhxVdP1LLfFcJdMcW_!!2221037331283-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01y9QL5A1LLfFb3UvdR_!!2221037331283-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01sybKlz1LLfFdBMsfx_!!2221037331283-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01ZwGkTC1LLfFcJgS4E_!!2221037331283-0-cib.jpg"
+      ],
+      "videoUrl": "https://cloud.video.taobao.com/play/u/2221037331283/p/2/e/6/t/1/538685334820.mp4",
+      "price": {
+        "min": 22,
+        "max": 22,
+        "currency": "CNY",
+        "priceType": "NORMAL",
+        "promoLabel": null
+      },
+      "quantityPrices": [],
+      "categoryPath": "数码、电脑 > 智能设备 > 智能手表表带",
+      "categoryName": "智能手表表带",
+      "categoryId": "124810006",
+      "topCategoryId": "7",
+      "recentSoldCount": 15500,
+      "soldDisplay": "已售1.6万+件",
+      "saledCount": 15500,
+      "saledCountStr": "1万+",
+      "orderCount": 4,
+      "sourceKeyword": "苹果手表表带",
+      "supplier": {
+        "companyName": "深圳市翼氪科技有限公司",
+        "shopUrl": "http://shop723d05t4873s5.1688.com"
+      },
+      "minOrderQuantity": 100,
+      "unit": "条"
+    },
+    {
+      "offerId": "934541084526",
+      "title": "适用苹果手表带7/8/9/10一珠小蛮腰蝴蝶扣表带 华为gt4表带高级感",
+      "detailUrl": "https://detail.1688.com/offer/934541084526.html",
+      "images": [
+        "https://cbu01.alicdn.com/img/ibank/O1CN01p67LVX1ZOmWx7kzUl_!!2219511493185-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01iRRfQ81ZOmWr4RSSE_!!2219511493185-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01WvzK7G1ZOmWxAUFCt_!!2219511493185-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01QKXlng1ZOmWxVOkdP_!!2219511493185-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01YUxtPY1ZOmWyx21Zt_!!2219511493185-0-cib.jpg"
+      ],
+      "videoUrl": "https://cloud.video.taobao.com/play/u/2219511493185/p/2/e/6/t/1/522011317297.mp4",
+      "price": {
+        "min": 7.2,
+        "max": 7.2,
+        "currency": "CNY",
+        "priceType": "NORMAL",
+        "promoLabel": null
+      },
+      "quantityPrices": [
+        {
+          "quantityRange": "≥10条",
+          "quantityMin": 10,
+          "quantityMax": null,
+          "price": 7.2
+        }
+      ],
+      "categoryPath": "数码、电脑 > 智能设备 > 智能手表表带",
+      "categoryName": "智能手表表带",
+      "categoryId": "124810006",
+      "topCategoryId": "7",
+      "recentSoldCount": 172872,
+      "soldDisplay": "已售10万+件",
+      "saledCount": 172872,
+      "saledCountStr": "17万+",
+      "orderCount": 336,
+      "sourceKeyword": "苹果手表表带",
+      "supplier": {
+        "companyName": "揭阳市榕城区晟世表带厂",
+        "shopUrl": "http://shop3l259w0131069.1688.com"
+      },
+      "minOrderQuantity": 10,
+      "unit": "条"
+    },
+    {
+      "offerId": "630476475984",
+      "title": "五珠实心蝴蝶扣手表带/适用名匠苹果三星华为304不锈钢手表带",
+      "detailUrl": "https://detail.1688.com/offer/630476475984.html",
+      "images": [
+        "https://cbu01.alicdn.com/img/ibank/21985863631_153908312.jpg",
+        "https://cbu01.alicdn.com/img/ibank/21965451523_153908312.jpg",
+        "https://cbu01.alicdn.com/img/ibank/21965481025_153908312.jpg",
+        "https://cbu01.alicdn.com/img/ibank/22134398800_153908312.jpg",
+        "https://cbu01.alicdn.com/img/ibank/22044775369_153908312.jpg"
+      ],
+      "videoUrl": "",
+      "price": {
+        "min": 10.5,
+        "max": 10.5,
+        "currency": "CNY",
+        "priceType": "NORMAL",
+        "promoLabel": null
+      },
+      "quantityPrices": [
+        {
+          "quantityRange": "≥2套",
+          "quantityMin": 2,
+          "quantityMax": null,
+          "price": 10.5
+        }
+      ],
+      "categoryPath": "服饰配件、饰品 > 表 > 表带",
+      "categoryName": "表带",
+      "categoryId": "124272005",
+      "topCategoryId": "54",
+      "recentSoldCount": 104771,
+      "soldDisplay": "已售10万+件",
+      "saledCount": 104771,
+      "saledCountStr": "10万+",
+      "orderCount": 1193,
+      "sourceKeyword": "苹果手表表带",
+      "supplier": {
+        "companyName": "揭阳市创宏表业有限公司",
+        "shopUrl": "http://shop1459528998061.1688.com"
+      },
+      "minOrderQuantity": 2,
+      "unit": "套"
+    },
+    {
+      "offerId": "642742537878",
+      "title": "适用苹果Watch Ultra 9876543210代se耐克Nike编织纯色手表带硅胶",
+      "detailUrl": "https://detail.1688.com/offer/642742537878.html",
+      "images": [
+        "https://cbu01.alicdn.com/img/ibank/O1CN013o4wjQ1P0pNc27iDS_!!4248621779-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01UcMVk81P0pNenRSKn_!!4248621779-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01AbQMB21P0pNYF66yl_!!4248621779-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN014qrcY71P0pNenRvQc_!!4248621779-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01SQoqYX1Bs2oKVVk2U_!!0-0-cib.jpg"
+      ],
+      "videoUrl": "https://cloud.video.taobao.com/play/u/4248621779/p/2/e/6/t/1/380816805724.mp4",
+      "price": {
+        "min": 1.35,
+        "max": 1.35,
+        "currency": "CNY",
+        "priceType": "NORMAL",
+        "promoLabel": null
+      },
+      "quantityPrices": [
+        {
+          "quantityRange": "≥100条",
+          "quantityMin": 100,
+          "quantityMax": null,
+          "price": 1.35
+        }
+      ],
+      "categoryPath": "数码、电脑 > 苹果专用配件 > AppleWatch表带",
+      "categoryName": "AppleWatch表带",
+      "categoryId": "124270010",
+      "topCategoryId": "7",
+      "recentSoldCount": 783670,
+      "soldDisplay": "已售10万+件",
+      "saledCount": 783670,
+      "saledCountStr": "78万+",
+      "orderCount": 2604,
+      "sourceKeyword": "苹果手表表带",
+      "supplier": {
+        "companyName": "东莞市环球金泰电子科技有限公司",
+        "shopUrl": "http://hqjtdz.1688.com"
+      },
+      "minOrderQuantity": 100,
+      "unit": "条"
+    },
+    {
+      "offerId": "1064504913238",
+      "title": "适用苹果iwatch11金属手表带滴胶手镯细款瘦身女款applewatch表带",
+      "detailUrl": "https://detail.1688.com/offer/1064504913238.html",
+      "images": [
+        "https://cbu01.alicdn.com/img/ibank/O1CN01xFuQbu1XZCOe6vXaB_!!2219691172937-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01cyQ6081XZCOe9umXO_!!2219691172937-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01azyG8T1XZCOdsX2Jg_!!2219691172937-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01KoQrLb1XZCOdo8BAI_!!2219691172937-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01ohkX9Z1XZCOe7X8Ru_!!2219691172937-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01R3kDna1XZCOdoslpe_!!2219691172937-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01BfKq1p1XZCOfcLABW_!!2219691172937-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01d8pFam1XZCOdvHNiZ_!!2219691172937-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01BdLCO11XZCOdovFqn_!!2219691172937-0-cib.jpg"
+      ],
+      "videoUrl": "https://cloud.video.taobao.com/play/u/2219691172937/p/2/e/6/t/1/572875044543.mp4",
+      "price": {
+        "min": 11.8,
+        "max": 11.8,
+        "currency": "CNY",
+        "priceType": "NORMAL",
+        "promoLabel": null
+      },
+      "quantityPrices": [
+        {
+          "quantityRange": "≥1条",
+          "quantityMin": 1,
+          "quantityMax": null,
+          "price": 11.8
+        }
+      ],
+      "categoryPath": "数码、电脑 > 智能设备 > 智能手表表带",
+      "categoryName": "智能手表表带",
+      "categoryId": "124810006",
+      "topCategoryId": "7",
+      "recentSoldCount": 27970,
+      "soldDisplay": "已售2.8万+件",
+      "saledCount": 27970,
+      "saledCountStr": "2万+",
+      "orderCount": 224,
+      "sourceKeyword": "苹果手表表带",
+      "supplier": {
+        "companyName": "揭阳市榕城区有为表带厂",
+        "shopUrl": "http://shop9684f06e19n38.1688.com"
+      },
+      "minOrderQuantity": 1,
+      "unit": "条"
+    },
+    {
+      "offerId": "986779498982",
+      "title": "适用Apple苹果S10手表表带S9 iwatch 87654321金属扣树脂手表带",
+      "detailUrl": "https://detail.1688.com/offer/986779498982.html",
+      "images": [
+        "https://cbu01.alicdn.com/img/ibank/O1CN01Pf40xD1LLfFZaLpkq_!!2221037331283-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01HOJ3Z91LLfFZ9trpo_!!2221037331283-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01f5NjIv1LLfFVWdMdV_!!2221037331283-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01LKMqXz1LLfFbWLZOb_!!2221037331283-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01urOYvL1LLfFbunpnQ_!!2221037331283-0-cib.jpg"
+      ],
+      "videoUrl": "https://cloud.video.taobao.com/play/u/2221037331283/p/2/e/6/t/1/538501600697.mp4",
+      "price": {
+        "min": 23,
+        "max": 25,
+        "currency": "CNY",
+        "priceType": "NORMAL",
+        "promoLabel": null
+      },
+      "quantityPrices": [
+        {
+          "quantityRange": "100~499条",
+          "quantityMin": 100,
+          "quantityMax": 499,
+          "price": 25
+        },
+        {
+          "quantityRange": "500~999条",
+          "quantityMin": 500,
+          "quantityMax": 999,
+          "price": 24
+        },
+        {
+          "quantityRange": "≥1000条",
+          "quantityMin": 1000,
+          "quantityMax": null,
+          "price": 23
+        }
+      ],
+      "categoryPath": "数码、电脑 > 智能设备 > 智能手表表带",
+      "categoryName": "智能手表表带",
+      "categoryId": "124810006",
+      "topCategoryId": "7",
+      "recentSoldCount": 13484,
+      "soldDisplay": "已售1.3万+件",
+      "saledCount": 13484,
+      "saledCountStr": "1万+",
+      "orderCount": 6,
+      "sourceKeyword": "苹果手表表带",
+      "supplier": {
+        "companyName": "深圳市翼氪科技有限公司",
+        "shopUrl": "http://shop723d05t4873s5.1688.com"
+      },
+      "minOrderQuantity": 100,
+      "unit": "条"
+    },
+    {
+      "offerId": "987356590987",
+      "title": "适用苹果Apple手表iWatch Ultra SE系列男士三珠不锈钢金属表带",
+      "detailUrl": "https://detail.1688.com/offer/987356590987.html",
+      "images": [
+        "https://cbu01.alicdn.com/img/ibank/O1CN01AN1FkX1LLfFdGQBy8_!!2221037331283-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01SuH2vP1LLfFX1lzqO_!!2221037331283-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01TBcCxT1LLfFbjXtmU_!!2221037331283-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01Au0HdP1LLfFdGPFkV_!!2221037331283-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01vkqEDS1LLfFcbhFyp_!!2221037331283-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01G3VCWz1LLfFdGnUJC_!!2221037331283-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01ERxVzc1LLfFcaucnq_!!2221037331283-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN012fMZzt1LLfFcbehsC_!!2221037331283-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01bGUOMC1LLfFczkRML_!!2221037331283-0-cib.jpg"
+      ],
+      "videoUrl": "https://cloud.video.taobao.com/play/u/2221037331283/p/2/e/6/t/1/538685334820.mp4",
+      "price": {
+        "min": 15,
+        "max": 15,
+        "currency": "CNY",
+        "priceType": "NORMAL",
+        "promoLabel": null
+      },
+      "quantityPrices": [],
+      "categoryPath": "数码、电脑 > 智能设备 > 智能手表表带",
+      "categoryName": "智能手表表带",
+      "categoryId": "124810006",
+      "topCategoryId": "7",
+      "recentSoldCount": 12500,
+      "soldDisplay": "已售1.2万+件",
+      "saledCount": 12500,
+      "saledCountStr": "1万+",
+      "orderCount": 6,
+      "sourceKeyword": "苹果手表表带",
+      "supplier": {
+        "companyName": "深圳市翼氪科技有限公司",
+        "shopUrl": "http://shop723d05t4873s5.1688.com"
+      },
+      "minOrderQuantity": 100,
+      "unit": "条"
+    },
+    {
+      "offerId": "1059096846162",
+      "title": "适用苹果iwatch钛合金表带applewatch新款一珠纯钛磁吸扣s9手表带",
+      "detailUrl": "https://detail.1688.com/offer/1059096846162.html",
+      "images": [
+        "https://cbu01.alicdn.com/img/ibank/O1CN01jWqxdF1JNpwm7UIiS_!!2222633981017-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01cNRYye1JNpwkMx4cM_!!2222633981017-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01OFLqUl1JNpwkLw87U_!!2222633981017-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01U8UHAy1JNpwkelpDl_!!2222633981017-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01MJJdYk1JNpwkempb9_!!2222633981017-0-cib.jpg"
+      ],
+      "videoUrl": "https://cloud.video.taobao.com/play/u/2222633981017/p/2/e/6/t/1/570539264169.mp4",
+      "price": {
+        "min": 86,
+        "max": 86,
+        "currency": "CNY",
+        "priceType": "NORMAL",
+        "promoLabel": null
+      },
+      "quantityPrices": [],
+      "categoryPath": "数码、电脑 > 智能设备 > 智能手表表带",
+      "categoryName": "智能手表表带",
+      "categoryId": "124810006",
+      "topCategoryId": "7",
+      "recentSoldCount": 4460,
+      "soldDisplay": "已售1.6万+件",
+      "saledCount": 4460,
+      "saledCountStr": "4400+",
+      "orderCount": 147,
+      "sourceKeyword": "苹果手表表带",
+      "supplier": {
+        "companyName": "深圳市美山智-美山科技",
+        "shopUrl": "http://shop6877nd169y319.1688.com"
+      },
+      "minOrderQuantity": 1,
+      "unit": "条"
+    },
+    {
+      "offerId": "1076459189911",
+      "title": "适用苹果手表AppleWatch1-12/Ultra1-3/洞洞磁吸九代硅胶镂空表带",
+      "detailUrl": "https://detail.1688.com/offer/1076459189911.html",
+      "images": [
+        "https://cbu01.alicdn.com/img/ibank/O1CN01gkDiCaEV7OF2vH2e_!!2216990565513-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01KcNXObzgihC2R3rs_!!2216990565513-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01nmqzbvad0DC2R3rs_!!2216990565513-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN0100LKKplFgHI2R3rs_!!2216990565513-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01jU25wVx2AzK2vH2e_!!2216990565513-0-cib.jpg"
+      ],
+      "videoUrl": "https://cloud.video.taobao.com/play/u/2216990565513/p/2/e/6/t/1/994453832647973.mp4",
+      "price": {
+        "min": 11,
+        "max": 17,
+        "currency": "CNY",
+        "priceType": "NORMAL",
+        "promoLabel": null
+      },
+      "quantityPrices": [
+        {
+          "quantityRange": "1~9条",
+          "quantityMin": 1,
+          "quantityMax": 9,
+          "price": 17
+        },
+        {
+          "quantityRange": "10~9998条",
+          "quantityMin": 10,
+          "quantityMax": 9998,
+          "price": 13
+        },
+        {
+          "quantityRange": "≥9999条",
+          "quantityMin": 9999,
+          "quantityMax": null,
+          "price": 11
+        }
+      ],
+      "categoryPath": "数码、电脑 > 智能设备 > 智能手表表带",
+      "categoryName": "智能手表表带",
+      "categoryId": "124810006",
+      "topCategoryId": "7",
+      "recentSoldCount": 5792,
+      "soldDisplay": "已售5700+件",
+      "saledCount": 5792,
+      "saledCountStr": "5700+",
+      "orderCount": 6,
+      "sourceKeyword": "苹果手表表带",
+      "supplier": {
+        "companyName": "深圳市酷碰科技有限公司",
+        "shopUrl": "http://shop920l949447767.1688.com"
+      },
+      "minOrderQuantity": 1,
+      "unit": "条"
+    },
+    {
+      "offerId": "650572770645",
+      "title": "适用苹果手表带不锈钢金属iwatch表带apple watch 8/SE三星华为gt",
+      "detailUrl": "https://detail.1688.com/offer/650572770645.html",
+      "images": [
+        "https://cbu01.alicdn.com/img/ibank/O1CN01aFtRLN1mIRmvu3i09_!!3276974931-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01Uxp1LG1mIRhbDXsoC_!!3276974931-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01kWDfUB1mIRhTpuZt2_!!3276974931-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01LahN001mIRifr7osc_!!3276974931-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01WlIsGU1mIRucLZufW_!!3276974931-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01atHUqu1mIRgxcbMin_!!3276974931-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01trBBMV1mIRkNZyMmz_!!3276974931-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01BQaTV51mIRgtxuUjx_!!3276974931-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01XAQOpM1mIRrC6HMGQ_!!3276974931-0-cib.jpg"
+      ],
+      "videoUrl": "https://cloud.video.taobao.com/play/u/3276974931/p/2/e/6/t/1/319800774379.mp4",
+      "price": {
+        "min": 6.8,
+        "max": 6.8,
+        "currency": "CNY",
+        "priceType": "NORMAL",
+        "promoLabel": null
+      },
+      "quantityPrices": [
+        {
+          "quantityRange": "≥2件",
+          "quantityMin": 2,
+          "quantityMax": null,
+          "price": 6.8
+        }
+      ],
+      "categoryPath": "数码、电脑 > 智能设备 > 智能手表表带",
+      "categoryName": "智能手表表带",
+      "categoryId": "124810006",
+      "topCategoryId": "7",
+      "recentSoldCount": 104288,
+      "soldDisplay": "已售10万+件",
+      "saledCount": 104288,
+      "saledCountStr": "10万+",
+      "orderCount": 11678,
+      "sourceKeyword": "苹果手表表带",
+      "supplier": {
+        "companyName": "揭阳市榕城区榕通表带厂",
+        "shopUrl": "http://rongtong138.1688.com"
+      },
+      "minOrderQuantity": 2,
+      "unit": "件"
+    },
+    {
+      "offerId": "644900644030",
+      "title": "适用苹果表带装饰环 apple watch 手表通用硅胶表带装饰环 装饰钉",
+      "detailUrl": "https://detail.1688.com/offer/644900644030.html",
+      "images": [
+        "https://cbu01.alicdn.com/img/ibank/O1CN01LkBNNr1mC2DOmKgkN_!!2207631144917-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01qQ79z51mC2DhQdU80_!!2207631144917-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN010ICg5b1mC2DfUDSTS_!!2207631144917-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01g2gi7H1mC2AvAz7Do_!!2207631144917-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01xc8fG61mC2AwSJ7O5_!!2207631144917-0-cib.jpg"
+      ],
+      "videoUrl": "",
+      "price": {
+        "min": 6.8,
+        "max": 6.8,
+        "currency": "CNY",
+        "priceType": "NORMAL",
+        "promoLabel": null
+      },
+      "quantityPrices": [
+        {
+          "quantityRange": "≥1个",
+          "quantityMin": 1,
+          "quantityMax": null,
+          "price": 6.8
+        }
+      ],
+      "categoryPath": "服饰配件、饰品 > 表 > 表带",
+      "categoryName": "表带",
+      "categoryId": "124272005",
+      "topCategoryId": "54",
+      "recentSoldCount": 31733,
+      "soldDisplay": "已售3.2万+件",
+      "saledCount": 31733,
+      "saledCountStr": "3万+",
+      "orderCount": 4471,
+      "sourceKeyword": "苹果手表表带",
+      "supplier": {
+        "companyName": "义乌市虎饰电子商务有限公司",
+        "shopUrl": "http://shop077up04014h25.1688.com"
+      },
+      "minOrderQuantity": 1,
+      "unit": "套"
+    },
+    {
+      "offerId": "1066046153836",
+      "title": "诺曼磁吸金属硅胶表带适用苹果手表AppleWatchS11/10代iwatch表带",
+      "detailUrl": "https://detail.1688.com/offer/1066046153836.html",
+      "images": [
+        "https://cbu01.alicdn.com/img/ibank/O1CN01nlP33F25y6sNOE55A_!!2222558397594-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01LojIwy25y6sO09xoj_!!2222558397594-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01mYdy1L25y6sIyj1Xa_!!2222558397594-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01ajTcm325y6sNOBX5L_!!2222558397594-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01NGFmcO25y6sOzPPnO_!!2222558397594-0-cib.jpg"
+      ],
+      "videoUrl": "https://cloud.video.taobao.com/play/u/2222558397594/p/2/e/6/t/1/573268978628.mp4",
+      "price": {
+        "min": 53,
+        "max": 53,
+        "currency": "CNY",
+        "priceType": "NORMAL",
+        "promoLabel": null
+      },
+      "quantityPrices": [],
+      "categoryPath": "数码、电脑 > 苹果专用配件 > AppleWatch表带",
+      "categoryName": "AppleWatch表带",
+      "categoryId": "124270010",
+      "topCategoryId": "7",
+      "recentSoldCount": 1660,
+      "soldDisplay": "已售1600+件",
+      "saledCount": 1660,
+      "saledCountStr": "1600+",
+      "orderCount": 31,
+      "sourceKeyword": "苹果手表表带",
+      "supplier": {
+        "companyName": "深圳市骏瑞达贸易有限公司",
+        "shopUrl": "http://shop44y3966151ey6.1688.com"
+      },
+      "minOrderQuantity": 1,
+      "unit": "条"
+    },
+    {
+      "offerId": "725895969569",
+      "title": "适用苹果iwatchs12三珠实心不锈钢applewatchs11三星华为GT手表带",
+      "detailUrl": "https://detail.1688.com/offer/725895969569.html",
+      "images": [
+        "https://cbu01.alicdn.com/img/ibank/O1CN01s5cko31cdqHoHgAnA_!!2213803143624-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01Qz0QxR1cdqOkP7Gy3_!!2213803143624-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01uuD8lM1cdqFU6frdg_!!2213803143624-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01HQ9LA21cdq5z1HlEW_!!2213803143624-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN013PyNaV1cdqFC85oqq_!!2213803143624-0-cib.jpg"
+      ],
+      "videoUrl": "https://cloud.video.taobao.com/play/u/2213803143624/p/2/e/6/t/1/406965264842.mp4",
+      "price": {
+        "min": 7.8,
+        "max": 7.8,
+        "currency": "CNY",
+        "priceType": "NORMAL",
+        "promoLabel": null
+      },
+      "quantityPrices": [],
+      "categoryPath": "数码、电脑 > 智能设备 > 智能手表表带",
+      "categoryName": "智能手表表带",
+      "categoryId": "124810006",
+      "topCategoryId": "7",
+      "recentSoldCount": 127127,
+      "soldDisplay": "已售10万+件",
+      "saledCount": 127127,
+      "saledCountStr": "12万+",
+      "orderCount": 5084,
+      "sourceKeyword": "苹果手表表带",
+      "supplier": {
+        "companyName": "揭阳市榕城区创佳表带厂",
+        "shopUrl": "http://shop7093718d82770.1688.com"
+      },
+      "minOrderQuantity": 1,
+      "unit": "条"
+    },
+    {
+      "offerId": "956897023620",
+      "title": "适用苹果手表带三珠不锈钢金属iwatch表带applewatch三星华为gt56",
+      "detailUrl": "https://detail.1688.com/offer/956897023620.html",
+      "images": [
+        "https://cbu01.alicdn.com/img/ibank/O1CN01ZLFnFJ1LADKSl4VGz_!!2218954031258-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01UENcAW1LADKQnkuhL_!!2218954031258-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01nz3DmH1LADKP4WMJS_!!2218954031258-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01bkFRZM1LADKJVrKQB_!!2218954031258-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01Ugi2iX1LADKPbyhG8_!!2218954031258-0-cib.jpg"
+      ],
+      "videoUrl": "https://cloud.video.taobao.com/play/u/2218954031258/p/2/e/6/t/1/549184562558.mp4",
+      "price": {
+        "min": 7.8,
+        "max": 7.8,
+        "currency": "CNY",
+        "priceType": "NORMAL",
+        "promoLabel": null
+      },
+      "quantityPrices": [],
+      "categoryPath": "数码、电脑 > 智能设备 > 智能手表表带",
+      "categoryName": "智能手表表带",
+      "categoryId": "124810006",
+      "topCategoryId": "7",
+      "recentSoldCount": 40860,
+      "soldDisplay": "已售4.4万+件",
+      "saledCount": 40860,
+      "saledCountStr": "4万+",
+      "orderCount": 1154,
+      "sourceKeyword": "苹果手表表带",
+      "supplier": {
+        "companyName": "揭阳市榕城区利合表带厂",
+        "shopUrl": "http://shop5374897n14363.1688.com"
+      },
+      "minOrderQuantity": 1,
+      "unit": "条"
+    },
+    {
+      "offerId": "1009028854318",
+      "title": "适用苹果iwatch表带s11不锈钢华为gt5智能手表s10钢带三珠手表带",
+      "detailUrl": "https://detail.1688.com/offer/1009028854318.html",
+      "images": [
+        "https://cbu01.alicdn.com/img/ibank/O1CN01bsgc7p2BPejtbxZjw_!!2221437848331-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01JnuVK02BPejt1lmYY_!!2221437848331-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01Oz6xNG2BPeju8FbwW_!!2221437848331-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN018Tc16y2BPejoil76n_!!2221437848331-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01wgCtiS2BPejt1mBWG_!!2221437848331-0-cib.jpg"
+      ],
+      "videoUrl": "https://cloud.video.taobao.com/play/u/2221437848331/p/2/e/6/t/1/548801544055.mp4",
+      "price": {
+        "min": 8.6,
+        "max": 8.6,
+        "currency": "CNY",
+        "priceType": "NORMAL",
+        "promoLabel": null
+      },
+      "quantityPrices": [],
+      "categoryPath": "数码、电脑 > 智能设备 > 智能手表表带",
+      "categoryName": "智能手表表带",
+      "categoryId": "124810006",
+      "topCategoryId": "7",
+      "recentSoldCount": 25854,
+      "soldDisplay": "已售10万+件",
+      "saledCount": 25854,
+      "saledCountStr": "2万+",
+      "orderCount": 112,
+      "sourceKeyword": "苹果手表表带",
+      "supplier": {
+        "companyName": "揭阳市揭东区磐东祖斌五金厂",
+        "shopUrl": "http://shop3303690812z32.1688.com"
+      },
+      "minOrderQuantity": 1,
+      "unit": "条"
+    },
+    {
+      "offerId": "743848214251",
+      "title": "钢表带适用于苹果apple iwatch智能手表链华为TG三珠不锈钢手表带",
+      "detailUrl": "https://detail.1688.com/offer/743848214251.html",
+      "images": [
+        "https://cbu01.alicdn.com/img/ibank/O1CN01lLCT9U1Ew7LGbL18D_!!2216651320415-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01RtkTkS1Ew7FsIYyaa_!!2216651320415-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01jWFbiO1Ew7Fr1PB3z_!!2216651320415-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01xQTu9c1Ew7Fj4u4Z5_!!2216651320415-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01XohPgV1Ew7Fu9Qd03_!!2216651320415-0-cib.jpg"
+      ],
+      "videoUrl": "",
+      "price": {
+        "min": 9.5,
+        "max": 9.5,
+        "currency": "CNY",
+        "priceType": "NORMAL",
+        "promoLabel": null
+      },
+      "quantityPrices": [],
+      "categoryPath": "数码、电脑 > 智能设备 > 智能手表表带",
+      "categoryName": "智能手表表带",
+      "categoryId": "124810006",
+      "topCategoryId": "7",
+      "recentSoldCount": 35247,
+      "soldDisplay": "已售3.5万+件",
+      "saledCount": 35247,
+      "saledCountStr": "3万+",
+      "orderCount": 303,
+      "sourceKeyword": "苹果手表表带",
+      "supplier": {
+        "companyName": "揭阳市揭东区磐东廉茂表带厂",
+        "shopUrl": "http://shop66327644690t0.1688.com"
+      },
+      "minOrderQuantity": 1,
+      "unit": "套"
+    },
+    {
+      "offerId": "752589047654",
+      "title": "适用华为watch三星苹果s10小米实心不锈钢gt7三珠蝴蝶扣s11手表带",
+      "detailUrl": "https://detail.1688.com/offer/752589047654.html",
+      "images": [
+        "https://cbu01.alicdn.com/img/ibank/O1CN01wrUdyR2MBQ6KqPGb9_!!2212642909789-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01lvsbQZ2MBQ6N5zzMG_!!2212642909789-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01sM6zNU2MBPzMMan0g_!!2212642909789-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01sBnHw92MBQ6MSR5yj_!!2212642909789-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01Kx5xNx2MBPzYR0Iwm_!!2212642909789-0-cib.jpg"
+      ],
+      "videoUrl": "",
+      "price": {
+        "min": 7.4,
+        "max": 7.4,
+        "currency": "CNY",
+        "priceType": "NORMAL",
+        "promoLabel": null
+      },
+      "quantityPrices": [
+        {
+          "quantityRange": "≥2条",
+          "quantityMin": 2,
+          "quantityMax": null,
+          "price": 7.4
+        }
+      ],
+      "categoryPath": "数码、电脑 > 智能设备 > 智能手表表带",
+      "categoryName": "智能手表表带",
+      "categoryId": "124810006",
+      "topCategoryId": "7",
+      "recentSoldCount": 73157,
+      "soldDisplay": "已售7.3万+件",
+      "saledCount": 73157,
+      "saledCountStr": "7万+",
+      "orderCount": 2155,
+      "sourceKeyword": "苹果手表表带",
+      "supplier": {
+        "companyName": "深圳市码咖科技有限公司",
+        "shopUrl": "http://shop0u85b434606u1.1688.com"
+      },
+      "minOrderQuantity": 1,
+      "unit": "条"
+    },
+    {
+      "offerId": "954575204135",
+      "title": "猫眼一珠竹节不锈钢表带 适用苹果手表iwatch789SE高级感手表带",
+      "detailUrl": "https://detail.1688.com/offer/954575204135.html",
+      "images": [
+        "https://cbu01.alicdn.com/img/ibank/O1CN01zUQ55B1FLlXFLmBfz_!!2207512530471-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01xfrZyN1FLlYXfBxjq_!!2207512530471-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01gM8wtf1FLlXD2OyFw_!!2207512530471-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01VZOtHV1FLlXDohdeD_!!2207512530471-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01RKoYF61FLlca23eSD_!!2207512530471-0-cib.jpg"
+      ],
+      "videoUrl": "https://cloud.video.taobao.com/play/u/2207512530471/p/2/e/6/t/1/526501717847.mp4",
+      "price": {
+        "min": 25,
+        "max": 25,
+        "currency": "CNY",
+        "priceType": "NORMAL",
+        "promoLabel": null
+      },
+      "quantityPrices": [
+        {
+          "quantityRange": "≥5条",
+          "quantityMin": 5,
+          "quantityMax": null,
+          "price": 25
+        }
+      ],
+      "categoryPath": "数码、电脑 > 智能设备 > 智能手表表带",
+      "categoryName": "智能手表表带",
+      "categoryId": "124810006",
+      "topCategoryId": "7",
+      "recentSoldCount": 19663,
+      "soldDisplay": "已售2万+件",
+      "saledCount": 19663,
+      "saledCountStr": "1万+",
+      "orderCount": 168,
+      "sourceKeyword": "苹果手表表带",
+      "supplier": {
+        "companyName": "揭阳市榕城区吉如五金制品厂",
+        "shopUrl": "http://shop536b24244j021.1688.com"
+      },
+      "minOrderQuantity": 5,
+      "unit": "条"
+    },
+    {
+      "offerId": "742770704704",
+      "title": "适用苹果硅胶s11/12官方款apple iwatch2345678910运动手表带厂家",
+      "detailUrl": "https://detail.1688.com/offer/742770704704.html",
+      "images": [
+        "https://cbu01.alicdn.com/img/ibank/O1CN01oKbw1p1EverAFziVv_!!3022230414-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01rN5VRR1EveuM13Dgs_!!3022230414-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01QfqSrU1EveuImt9O3_!!3022230414-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01VwiAcA2C32WDPtOP8_!!2200812368417.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01AzBceY1EveveitMSG_!!3022230414-0-cib.jpg"
+      ],
+      "videoUrl": "",
+      "price": {
+        "min": 4,
+        "max": 4,
+        "currency": "CNY",
+        "priceType": "NORMAL",
+        "promoLabel": null
+      },
+      "quantityPrices": [
+        {
+          "quantityRange": "1~1个",
+          "quantityMin": 1,
+          "quantityMax": 1,
+          "price": 4
+        },
+        {
+          "quantityRange": "≥2个",
+          "quantityMin": 2,
+          "quantityMax": null,
+          "price": 10
+        }
+      ],
+      "categoryPath": "数码、电脑 > 智能设备 > 智能手表表带",
+      "categoryName": "智能手表表带",
+      "categoryId": "124810006",
+      "topCategoryId": "7",
+      "recentSoldCount": 80818,
+      "soldDisplay": "已售8.1万+件",
+      "saledCount": 80818,
+      "saledCountStr": "8万+",
+      "orderCount": 23025,
+      "sourceKeyword": "苹果手表表带",
+      "supplier": {
+        "companyName": "深圳市米兰仕科技有限公司",
+        "shopUrl": "http://syunet.1688.com"
+      },
+      "minOrderQuantity": 1,
+      "unit": "条"
+    },
+    {
+      "offerId": "672990507384",
+      "title": "适用苹果appl ewatch手表表手表带三珠304不锈钢金属华为三星配件",
+      "detailUrl": "https://detail.1688.com/offer/672990507384.html",
+      "images": [
+        "https://cbu01.alicdn.com/img/ibank/O1CN01KkoqAw1cummzt93KJ_!!2213849183661-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01ydXiQE1cummmSdQKd_!!2213849183661-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01dMaZKf1cumn1hYgLp_!!2213849183661-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01RksRlz1cumkHn3BZo_!!2213849183661-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01wmwBwY1cumkQAh4dq_!!2213849183661-0-cib.jpg"
+      ],
+      "videoUrl": "https://cloud.video.taobao.com/play/u/2213849183661/p/2/e/6/t/1/374152376059.mp4",
+      "price": {
+        "min": 3.65,
+        "max": 3.65,
+        "currency": "CNY",
+        "priceType": "NORMAL",
+        "promoLabel": null
+      },
+      "quantityPrices": [],
+      "categoryPath": "数码、电脑 > 智能设备 > 智能手表表带",
+      "categoryName": "智能手表表带",
+      "categoryId": "124810006",
+      "topCategoryId": "7",
+      "recentSoldCount": 78111,
+      "soldDisplay": "已售10万+件",
+      "saledCount": 78111,
+      "saledCountStr": "7万+",
+      "orderCount": 3832,
+      "sourceKeyword": "苹果手表表带",
+      "supplier": {
+        "companyName": "揭阳市揭东区曲溪智越表带厂",
+        "shopUrl": "http://shop38gn763844793.1688.com"
+      },
+      "minOrderQuantity": 2,
+      "unit": "副"
+    },
+    {
+      "offerId": "1076557759290",
+      "title": "适用苹果手表AppleWatch1-12/Ultra1-3/se三珠回环磁吸手表带",
+      "detailUrl": "https://detail.1688.com/offer/1076557759290.html",
+      "images": [
+        "https://cbu01.alicdn.com/img/ibank/O1CN01uo0iDGyP7oB2vH2e_!!2216990565513-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01GNHeQehtEhC2R3rs_!!2216990565513-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01fkZC2a7AF1C2R3rs_!!2216990565513-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01BydZFpoIEYG2R3rs_!!2216990565513-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01VXOz0WTRFTE2vH2e_!!2216990565513-0-cib.jpg"
+      ],
+      "videoUrl": "",
+      "price": {
+        "min": 17,
+        "max": 22,
+        "currency": "CNY",
+        "priceType": "NORMAL",
+        "promoLabel": null
+      },
+      "quantityPrices": [
+        {
+          "quantityRange": "1~9条",
+          "quantityMin": 1,
+          "quantityMax": 9,
+          "price": 22
+        },
+        {
+          "quantityRange": "10~9998条",
+          "quantityMin": 10,
+          "quantityMax": 9998,
+          "price": 18
+        },
+        {
+          "quantityRange": "≥9999条",
+          "quantityMin": 9999,
+          "quantityMax": null,
+          "price": 17
+        }
+      ],
+      "categoryPath": "数码、电脑 > 智能设备 > 智能手表表带",
+      "categoryName": "智能手表表带",
+      "categoryId": "124810006",
+      "topCategoryId": "7",
+      "recentSoldCount": 2574,
+      "soldDisplay": "已售2500+件",
+      "saledCount": 2574,
+      "saledCountStr": "2500+",
+      "orderCount": 76,
+      "sourceKeyword": "苹果手表表带",
+      "supplier": {
+        "companyName": "深圳市酷碰科技有限公司",
+        "shopUrl": "http://shop920l949447767.1688.com"
+      },
+      "minOrderQuantity": 1,
+      "unit": "条"
+    },
+    {
+      "offerId": "960404260929",
+      "title": "适用苹果applewatch s12手表带iwatch10/9原野山地纹尼龙回环表带",
+      "detailUrl": "https://detail.1688.com/offer/960404260929.html",
+      "images": [
+        "https://cbu01.alicdn.com/img/ibank/O1CN01VqfcrB2L1yNdcVOOp_!!2212968979633-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01OOzEwu2L1yNe80YE3_!!2212968979633-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01KKFmVX2L1yNUjF0Vl_!!2212968979633-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01B7huAE2L1yNcfboa7_!!2212968979633-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01xlag9X1NUwUE6ml26_!!6000000001574-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01lSb15u2L1yNbVyZo3_!!2212968979633-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01JyVegr2L1yNciEwNE_!!2212968979633-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01nds6Dr2L1yNcxELwp_!!2212968979633-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01xAny1j2L1yNdas1T3_!!2212968979633-0-cib.jpg"
+      ],
+      "videoUrl": "https://cloud.video.taobao.com/play/u/2212968979633/p/2/e/6/t/1/343779035802.mp4",
+      "price": {
+        "min": 5,
+        "max": 6,
+        "currency": "CNY",
+        "priceType": "NORMAL",
+        "promoLabel": null
+      },
+      "quantityPrices": [
+        {
+          "quantityRange": "1~999条",
+          "quantityMin": 1,
+          "quantityMax": 999,
+          "price": 6
+        },
+        {
+          "quantityRange": "1000~4999条",
+          "quantityMin": 1000,
+          "quantityMax": 4999,
+          "price": 5.5
+        },
+        {
+          "quantityRange": "≥5000条",
+          "quantityMin": 5000,
+          "quantityMax": null,
+          "price": 5
+        }
+      ],
+      "categoryPath": "数码、电脑 > 智能设备 > 智能手表表带",
+      "categoryName": "智能手表表带",
+      "categoryId": "124810006",
+      "topCategoryId": "7",
+      "recentSoldCount": 81721,
+      "soldDisplay": "已售8.2万+件",
+      "saledCount": 81721,
+      "saledCountStr": "8万+",
+      "orderCount": 445,
+      "sourceKeyword": "苹果手表表带",
+      "supplier": {
+        "companyName": "东莞市大岭山一捷通五金厂",
+        "shopUrl": "http://shop40y2911892jy7.1688.com"
+      },
+      "minOrderQuantity": 1,
+      "unit": "条"
+    },
+    {
+      "offerId": "630285448216",
+      "title": "新升级款i watch手表带适用苹果apple watch三珠不锈钢带苹果表带",
+      "detailUrl": "https://detail.1688.com/offer/630285448216.html",
+      "images": [
+        "https://cbu01.alicdn.com/img/ibank/O1CN01nq9SJE238ELPcCwIg_!!2209549437210-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/22302999798_1447659297.jpg",
+        "https://cbu01.alicdn.com/img/ibank/22384123056_1447659297.jpg",
+        "https://cbu01.alicdn.com/img/ibank/22474547575_1447659297.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN014MPVgD238ELNUhcuF_!!2209549437210-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01mMSvm1238EMd9gTSe_!!2209549437210-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01CC9Atd238EMWxT5WL_!!2209549437210-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01WvdC8W238EMSVwvn4_!!2209549437210-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/22474559526_1447659297.jpg"
+      ],
+      "videoUrl": "https://cloud.video.taobao.com/play/u/2209549437210/p/2/e/6/t/1/333851124252.mp4",
+      "price": {
+        "min": 19,
+        "max": 19,
+        "currency": "CNY",
+        "priceType": "NORMAL",
+        "promoLabel": null
+      },
+      "quantityPrices": [],
+      "categoryPath": "数码、电脑 > 智能设备 > 智能手表表带",
+      "categoryName": "智能手表表带",
+      "categoryId": "124810006",
+      "topCategoryId": "7",
+      "recentSoldCount": 3022,
+      "soldDisplay": "已售3000+件",
+      "saledCount": 3022,
+      "saledCountStr": "3000+",
+      "orderCount": 439,
+      "sourceKeyword": "苹果手表表带",
+      "supplier": {
+        "companyName": "深圳市启宏表业有限公司",
+        "shopUrl": "http://shop489429994y8n7.1688.com"
+      },
+      "minOrderQuantity": 1,
+      "unit": "件"
+    },
+    {
+      "offerId": "870990632511",
+      "title": "适用苹果ultra2手表表带iwatch s10/9/8降落伞扣运动越野尼龙表带",
+      "detailUrl": "https://detail.1688.com/offer/870990632511.html",
+      "images": [
+        "https://cbu01.alicdn.com/img/ibank/O1CN01kK8nrZ2L1yKIwps2s_!!2212968979633-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01mv1SUo2L1yKHuV0QY_!!2212968979633-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01NrUFrk2L1yKGtbpRr_!!2212968979633-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN010fM0nd2L1yNsVpAbn_!!2212968979633-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01cXyZpY2L1yKKuJMj0_!!2212968979633-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN015WRWYw2L1yNvCpQg9_!!2212968979633-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01fgYDEy2L1yNtrSaPO_!!2212968979633-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01k4be6e2L1yKIOPSWp_!!2212968979633-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN012MaGJB2L1yKJu2acR_!!2212968979633-0-cib.jpg"
+      ],
+      "videoUrl": "",
+      "price": {
+        "min": 10,
+        "max": 12,
+        "currency": "CNY",
+        "priceType": "NORMAL",
+        "promoLabel": null
+      },
+      "quantityPrices": [
+        {
+          "quantityRange": "1~999条",
+          "quantityMin": 1,
+          "quantityMax": 999,
+          "price": 12
+        },
+        {
+          "quantityRange": "1000~2999条",
+          "quantityMin": 1000,
+          "quantityMax": 2999,
+          "price": 11
+        },
+        {
+          "quantityRange": "≥3000条",
+          "quantityMin": 3000,
+          "quantityMax": null,
+          "price": 10
+        }
+      ],
+      "categoryPath": "数码、电脑 > 智能设备 > 智能手表表带",
+      "categoryName": "智能手表表带",
+      "categoryId": "124810006",
+      "topCategoryId": "7",
+      "recentSoldCount": 48989,
+      "soldDisplay": "已售5.1万+件",
+      "saledCount": 48989,
+      "saledCountStr": "4万+",
+      "orderCount": 690,
+      "sourceKeyword": "苹果手表表带",
+      "supplier": {
+        "companyName": "东莞市大岭山一捷通五金厂",
+        "shopUrl": "http://shop40y2911892jy7.1688.com"
+      },
+      "minOrderQuantity": 1,
+      "unit": "条"
+    },
+    {
+      "offerId": "1068871319907",
+      "title": "适用apple watch11钛合金表带苹果iwatch手表竹节一株按扣手表带",
+      "detailUrl": "https://detail.1688.com/offer/1068871319907.html",
+      "images": [
+        "https://cbu01.alicdn.com/img/ibank/O1CN01DiyXqw1vswFYfhTb8_!!2209254346229-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01o3bTQK1vswFYUoVlK_!!2209254346229-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01ukYiAK1vswFUOx4Nd_!!2209254346229-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN016xvFZ31vswFYfhLGw_!!2209254346229-0-cib.jpg"
+      ],
+      "videoUrl": "",
+      "price": {
+        "min": 70,
+        "max": 70,
+        "currency": "CNY",
+        "priceType": "NORMAL",
+        "promoLabel": null
+      },
+      "quantityPrices": [
+        {
+          "quantityRange": "≥3个",
+          "quantityMin": 3,
+          "quantityMax": null,
+          "price": 70
+        }
+      ],
+      "categoryPath": "数码、电脑 > 智能设备 > 智能手表表带",
+      "categoryName": "智能手表表带",
+      "categoryId": "124810006",
+      "topCategoryId": "7",
+      "recentSoldCount": 670,
+      "soldDisplay": "已售600+件",
+      "saledCount": 670,
+      "saledCountStr": "600+",
+      "orderCount": 7,
+      "sourceKeyword": "苹果手表表带",
+      "supplier": {
+        "companyName": "深圳市嘉特霖科技有限公司",
+        "shopUrl": "http://shop4265745946f67.1688.com"
+      },
+      "minOrderQuantity": 3,
+      "unit": "个"
+    },
+    {
+      "offerId": "1008845307423",
+      "title": "适用苹果iwatch表带不锈钢华为gt7手表带22mm跨境s11实心三珠腕带",
+      "detailUrl": "https://detail.1688.com/offer/1008845307423.html",
+      "images": [
+        "https://cbu01.alicdn.com/img/ibank/O1CN01b2ZMFE2BPejwZU44k_!!2221437848331-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN017Fvkb92BPejwOQGwe_!!2221437848331-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN015mxmnF2BPejwyzcwU_!!2221437848331-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01sFDoTs2BPejwMhimn_!!2221437848331-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN017eESKQ2BPejvq408B_!!2221437848331-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01GiBvmH2BPejvVRcuf_!!2221437848331-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01m66bXF2BPejvVSQgd_!!2221437848331-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01xO9q7Y2BPejxVN67z_!!2221437848331-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01qypfMVwUuUD1chua_!!2221437848331-0-cib.jpg"
+      ],
+      "videoUrl": "https://cloud.video.taobao.com/play/u/2221437848331/p/2/e/6/t/1/548801544055.mp4",
+      "price": {
+        "min": 4.3,
+        "max": 4.3,
+        "currency": "CNY",
+        "priceType": "NORMAL",
+        "promoLabel": null
+      },
+      "quantityPrices": [],
+      "categoryPath": "数码、电脑 > 智能设备 > 智能手表表带",
+      "categoryName": "智能手表表带",
+      "categoryId": "124810006",
+      "topCategoryId": "7",
+      "recentSoldCount": 18896,
+      "soldDisplay": "已售2.1万+件",
+      "saledCount": 18896,
+      "saledCountStr": "1万+",
+      "orderCount": 327,
+      "sourceKeyword": "苹果手表表带",
+      "supplier": {
+        "companyName": "揭阳市揭东区磐东祖斌五金厂",
+        "shopUrl": "http://shop3303690812z32.1688.com"
+      },
+      "minOrderQuantity": 1,
+      "unit": "条"
+    },
+    {
+      "offerId": "833035430891",
+      "title": "适用Apple Watch系列 8/7/6/5/4/3/2/1SE/Ultra四叶草苹果手表带",
+      "detailUrl": "https://detail.1688.com/offer/833035430891.html",
+      "images": [
+        "https://cbu01.alicdn.com/img/ibank/O1CN01WJxKWf1vXrqgPveY9_!!2217755096183-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01SY85q11vXrqgPumU7_!!2217755096183-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01YuIjNx1vXrqhkVXBg_!!2217755096183-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01N1MJBT1vXrqfIiolL_!!2217755096183-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01cbwu0N1vXrqhq12mj_!!2217755096183-0-cib.jpg"
+      ],
+      "videoUrl": "https://cloud.video.taobao.com/play/u/2217755096183/p/2/e/6/t/1/463128663202.mp4",
+      "price": {
+        "min": 21,
+        "max": 21,
+        "currency": "CNY",
+        "priceType": "NORMAL",
+        "promoLabel": null
+      },
+      "quantityPrices": [],
+      "categoryPath": "服饰配件、饰品 > 表 > 表带",
+      "categoryName": "表带",
+      "categoryId": "124272005",
+      "topCategoryId": "54",
+      "recentSoldCount": 4861,
+      "soldDisplay": "已售3.5万+件",
+      "saledCount": 4861,
+      "saledCountStr": "4800+",
+      "orderCount": 743,
+      "sourceKeyword": "苹果手表表带",
+      "supplier": {
+        "companyName": "东莞市时代智能科技有限公司",
+        "shopUrl": "http://shop3b21246128c42.1688.com"
+      },
+      "minOrderQuantity": 1,
+      "unit": "个"
+    },
+    {
+      "offerId": "984755949963",
+      "title": "适用苹果iwatch一珠竹节金属小蛮腰蝴蝶扣applewatchS10/11手表带",
+      "detailUrl": "https://detail.1688.com/offer/984755949963.html",
+      "images": [
+        "https://cbu01.alicdn.com/img/ibank/O1CN01ctvVpi2Ad6jlQb6vu_!!2219592928225-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01Vxdwm62Ad6jlUbjfr_!!2219592928225-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01Puo8Yq2Ad6jkfR2PT_!!2219592928225-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01Q2f5662GL8nk3G7d6_!!2215476908998.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01dk5Ofy2Ad6jlQbJPt_!!2219592928225-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN018wTBnz2Ad6jjpXY2J_!!2219592928225-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01esuDkZ2Ad6jjnHdRb_!!2219592928225-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01haqbpd2Ad6jjpXcCt_!!2219592928225-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01C6Ykgl2Ad6lwM5c6I_!!2219592928225-0-cib.jpg"
+      ],
+      "videoUrl": "https://cloud.video.taobao.com/play/u/2219592928225/p/2/e/6/t/1/537203261510.mp4",
+      "price": {
+        "min": 7.4,
+        "max": 7.4,
+        "currency": "CNY",
+        "priceType": "NORMAL",
+        "promoLabel": null
+      },
+      "quantityPrices": [
+        {
+          "quantityRange": "≥1条",
+          "quantityMin": 1,
+          "quantityMax": null,
+          "price": 7.4
+        }
+      ],
+      "categoryPath": "数码、电脑 > 智能设备 > 智能手表表带",
+      "categoryName": "智能手表表带",
+      "categoryId": "124810006",
+      "topCategoryId": "7",
+      "recentSoldCount": 16868,
+      "soldDisplay": "已售1.7万+件",
+      "saledCount": 16868,
+      "saledCountStr": "1万+",
+      "orderCount": 9792,
+      "sourceKeyword": "苹果手表表带",
+      "supplier": {
+        "companyName": "揭阳市榕城区智胜表带厂",
+        "shopUrl": "http://zhishengbiaodai.1688.com"
+      },
+      "minOrderQuantity": 1,
+      "unit": "条"
+    },
+    {
+      "offerId": "1069830904410",
+      "title": "适用AppleWatch智能手表42/44/45/46/49mm双色蜂窝款硅胶表带",
+      "detailUrl": "https://detail.1688.com/offer/1069830904410.html",
+      "images": [
+        "https://cbu01.alicdn.com/img/ibank/O1CN01WBjlVA1ERtNjQ6cCX_!!2217359460349-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01JkM57l1ERtNjNDzgJ_!!2217359460349-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01n4N6DU1ERtNk1tad6_!!2217359460349-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01k8RPkc1ERtNf2T3DR_!!2217359460349-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01RHVI2i1ERtNjamgmK_!!2217359460349-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01un4HPj1ERtNjXV8Ck_!!2217359460349-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01K0hPao1ERtNjB70CF_!!2217359460349-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01Al4uNl1ERtNjaVdUT_!!2217359460349-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01fvsB6m1ERtNjaZnVV_!!2217359460349-0-cib.jpg"
+      ],
+      "videoUrl": "https://cloud.video.taobao.com/play/u/2217359460349/p/2/e/6/t/1/574684361626.mp4",
+      "price": {
+        "min": 6.5,
+        "max": 6.5,
+        "currency": "CNY",
+        "priceType": "NORMAL",
+        "promoLabel": null
+      },
+      "quantityPrices": [
+        {
+          "quantityRange": "≥1套",
+          "quantityMin": 1,
+          "quantityMax": null,
+          "price": 6.5
+        }
+      ],
+      "categoryPath": "数码、电脑 > 智能设备 > 智能手表表带",
+      "categoryName": "智能手表表带",
+      "categoryId": "124810006",
+      "topCategoryId": "7",
+      "recentSoldCount": 6146,
+      "soldDisplay": "已售6100+件",
+      "saledCount": 6146,
+      "saledCountStr": "6100+",
+      "orderCount": 6,
+      "sourceKeyword": "苹果手表表带",
+      "supplier": {
+        "companyName": "深圳市沄亿橡胶制品有限公司",
+        "shopUrl": "http://shop82909q0795a23.1688.com"
+      },
+      "minOrderQuantity": 1,
+      "unit": "套"
+    },
+    {
+      "offerId": "823673353757",
+      "title": "适用苹果手表米兰尼斯表带Applewatch系列Ultra磁吸表带工厂直发",
+      "detailUrl": "https://detail.1688.com/offer/823673353757.html",
+      "images": [
+        "https://cbu01.alicdn.com/img/ibank/O1CN01QcImh32AMA1jWFswT_!!2218303608188-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01I1pC4K2AM9xyW7hJk_!!2218303608188-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01hKI8pp2AM9xxOg5y9_!!2218303608188-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01vTVq1R2AM9y0l44Bh_!!2218303608188-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01ILzxlu2AM9xxOiZkx_!!2218303608188-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01AtxqsY2AMA1fBRzE1_!!2218303608188-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01UWSGfP2AM9xxDYk6B_!!2218303608188-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN018iabYX2AMA1iaKW7G_!!2218303608188-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01usdJ7i2AMA1folAdr_!!2218303608188-0-cib.jpg"
+      ],
+      "videoUrl": "",
+      "price": {
+        "min": 3,
+        "max": 3,
+        "currency": "CNY",
+        "priceType": "NORMAL",
+        "promoLabel": null
+      },
+      "quantityPrices": [],
+      "categoryPath": "数码、电脑 > 智能设备 > 智能手表表带",
+      "categoryName": "智能手表表带",
+      "categoryId": "124810006",
+      "topCategoryId": "7",
+      "recentSoldCount": 92915,
+      "soldDisplay": "已售9.3万+件",
+      "saledCount": 92915,
+      "saledCountStr": "9万+",
+      "orderCount": 658,
+      "sourceKeyword": "苹果手表表带",
+      "supplier": {
+        "companyName": "揭阳市榕城区鼎吉五金制品厂",
+        "shopUrl": "http://shop66s0700954r76.1688.com"
+      },
+      "minOrderQuantity": 1,
+      "unit": "条"
+    },
+    {
+      "offerId": "1063367983475",
+      "title": "荔枝纹H扣磁吸表带适用于苹果s11华为手表Fit5GT6pro米10真皮表带",
+      "detailUrl": "https://detail.1688.com/offer/1063367983475.html",
+      "images": [
+        "https://cbu01.alicdn.com/img/ibank/O1CN016Fwbuq1dRJGkoaW7D_!!2218439273732-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01PZNFpZ1dRJGl2nPVC_!!2218439273732-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01jmgcYf1dRJGl4oUCA_!!2218439273732-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN0113CdCY1dRJGl2lrzF_!!2218439273732-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01Rfz7Wo1dRJDkMJJqJ_!!2218439273732-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01K9CEj21dRJDji1085_!!2218439273732-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN013vRKns1dRJDjPgXAn_!!2218439273732-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01FE2rfa1dRJDj15ZUW_!!2218439273732-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01qLInp41dRJDhsBJMz_!!2218439273732-0-cib.jpg"
+      ],
+      "videoUrl": "https://cloud.video.taobao.com/play/u/2218439273732/p/2/e/6/t/1/572829354789.mp4",
+      "price": {
+        "min": 20,
+        "max": 21,
+        "currency": "CNY",
+        "priceType": "NORMAL",
+        "promoLabel": null
+      },
+      "quantityPrices": [
+        {
+          "quantityRange": "1~99件",
+          "quantityMin": 1,
+          "quantityMax": 99,
+          "price": 21
+        },
+        {
+          "quantityRange": "≥100件",
+          "quantityMin": 100,
+          "quantityMax": null,
+          "price": 20
+        }
+      ],
+      "categoryPath": "数码、电脑 > 智能设备 > 智能手表表带",
+      "categoryName": "智能手表表带",
+      "categoryId": "124810006",
+      "topCategoryId": "7",
+      "recentSoldCount": 3259,
+      "soldDisplay": "已售3200+件",
+      "saledCount": 3259,
+      "saledCountStr": "3200+",
+      "orderCount": 362,
+      "sourceKeyword": "苹果手表表带",
+      "supplier": {
+        "companyName": "深圳市龙华区蓝果手机配件部",
+        "shopUrl": "http://shop6w436z0204c26.1688.com"
+      },
+      "minOrderQuantity": 1,
+      "unit": "件"
+    },
+    {
+      "offerId": "921778650170",
+      "title": "适用苹果iwatch手表表小香风双排珍珠镶钻伸缩链夏百搭女表带饰品",
+      "detailUrl": "https://detail.1688.com/offer/921778650170.html",
+      "images": [
+        "https://cbu01.alicdn.com/img/ibank/O1CN014igU9P1PE78qSJpzB_!!2213219681808-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01gLbxVF1PE78pawMXo_!!2213219681808-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01UmArtB1PE78qC8r6i_!!2213219681808-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01UllCkl1PE78pgUV33_!!2213219681808-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN011OBtyx1PE78pbBw1m_!!2213219681808-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN0165zRXK1PE78pNDdc9_!!2213219681808-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN013M5R0j1PE78q3yaRv_!!2213219681808-0-cib.jpg"
+      ],
+      "videoUrl": "https://cloud.video.taobao.com/play/u/2213219681808/p/2/e/6/t/1/518534907552.mp4",
+      "price": {
+        "min": 18,
+        "max": 18,
+        "currency": "CNY",
+        "priceType": "NORMAL",
+        "promoLabel": null
+      },
+      "quantityPrices": [
+        {
+          "quantityRange": "≥30个",
+          "quantityMin": 30,
+          "quantityMax": null,
+          "price": 18
+        }
+      ],
+      "categoryPath": "服饰配件、饰品 > 表 > 表带",
+      "categoryName": "表带",
+      "categoryId": "124272005",
+      "topCategoryId": "54",
+      "recentSoldCount": 3239,
+      "soldDisplay": "已售3200+件",
+      "saledCount": 3239,
+      "saledCountStr": "3200+",
+      "orderCount": 30,
+      "sourceKeyword": "苹果手表表带",
+      "supplier": {
+        "companyName": "东阳市聚诚饰品有限公司",
+        "shopUrl": "http://shop344697q8l15c1.1688.com"
+      },
+      "minOrderQuantity": 30,
+      "unit": "个"
+    },
+    {
+      "offerId": "777487286440",
+      "title": "适用苹果apple watchs9三珠实心不锈钢s10手表带iwatch华为手表带",
+      "detailUrl": "https://detail.1688.com/offer/777487286440.html",
+      "images": [
+        "https://cbu01.alicdn.com/img/ibank/O1CN01WEfHJp1tD8evztUwJ_!!2217507375867-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01wKPQwc1tD8eQR7CyL_!!2217507375867-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01EQlzPY1tD8eQR6baa_!!2217507375867-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN017SntYn1tD8eS9aDAW_!!2217507375867-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01p40Fks1tD8eVV1N8k_!!2217507375867-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01uEs7SH1tD8eOE7lB5_!!2217507375867-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01bNX5EB1tD8eIjBkuh_!!2217507375867-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN012U04SE1tD8eU3vPWi_!!2217507375867-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01g9eWWF1tD8eRFDOMv_!!2217507375867-0-cib.jpg"
+      ],
+      "videoUrl": "",
+      "price": {
+        "min": 6.2,
+        "max": 6.2,
+        "currency": "CNY",
+        "priceType": "NORMAL",
+        "promoLabel": null
+      },
+      "quantityPrices": [],
+      "categoryPath": "数码、电脑 > 智能设备 > 智能手表表带",
+      "categoryName": "智能手表表带",
+      "categoryId": "124810006",
+      "topCategoryId": "7",
+      "recentSoldCount": 41332,
+      "soldDisplay": "已售10万+件",
+      "saledCount": 41332,
+      "saledCountStr": "4万+",
+      "orderCount": 1026,
+      "sourceKeyword": "苹果手表表带",
+      "supplier": {
+        "companyName": "揭阳市榕城区楠胜表带厂",
+        "shopUrl": "http://shop437qr08p70709.1688.com"
+      },
+      "minOrderQuantity": 1,
+      "unit": "条"
+    },
+    {
+      "offerId": "851076415434",
+      "title": "适用苹果表带Apple Watch1-12代/Ultra1-3/SE3三珠硅胶磁吸手表带",
+      "detailUrl": "https://detail.1688.com/offer/851076415434.html",
+      "images": [
+        "https://cbu01.alicdn.com/img/ibank/O1CN01SAR6l12EcQWYD97uN_!!3046448765-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01WsPVVH2EcQWVbLPP2_!!3046448765-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN015m828N2EcQWXiaJjq_!!3046448765-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN010jiuQZ2EcQWVbJjTp_!!3046448765-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN012smt4k2EcQWZFkZXp_!!3046448765-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01E243wp2EcQWYANJs9_!!3046448765-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01AUq9292EcQWWfgfcB_!!3046448765-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN016z8Jlm2EcQWYlQmsz_!!3046448765-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01Mi92Go2EcQWZEk06R_!!3046448765-0-cib.jpg"
+      ],
+      "videoUrl": "https://cloud.video.taobao.com/play/u/3046448765/p/2/e/6/t/1/491864497777.mp4",
+      "price": {
+        "min": 9,
+        "max": 13.5,
+        "currency": "CNY",
+        "priceType": "NORMAL",
+        "promoLabel": null
+      },
+      "quantityPrices": [
+        {
+          "quantityRange": "1~9条",
+          "quantityMin": 1,
+          "quantityMax": 9,
+          "price": 13.5
+        },
+        {
+          "quantityRange": "10~9999条",
+          "quantityMin": 10,
+          "quantityMax": 9999,
+          "price": 10
+        },
+        {
+          "quantityRange": "≥10000条",
+          "quantityMin": 10000,
+          "quantityMax": null,
+          "price": 9
+        }
+      ],
+      "categoryPath": "数码、电脑 > 智能设备 > 智能手表表带",
+      "categoryName": "智能手表表带",
+      "categoryId": "124810006",
+      "topCategoryId": "7",
+      "recentSoldCount": 26545,
+      "soldDisplay": "已售2.7万+件",
+      "saledCount": 26545,
+      "saledCountStr": "2万+",
+      "orderCount": 6209,
+      "sourceKeyword": "苹果手表表带",
+      "supplier": {
+        "companyName": "深圳尚戴科技有限公司",
+        "shopUrl": "http://shop1480742335873.1688.com"
+      },
+      "minOrderQuantity": 1,
+      "unit": "条"
+    },
+    {
+      "offerId": "681842289015",
+      "title": "适用于苹果手表7se8表带Apple Watch小蛮腰亮面漆皮iwatch皮表带",
+      "detailUrl": "https://detail.1688.com/offer/681842289015.html",
+      "images": [
+        "https://cbu01.alicdn.com/img/ibank/O1CN015q0izB1Q0ekLpeGfd_!!2206684691914-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01T5L7yb1Q0elPa3hVl_!!2206684691914-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN015xXLTv1Q0elPJAGSq_!!2206684691914-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01gVbKbg1Q0elOUov0j_!!2206684691914-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01XeXTTq1Q0ekVOiYEU_!!2206684691914-0-cib.jpg"
+      ],
+      "videoUrl": "https://cloud.video.taobao.com/play/u/2206684691914/p/2/e/6/t/1/301669107300.mp4",
+      "price": {
+        "min": 13,
+        "max": 15,
+        "currency": "CNY",
+        "priceType": "NORMAL",
+        "promoLabel": null
+      },
+      "quantityPrices": [
+        {
+          "quantityRange": "2~999件",
+          "quantityMin": 2,
+          "quantityMax": 999,
+          "price": 15
+        },
+        {
+          "quantityRange": "1000~6999件",
+          "quantityMin": 1000,
+          "quantityMax": 6999,
+          "price": 14
+        },
+        {
+          "quantityRange": "≥7000件",
+          "quantityMin": 7000,
+          "quantityMax": null,
+          "price": 13
+        }
+      ],
+      "categoryPath": "数码、电脑 > 苹果专用配件 > AppleWatch表带",
+      "categoryName": "AppleWatch表带",
+      "categoryId": "124270010",
+      "topCategoryId": "7",
+      "recentSoldCount": 11280,
+      "soldDisplay": "已售1.1万+件",
+      "saledCount": 11280,
+      "saledCountStr": "1万+",
+      "orderCount": 421,
+      "sourceKeyword": "苹果手表表带",
+      "supplier": {
+        "companyName": "东莞市华斯顿智能科技有限公司",
+        "shopUrl": "http://shop1782188451383.1688.com"
+      },
+      "minOrderQuantity": 2,
+      "unit": "件"
+    },
+    {
+      "offerId": "711064624571",
+      "title": "适用苹果表带陶瓷树脂表带透色applewatch手表带iwatch透明表带",
+      "detailUrl": "https://detail.1688.com/offer/711064624571.html",
+      "images": [
+        "https://cbu01.alicdn.com/img/ibank/O1CN01AgT3WK1z5FPyrypMZ_!!2214925186662-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01dndvpP1z5FTnzHWGu_!!2214925186662-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01X1dEOr1z5FPx4vJQW_!!2214925186662-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01tU2YmV1z5FPx2D8Ws_!!2214925186662-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01Qcubog1z5FPx2DXWS_!!2214925186662-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01Puwj051z5FXtduXWt_!!2214925186662-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01oUi4S11z5FPys1JEe_!!2214925186662-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01NWYBcW1z5FTvcucBl_!!2214925186662-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01qLCOHg1z5FXq1pS6t_!!2214925186662-0-cib.jpg"
+      ],
+      "videoUrl": "https://cloud.video.taobao.com/play/u/2214925186662/p/2/e/6/t/1/403561265497.mp4",
+      "price": {
+        "min": 20,
+        "max": 20,
+        "currency": "CNY",
+        "priceType": "NORMAL",
+        "promoLabel": null
+      },
+      "quantityPrices": [],
+      "categoryPath": "数码、电脑 > 智能设备 > 智能手表表带",
+      "categoryName": "智能手表表带",
+      "categoryId": "124810006",
+      "topCategoryId": "7",
+      "recentSoldCount": 9648,
+      "soldDisplay": "已售9600+件",
+      "saledCount": 9648,
+      "saledCountStr": "9600+",
+      "orderCount": 2131,
+      "sourceKeyword": "苹果手表表带",
+      "supplier": {
+        "companyName": "深圳市生银科技有限公司",
+        "shopUrl": "http://shengyinshop.1688.com"
+      },
+      "minOrderQuantity": 1,
+      "unit": "条"
+    },
+    {
+      "offerId": "1061447834403",
+      "title": "适用苹果apple watchS11小米尼龙菱形纹降落伞扣华为fit3/4手表带",
+      "detailUrl": "https://detail.1688.com/offer/1061447834403.html",
+      "images": [
+        "https://cbu01.alicdn.com/img/ibank/O1CN017yeeGc1vVa2vG7bPk_!!2222618336178-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01xHZJSX1vVa2nOdKDl_!!2222618336178-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01pnFZcL1vVa2nIcwSs_!!2222618336178-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01fVn9uB1vVa2n9nElS_!!2222618336178-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01NpwDqd1vVa2nLYlpZ_!!2222618336178-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01ZZdEcY1vVa2nAPq6G_!!2222618336178-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01Nimjhg1vVa2iorX2N_!!2222618336178-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01BSUSw71vVa2nPGjO9_!!2222618336178-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN011UV0SB1vVa2nSJBWe_!!2222618336178-0-cib.jpg"
+      ],
+      "videoUrl": "https://cloud.video.taobao.com/play/u/2222618336178/p/2/e/6/t/1/571556394157.mp4",
+      "price": {
+        "min": 9,
+        "max": 11,
+        "currency": "CNY",
+        "priceType": "NORMAL",
+        "promoLabel": null
+      },
+      "quantityPrices": [
+        {
+          "quantityRange": "1~199条",
+          "quantityMin": 1,
+          "quantityMax": 199,
+          "price": 11
+        },
+        {
+          "quantityRange": "200~499条",
+          "quantityMin": 200,
+          "quantityMax": 499,
+          "price": 10
+        },
+        {
+          "quantityRange": "≥500条",
+          "quantityMin": 500,
+          "quantityMax": null,
+          "price": 9
+        }
+      ],
+      "categoryPath": "数码、电脑 > 智能设备 > 智能手表表带",
+      "categoryName": "智能手表表带",
+      "categoryId": "124810006",
+      "topCategoryId": "7",
+      "recentSoldCount": 3941,
+      "soldDisplay": "已售3900+件",
+      "saledCount": 3941,
+      "saledCountStr": "3900+",
+      "orderCount": 9,
+      "sourceKeyword": "苹果手表表带",
+      "supplier": {
+        "companyName": "深圳市宝安区毫克表带商行",
+        "shopUrl": "http://shop952w0m0730952.1688.com"
+      },
+      "minOrderQuantity": 1,
+      "unit": "条"
+    },
+    {
+      "offerId": "838882196253",
+      "title": "小香风黑金表带适用apple watch苹果手表腕带四叶草金属镶钻表带",
+      "detailUrl": "https://detail.1688.com/offer/838882196253.html",
+      "images": [
+        "https://cbu01.alicdn.com/img/ibank/O1CN01SiCm951w6DZdKEWn3_!!2218089336258-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN016HYjBG1w6DZdHTBdt_!!2218089336258-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01uPL1ba1w6DZaMUbXK_!!2218089336258-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01CLbNXf1w6DZfIPSWo_!!2218089336258-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01HnKd591gwOyxjjRpW_!!6000000004206-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01kNEBsk1w6DZdHixnz_!!2218089336258-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01PjAjZ61w6DZdFXlxP_!!2218089336258-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01SjlUBm1w6DZbQGxUO_!!2218089336258-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01KOg9Jv1w6DZfIjOai_!!2218089336258-0-cib.jpg"
+      ],
+      "videoUrl": "",
+      "price": {
+        "min": 15.5,
+        "max": 18,
+        "currency": "CNY",
+        "priceType": "NORMAL",
+        "promoLabel": null
+      },
+      "quantityPrices": [
+        {
+          "quantityRange": "2~99套",
+          "quantityMin": 2,
+          "quantityMax": 99,
+          "price": 18
+        },
+        {
+          "quantityRange": "100~999套",
+          "quantityMin": 100,
+          "quantityMax": 999,
+          "price": 17
+        },
+        {
+          "quantityRange": "≥1000套",
+          "quantityMin": 1000,
+          "quantityMax": null,
+          "price": 15.5
+        }
+      ],
+      "categoryPath": "数码、电脑 > 智能设备 > 智能手表表带",
+      "categoryName": "智能手表表带",
+      "categoryId": "124810006",
+      "topCategoryId": "7",
+      "recentSoldCount": 29404,
+      "soldDisplay": "已售2.9万+件",
+      "saledCount": 29404,
+      "saledCountStr": "2万+",
+      "orderCount": 653,
+      "sourceKeyword": "苹果手表表带",
+      "supplier": {
+        "companyName": "东莞市金米表业有限公司",
+        "shopUrl": "http://shop965167z1654q5.1688.com"
+      },
+      "minOrderQuantity": 2,
+      "unit": "套"
+    },
+    {
+      "offerId": "939542409528",
+      "title": "适用苹果iwatch s10硅胶表带apple watch ultra8/7/6/5运动手表带",
+      "detailUrl": "https://detail.1688.com/offer/939542409528.html",
+      "images": [
+        "https://cbu01.alicdn.com/img/ibank/O1CN015XZqQe2IVnKeRGSnH_!!2219910659292-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01bPnXbM2IVnKfXdtww_!!2219910659292-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01wEOJKu2IVnInu0BPL_!!2219910659292-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01bCA4GU2IVnIu042tN_!!2219910659292-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01MGMccX2IVnIukqb09_!!2219910659292-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01RL7G7Z2IVnL00h4PX_!!2219910659292-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01FzWilq2IVnIuL2mMU_!!2219910659292-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01iYAOHL2IVnIuL0ZBV_!!2219910659292-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01ydR2Aw2IVnNNKNaB1_!!2219910659292-0-cib.jpg"
+      ],
+      "videoUrl": "https://cloud.video.taobao.com/play/u/2219910659292/p/2/e/6/t/1/537173351278.mp4",
+      "price": {
+        "min": 3.8,
+        "max": 5.8,
+        "currency": "CNY",
+        "priceType": "NORMAL",
+        "promoLabel": null
+      },
+      "quantityPrices": [
+        {
+          "quantityRange": "1~499条",
+          "quantityMin": 1,
+          "quantityMax": 499,
+          "price": 5.8
+        },
+        {
+          "quantityRange": "500~1999条",
+          "quantityMin": 500,
+          "quantityMax": 1999,
+          "price": 3.99
+        },
+        {
+          "quantityRange": "≥2000条",
+          "quantityMin": 2000,
+          "quantityMax": null,
+          "price": 3.8
+        }
+      ],
+      "categoryPath": "数码、电脑 > 智能设备 > 智能手表表带",
+      "categoryName": "智能手表表带",
+      "categoryId": "124810006",
+      "topCategoryId": "7",
+      "recentSoldCount": 17663,
+      "soldDisplay": "已售2.3万+件",
+      "saledCount": 17663,
+      "saledCountStr": "1万+",
+      "orderCount": 383,
+      "sourceKeyword": "苹果手表表带",
+      "supplier": {
+        "companyName": "深圳市米粒尔智能穿戴有限公司",
+        "shopUrl": "http://shop0i94492892842.1688.com"
+      },
+      "minOrderQuantity": 1,
+      "unit": "条"
+    },
+    {
+      "offerId": "990670534693",
+      "title": "工厂直销适用苹果手表表带S10S11经典iwacth官网同款硅胶运动款",
+      "detailUrl": "https://detail.1688.com/offer/990670534693.html",
+      "images": [
+        "https://cbu01.alicdn.com/img/ibank/O1CN01onGYTU1khyxADLg5v_!!2218546004716-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01sMWvkI1khywq5rhdW_!!2218546004716-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01BImXAi1khyskPtCVJ_!!2218546004716-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01nmZ2oG1khyxBRlzZa_!!2218546004716-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01bO7xzu1khywpLMS79_!!2218546004716-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01ry4cB01khywqlrPGm_!!2218546004716-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01tBZSEB1khywntv3Nf_!!2218546004716-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01jDshtj1khywnjqELp_!!2218546004716-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01HjXmqS1khywnwWT09_!!2218546004716-0-cib.jpg"
+      ],
+      "videoUrl": "https://cloud.video.taobao.com/play/u/2218546004716/p/2/e/6/t/1/541035276141.mp4",
+      "price": {
+        "min": 1.8,
+        "max": 2,
+        "currency": "CNY",
+        "priceType": "NORMAL",
+        "promoLabel": null
+      },
+      "quantityPrices": [
+        {
+          "quantityRange": "5~499条",
+          "quantityMin": 5,
+          "quantityMax": 499,
+          "price": 2
+        },
+        {
+          "quantityRange": "500~4999条",
+          "quantityMin": 500,
+          "quantityMax": 4999,
+          "price": 1.9
+        },
+        {
+          "quantityRange": "≥5000条",
+          "quantityMin": 5000,
+          "quantityMax": null,
+          "price": 1.8
+        }
+      ],
+      "categoryPath": "数码、电脑 > 智能设备 > 智能手表表带",
+      "categoryName": "智能手表表带",
+      "categoryId": "124810006",
+      "topCategoryId": "7",
+      "recentSoldCount": 14753,
+      "soldDisplay": "已售3.8万+件",
+      "saledCount": 14753,
+      "saledCountStr": "1万+",
+      "orderCount": 58,
+      "sourceKeyword": "苹果手表表带",
+      "supplier": {
+        "companyName": "东莞市众合硅胶电子科技有限公司",
+        "shopUrl": "http://shop2684i309379f0.1688.com"
+      },
+      "minOrderQuantity": 5,
+      "unit": "条"
+    },
+    {
+      "offerId": "965105699702",
+      "title": "适用苹果Apple Watch1-12/Ultra1-3工字款三珠硅胶强力磁吸手表带",
+      "detailUrl": "https://detail.1688.com/offer/965105699702.html",
+      "images": [
+        "https://cbu01.alicdn.com/img/ibank/O1CN019QHq0K1aMmRC0bSDs_!!2220489713316-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01Bh6shB1aMmRAy4NTx_!!2220489713316-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01TPIRNP1aMmRBgBiTJ_!!2220489713316-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01XMjIe61aMmRBgBRwJ_!!2220489713316-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01zaveQU1aMmRCheO6g_!!2220489713316-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN013cKstP1aMmRCcdJnt_!!2220489713316-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN012VtvsW1aMmRC7weuI_!!2220489713316-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01zgYU8D1aMmR6AdhLk_!!2220489713316-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01KA6yX71aMmRCY2THt_!!2220489713316-0-cib.jpg"
+      ],
+      "videoUrl": "https://cloud.video.taobao.com/play/u/2220489713316/p/2/e/6/t/1/530586608484.mp4",
+      "price": {
+        "min": 10,
+        "max": 13.5,
+        "currency": "CNY",
+        "priceType": "NORMAL",
+        "promoLabel": null
+      },
+      "quantityPrices": [
+        {
+          "quantityRange": "1~9条",
+          "quantityMin": 1,
+          "quantityMax": 9,
+          "price": 13.5
+        },
+        {
+          "quantityRange": "10~9998条",
+          "quantityMin": 10,
+          "quantityMax": 9998,
+          "price": 11
+        },
+        {
+          "quantityRange": "≥9999条",
+          "quantityMin": 9999,
+          "quantityMax": null,
+          "price": 10
+        }
+      ],
+      "categoryPath": "数码、电脑 > 智能设备 > 智能手表表带",
+      "categoryName": "智能手表表带",
+      "categoryId": "124810006",
+      "topCategoryId": "7",
+      "recentSoldCount": 27721,
+      "soldDisplay": "已售2.8万+件",
+      "saledCount": 27721,
+      "saledCountStr": "2万+",
+      "orderCount": 28488,
+      "sourceKeyword": "苹果手表表带",
+      "supplier": {
+        "companyName": "深圳嘉瑞诚兴科技有限公司",
+        "shopUrl": "http://shop6251444230q34.1688.com"
+      },
+      "minOrderQuantity": 1,
+      "unit": "条"
+    },
+    {
+      "offerId": "795390011269",
+      "title": "适用于iwatch米兰尼斯表带不锈钢磁吸手表带苹果米兰智能手表带",
+      "detailUrl": "https://detail.1688.com/offer/795390011269.html",
+      "images": [
+        "https://cbu01.alicdn.com/img/ibank/O1CN01QfcmvU1CVR1FSHt8c_!!2888550086-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01rTj37f1CVR1B8hC1t_!!2888550086-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN011Vv1Vn1CVR1E550mt_!!2888550086-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01zXrDo51CVR1FRUPYN_!!2888550086-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01PxJb1D1CVR5qUCsN5_!!2888550086-0-cib.jpg"
+      ],
+      "videoUrl": "",
+      "price": {
+        "min": 3.5,
+        "max": 3.5,
+        "currency": "CNY",
+        "priceType": "NORMAL",
+        "promoLabel": null
+      },
+      "quantityPrices": [],
+      "categoryPath": "数码、电脑 > 苹果专用配件 > AppleWatch表带",
+      "categoryName": "AppleWatch表带",
+      "categoryId": "124270010",
+      "topCategoryId": "7",
+      "recentSoldCount": 54786,
+      "soldDisplay": "已售5.5万+件",
+      "saledCount": 54786,
+      "saledCountStr": "5万+",
+      "orderCount": 162,
+      "sourceKeyword": "苹果手表表带",
+      "supplier": {
+        "companyName": "深圳市灏达鑫电子科技有限公司",
+        "shopUrl": "http://shop1466182241626.1688.com"
+      },
+      "minOrderQuantity": 2,
+      "unit": "条"
+    },
+    {
+      "offerId": "760664413376",
+      "title": "适用 Apple Watch全系苹果手表带硅胶表带",
+      "detailUrl": "https://detail.1688.com/offer/760664413376.html",
+      "images": [
+        "https://cbu01.alicdn.com/img/ibank/O1CN014Yv2cA1vs1DVbuUw4_!!2217181156227-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01ZJ0qCb1vs1DSzF8o3_!!2217181156227-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01RX5EY61vs1DQbMjAC_!!2217181156227-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01jEWLAx1vs1DSuu4QX_!!2217181156227-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01TA7RNN1vs1DWv049p_!!2217181156227-0-cib.jpg"
+      ],
+      "videoUrl": "",
+      "price": {
+        "min": 25,
+        "max": 28,
+        "currency": "CNY",
+        "priceType": "NORMAL",
+        "promoLabel": null
+      },
+      "quantityPrices": [
+        {
+          "quantityRange": "1~49个",
+          "quantityMin": 1,
+          "quantityMax": 49,
+          "price": 28
+        },
+        {
+          "quantityRange": "50~99个",
+          "quantityMin": 50,
+          "quantityMax": 99,
+          "price": 26
+        },
+        {
+          "quantityRange": "≥100个",
+          "quantityMin": 100,
+          "quantityMax": null,
+          "price": 25
+        }
+      ],
+      "categoryPath": "数码、电脑 > 苹果专用配件 > AppleWatch表带",
+      "categoryName": "AppleWatch表带",
+      "categoryId": "124270010",
+      "topCategoryId": "7",
+      "recentSoldCount": 16188,
+      "soldDisplay": "已售1.6万+件",
+      "saledCount": 16188,
+      "saledCountStr": "1万+",
+      "orderCount": 831,
+      "sourceKeyword": "苹果手表表带",
+      "supplier": {
+        "companyName": "福州闽讯跳动信息科技有限公司",
+        "shopUrl": "http://shop6162331z8n990.1688.com"
+      },
+      "minOrderQuantity": 1,
+      "unit": "个"
+    },
+    {
+      "offerId": "1071506400024",
+      "title": "适用苹果iwatch表带钛金属磁吸扣Apple Watch/Ultra3/2骑士手表带",
+      "detailUrl": "https://detail.1688.com/offer/1071506400024.html",
+      "images": [
+        "https://cbu01.alicdn.com/img/ibank/O1CN01eFW5Vx1JNpwkFmpN2_!!2222633981017-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN011YWHPN1JNpwkQHEKE_!!2222633981017-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01i6Zh0T1JNpwkLzVFJ_!!2222633981017-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN012XIXGs1JNpwk8Jx58_!!2222633981017-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01rW1OYa1JNpwkM1NsU_!!2222633981017-0-cib.jpg"
+      ],
+      "videoUrl": "https://cloud.video.taobao.com/play/u/2222633981017/p/2/e/6/t/1/570496372434.mp4",
+      "price": {
+        "min": 116,
+        "max": 116,
+        "currency": "CNY",
+        "priceType": "NORMAL",
+        "promoLabel": null
+      },
+      "quantityPrices": [],
+      "categoryPath": "数码、电脑 > 智能设备 > 智能手表表带",
+      "categoryName": "智能手表表带",
+      "categoryId": "124810006",
+      "topCategoryId": "7",
+      "recentSoldCount": 345,
+      "soldDisplay": "已售300+件",
+      "saledCount": 345,
+      "saledCountStr": "300+",
+      "orderCount": 43,
+      "sourceKeyword": "苹果手表表带",
+      "supplier": {
+        "companyName": "深圳市美山智-美山科技",
+        "shopUrl": "http://shop6877nd169y319.1688.com"
+      },
+      "minOrderQuantity": 1,
+      "unit": "条"
+    },
+    {
+      "offerId": "898041152031",
+      "title": "适用华为Watch4 GT4智能真皮原装同款GT3GT4GT5GT6全系列表带",
+      "detailUrl": "https://detail.1688.com/offer/898041152031.html",
+      "images": [
+        "https://cbu01.alicdn.com/img/ibank/O1CN01aTl9Jm2NRjuwYXh3D_!!2678639960-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01hw2Lm92NRjuxKYqpx_!!2678639960-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01Jmdy9r2NRjuwrGJCa_!!2678639960-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01MOsXuF2NRjuxLNGF3_!!2678639960-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01uLQqyu2NRjuxkRJ62_!!2678639960-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01ChsTsA2NRjuyBX6FO_!!2678639960-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01Hly8PC2NRjuy9QPKN_!!2678639960-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01kask2B2NRjuxym25z_!!2678639960-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01YpoXhy2NRjuxZcTve_!!2678639960-0-cib.jpg"
+      ],
+      "videoUrl": "https://cloud.video.taobao.com/play/u/2678639960/p/2/e/6/t/1/540607927180.mp4",
+      "price": {
+        "min": 16.8,
+        "max": 16.8,
+        "currency": "CNY",
+        "priceType": "NORMAL",
+        "promoLabel": null
+      },
+      "quantityPrices": [],
+      "categoryPath": "数码、电脑 > 智能设备 > 智能手表表带",
+      "categoryName": "智能手表表带",
+      "categoryId": "124810006",
+      "topCategoryId": "7",
+      "recentSoldCount": 4061,
+      "soldDisplay": "已售6.7万+件",
+      "saledCount": 4061,
+      "saledCountStr": "4000+",
+      "orderCount": 1132,
+      "sourceKeyword": "苹果手表表带",
+      "supplier": {
+        "companyName": "深圳宝联皮具有限公司",
+        "shopUrl": "http://szpowerlink.1688.com"
+      },
+      "minOrderQuantity": 1,
+      "unit": "套"
+    },
+    {
+      "offerId": "815709718635",
+      "title": "工厂新款魔术贴尼龙回环表带运动休闲男适用苹果手表带佳明20/22m",
+      "detailUrl": "https://detail.1688.com/offer/815709718635.html",
+      "images": [
+        "https://cbu01.alicdn.com/img/ibank/O1CN01Z4jq4S2GJlaHGagN8_!!2213976208995-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01O7IPT02GJlaH3moUc_!!2213976208995-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01qGVXt62GJlaEGuus4_!!2213976208995-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01fTcXzD2GJlaFjqH9U_!!2213976208995-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01ZpTdlH2GJlaEwNR9h_!!2213976208995-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01mA2v9I2GJlaEH95C5_!!2213976208995-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN0156TImk2GJlaECzMEu_!!2213976208995-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01QNO4812GJlaHtjBtt_!!2213976208995-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01KQYreY2GJlaH3yQlh_!!2213976208995-0-cib.jpg"
+      ],
+      "videoUrl": "https://cloud.video.taobao.com/play/u/2213976208995/p/2/e/6/t/1/472493243841.mp4",
+      "price": {
+        "min": 7.5,
+        "max": 8,
+        "currency": "CNY",
+        "priceType": "NORMAL",
+        "promoLabel": null
+      },
+      "quantityPrices": [
+        {
+          "quantityRange": "50~999件",
+          "quantityMin": 50,
+          "quantityMax": 999,
+          "price": 8
+        },
+        {
+          "quantityRange": "1000~9999件",
+          "quantityMin": 1000,
+          "quantityMax": 9999,
+          "price": 7.8
+        },
+        {
+          "quantityRange": "≥10000件",
+          "quantityMin": 10000,
+          "quantityMax": null,
+          "price": 7.5
+        }
+      ],
+      "categoryPath": "数码、电脑 > 智能设备 > 智能手表表带",
+      "categoryName": "智能手表表带",
+      "categoryId": "124810006",
+      "topCategoryId": "7",
+      "recentSoldCount": 41128,
+      "soldDisplay": "已售4.1万+件",
+      "saledCount": 41128,
+      "saledCountStr": "4万+",
+      "orderCount": 653,
+      "sourceKeyword": "苹果手表表带",
+      "supplier": {
+        "companyName": "中山市佑祺表业制品有限公司",
+        "shopUrl": "http://youqi6688.1688.com"
+      },
+      "minOrderQuantity": 50,
+      "unit": "件"
+    },
+    {
+      "offerId": "717010866295",
+      "title": "适用苹果手表表带iwatchSE Ultra新品10代皮不锈钢液态硅胶运动新",
+      "detailUrl": "https://detail.1688.com/offer/717010866295.html",
+      "images": [
+        "https://cbu01.alicdn.com/img/ibank/O1CN01VAy3DY2MeH2r6HVeB_!!2214060429852-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01lq22GG2MeH0GU4ZEg_!!2214060429852-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01vu8SFH2MeGrzl7IIn_!!2214060429852-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01veG8mn2MeGwza1VQT_!!2214060429852-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01r5ZLKd2MeH0QUEpvp_!!2214060429852-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01jHWGVO2MeH4vCzFcI_!!2214060429852-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN0199Jr1K2MeH4tedHYK_!!2214060429852-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01pFhiTb2MeH66PyyhI_!!2214060429852-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN0111sPN52MeGwo2QJUG_!!2214060429852-0-cib.jpg"
+      ],
+      "videoUrl": "https://cloud.video.taobao.com/play/u/2214060429852/p/2/e/6/t/1/427427868153.mp4",
+      "price": {
+        "min": 35,
+        "max": 35,
+        "currency": "CNY",
+        "priceType": "NORMAL",
+        "promoLabel": null
+      },
+      "quantityPrices": [],
+      "categoryPath": "数码、电脑 > 智能设备 > 智能手表表带",
+      "categoryName": "智能手表表带",
+      "categoryId": "124810006",
+      "topCategoryId": "7",
+      "recentSoldCount": 3214,
+      "soldDisplay": "已售3200+件",
+      "saledCount": 3214,
+      "saledCountStr": "3200+",
+      "orderCount": 2334,
+      "sourceKeyword": "苹果手表表带",
+      "supplier": {
+        "companyName": "东莞市贸洋塑胶五金制品有限公司",
+        "shopUrl": "http://shop15622813388.1688.com"
+      },
+      "minOrderQuantity": 1,
+      "unit": "条"
+    },
+    {
+      "offerId": "1011271569052",
+      "title": "适用iwatch表带06线三星米兰尼斯不锈钢Applewatch华为gt5手表带",
+      "detailUrl": "https://detail.1688.com/offer/1011271569052.html",
+      "images": [
+        "https://cbu01.alicdn.com/img/ibank/O1CN01MEUDvs2BPemUfKKYB_!!2221437848331-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01uIBfAH2BPejyMGAW5_!!2221437848331-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01CDl5JW2BPejy1KSMX_!!2221437848331-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01AsPV6G2BPejyMHAqZ_!!2221437848331-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01tturom2BPejyE3TCJ_!!2221437848331-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01WP9kzC2BPelmqS9Vk_!!2221437848331-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01ct1FtB2BPeloK2QIx_!!2221437848331-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01rTGoCq2BPejyFHfMb_!!2221437848331-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01GfYoUf2BPejsopWJp_!!2221437848331-0-cib.jpg"
+      ],
+      "videoUrl": "https://cloud.video.taobao.com/play/u/2221437848331/p/2/e/6/t/1/549343045874.mp4",
+      "price": {
+        "min": 8,
+        "max": 8,
+        "currency": "CNY",
+        "priceType": "NORMAL",
+        "promoLabel": null
+      },
+      "quantityPrices": [],
+      "categoryPath": "数码、电脑 > 智能设备 > 智能手表表带",
+      "categoryName": "智能手表表带",
+      "categoryId": "124810006",
+      "topCategoryId": "7",
+      "recentSoldCount": 6407,
+      "soldDisplay": "已售6400+件",
+      "saledCount": 6407,
+      "saledCountStr": "6400+",
+      "orderCount": 30,
+      "sourceKeyword": "苹果手表表带",
+      "supplier": {
+        "companyName": "揭阳市揭东区磐东祖斌五金厂",
+        "shopUrl": "http://shop3303690812z32.1688.com"
+      },
+      "minOrderQuantity": 1,
+      "unit": "条"
+    },
+    {
+      "offerId": "889649137201",
+      "title": "适用iwatch苹果表带磁吸尼龙编织S10弹力彩虹Applewatch手表带",
+      "detailUrl": "https://detail.1688.com/offer/889649137201.html",
+      "images": [
+        "https://cbu01.alicdn.com/img/ibank/O1CN01Q2BwVA2CU465rLmRb_!!2215832058476-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01c16Det2CU4CWymsuI_!!2215832058476-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01TtXk5W2CU466CVkVS_!!2215832058476-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01zfcOG82CU45On2pjy_!!2215832058476-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01opKm3a2CU45W1vyCE_!!2215832058476-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN014N8RPJ2CU46xlr8Gc_!!2215832058476-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01GNJ7wC2CU45W381Go_!!2215832058476-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01M8BGZo2CU45ViBXak_!!2215832058476-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01LBupyJ2CU45Wgm5Kb_!!2215832058476-0-cib.jpg"
+      ],
+      "videoUrl": "https://cloud.video.taobao.com/play/u/2215832058476/p/2/e/6/t/1/520182998827.mp4",
+      "price": {
+        "min": 5,
+        "max": 6,
+        "currency": "CNY",
+        "priceType": "NORMAL",
+        "promoLabel": null
+      },
+      "quantityPrices": [
+        {
+          "quantityRange": "1~499条",
+          "quantityMin": 1,
+          "quantityMax": 499,
+          "price": 6
+        },
+        {
+          "quantityRange": "500~2999条",
+          "quantityMin": 500,
+          "quantityMax": 2999,
+          "price": 5.5
+        },
+        {
+          "quantityRange": "≥3000条",
+          "quantityMin": 3000,
+          "quantityMax": null,
+          "price": 5
+        }
+      ],
+      "categoryPath": "数码、电脑 > 智能设备 > 智能手表表带",
+      "categoryName": "智能手表表带",
+      "categoryId": "124810006",
+      "topCategoryId": "7",
+      "recentSoldCount": 35406,
+      "soldDisplay": "已售7.9万+件",
+      "saledCount": 35406,
+      "saledCountStr": "3万+",
+      "orderCount": 2701,
+      "sourceKeyword": "苹果手表表带",
+      "supplier": {
+        "companyName": "深圳市乐喔科技有限公司",
+        "shopUrl": "http://leworld.1688.com"
+      },
+      "minOrderQuantity": 1,
+      "unit": "条"
+    },
+    {
+      "offerId": "760129327730",
+      "title": "适用DW不锈钢06线网带快拆表耳 苹果三星华为GT2米兰尼斯双扣表带",
+      "detailUrl": "https://detail.1688.com/offer/760129327730.html",
+      "images": [
+        "https://cbu01.alicdn.com/img/ibank/O1CN01OOabCx1L9klmTF1JI_!!2215489401257-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01CMRd7e1L9kfi4hwqD_!!2215489401257-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01hRLVgw1L9kfkB6Grt_!!2215489401257-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01hTol8d1L9kn00nK3t_!!2215489401257-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01z9gmau1L9kvf7JSKg_!!2215489401257-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01P6S8MG1L9kqPhsDvX_!!2215489401257-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01qE21er1L9kqGC3bjB_!!2215489401257-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01vkrIyc1L9khqy5Ucz_!!2215489401257-0-cib.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01NZViKo1L9kqQIJVFR_!!2215489401257-0-cib.jpg"
+      ],
+      "videoUrl": "https://cloud.video.taobao.com/play/u/2215489401257/p/2/e/6/t/1/500869156174.mp4",
+      "price": {
+        "min": 3.2,
+        "max": 3.2,
+        "currency": "CNY",
+        "priceType": "NORMAL",
+        "promoLabel": null
+      },
+      "quantityPrices": [
+        {
+          "quantityRange": "≥3个",
+          "quantityMin": 3,
+          "quantityMax": null,
+          "price": 3.2
+        }
+      ],
+      "categoryPath": "服饰配件、饰品 > 表 > 表带",
+      "categoryName": "表带",
+      "categoryId": "124272005",
+      "topCategoryId": "54",
+      "recentSoldCount": 28794,
+      "soldDisplay": "已售2.9万+件",
+      "saledCount": 28794,
+      "saledCountStr": "2万+",
+      "orderCount": 534,
+      "sourceKeyword": "苹果手表表带",
+      "supplier": {
+        "companyName": "广州市越秀区灏翔钟表配件商行",
+        "shopUrl": "http://shop752777z755a48.1688.com"
+      },
+      "minOrderQuantity": 3,
+      "unit": "个"
+    }
+  ]
+}

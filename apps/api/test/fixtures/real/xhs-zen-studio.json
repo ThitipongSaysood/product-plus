@@ -1,0 +1,173 @@
+{
+ "_source": "REAL smoke run 5hYl39mFSmqrlFEcu · zen-studio/rednote-product-search-scraper · 2026-09-24 · keyword 苹果手表表带 · maxResults 5 · includeProductDetails false · `link` (xhsdiscover deep link) and vendor.vendor_link omitted for size",
+ "_findings": "metrics.units_sold is lifetime · metrics.shop_sold is shop-level, NOT product sold · price.price CNY · images[].url signed-ish CDN (cache immediately) · results skew to handmade beaded/crystal bands (串珠/水晶/手链) — taxonomy needs a beaded/jewelry category",
+ "items": [
+  {
+   "id": "6a4ca8b944362a0001675eb3",
+   "title": "AUDOBIBI气质美神蕾丝手表带iwatch手表链小众复古巴洛克高级感",
+   "url": "https://www.xiaohongshu.com/goods-detail/6a4ca8b944362a0001675eb3",
+   "keyword": "苹果手表表带",
+   "goods_type": "normal",
+   "stock_status": 1,
+   "price": {
+    "price": 88,
+    "origin_price": 88,
+    "foreign_price": "≈£9.95",
+    "price_description": ""
+   },
+   "metrics": {
+    "units_sold_text": "17 sold",
+    "units_sold": 17,
+    "shop_age_text": "3 yrs shop",
+    "added_to_cart_text": "100+ added to cart",
+    "added_to_cart": 100
+   },
+   "vendor": {
+    "vendor_name": "A PART OF ME的店",
+    "seller_id": "633ba42901ba12000185cbf4"
+   },
+   "images": [
+    {
+     "url": "https://mall-i8.xhscdn.com/arkgoods/1040g0o0322aho8ui70005oj11mpk12d8qs7v7bg?imageView2/1/w/540/h/720/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+     "width": 540,
+     "height": 720,
+     "aspect_ratio": 0.75
+    }
+   ]
+  },
+  {
+   "id": "6a574d318cb63f00011000ca",
+   "title": "kitty的游乐园·醒醒原创手作·天然水晶手表表带配饰饰品",
+   "url": "https://www.xiaohongshu.com/goods-detail/6a574d318cb63f00011000ca",
+   "keyword": "苹果手表表带",
+   "goods_type": "normal",
+   "stock_status": 1,
+   "price": {
+    "price": 103,
+    "origin_price": 108,
+    "foreign_price": "≈£11.65",
+    "price_description": ""
+   },
+   "metrics": {
+    "added_to_cart_text": "1k added to cart",
+    "added_to_cart": 1000,
+    "saved_text": "173 saved",
+    "saved": 173,
+    "units_sold_text": "306 sold",
+    "units_sold": 306
+   },
+   "vendor": {
+    "vendor_name": "醒醒表带的店",
+    "seller_id": "69ddab7610b3f0001544d5a0"
+   },
+   "images": [
+    {
+     "url": "https://mall-i8.xhscdn.com/arkgoods/104100ao3211bg6h4na46jndbeojs00000000000qd6o9e?imageView2/2/w/540/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+     "width": 540,
+     "height": 540,
+     "aspect_ratio": 1
+    }
+   ]
+  },
+  {
+   "id": "6968d48230cc0500010a24af",
+   "title": "2026HELLO个性NFC门禁卡表带扣半环电话手表iWatch金属表带适配",
+   "url": "https://www.xiaohongshu.com/goods-detail/6968d48230cc0500010a24af",
+   "keyword": "苹果手表表带",
+   "goods_type": "normal",
+   "stock_status": 1,
+   "price": {
+    "price": 26.9,
+    "origin_price": 29.9,
+    "foreign_price": "≈£3.05",
+    "price_description": ""
+   },
+   "metrics": {
+    "added_to_cart_text": "100+ added to cart",
+    "added_to_cart": 100,
+    "units_sold_text": "62 sold",
+    "units_sold": 62
+   },
+   "vendor": {
+    "vendor_name": "擎上文创的店",
+    "seller_id": "676bc7b280609800159be930"
+   },
+   "images": [
+    {
+     "url": "https://mall-i8.xhscdn.com/arkgoods/1040g0o031rc216oj0m00412ioabo4iooms9oamg?imageView2/2/w/540/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+     "width": 540,
+     "height": 540,
+     "aspect_ratio": 1
+    }
+   ]
+  },
+  {
+   "id": "6a5c9fbe8c0a3e00013fc1f1",
+   "title": "手工·原创游到海水变蓝表带手链",
+   "url": "https://www.xiaohongshu.com/goods-detail/6a5c9fbe8c0a3e00013fc1f1",
+   "keyword": "苹果手表表带",
+   "goods_type": "normal",
+   "stock_status": 1,
+   "price": {
+    "price": 29.8,
+    "origin_price": 29.8,
+    "foreign_price": "≈£3.37",
+    "price_description": ""
+   },
+   "metrics": {
+    "shop_sold_text": "23k+ sold",
+    "shop_sold": 23000,
+    "units_sold_text": "753 sold",
+    "units_sold": 753,
+    "added_to_cart_text": "3k added to cart",
+    "added_to_cart": 3000,
+    "saved_text": "218 saved",
+    "saved": 218
+   },
+   "vendor": {
+    "vendor_name": "自由的风Free Wind的店",
+    "seller_id": "671d838219cdeb001599aec8"
+   },
+   "images": [
+    {
+     "url": "https://mall-i8.xhscdn.com/arkgoods/104103ng3222movpnnk7me7c2lh7g0000000000d3o48tm?imageView2/1/w/540/h/720/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+     "width": 540,
+     "height": 720,
+     "aspect_ratio": 0.75
+    }
+   ]
+  },
+  {
+   "id": "6a71ae1067db57000133fb88",
+   "title": "海盐奶冻·珍珠蓝玉髓白水晶表带 清冷温柔手工串珠定制",
+   "url": "https://www.xiaohongshu.com/goods-detail/6a71ae1067db57000133fb88",
+   "keyword": "苹果手表表带",
+   "goods_type": "normal",
+   "stock_status": 1,
+   "price": {
+    "price": 58,
+    "origin_price": 58,
+    "foreign_price": "≈£6.56",
+    "price_description": ""
+   },
+   "metrics": {
+    "units_sold_text": "92 sold",
+    "units_sold": 92,
+    "added_to_cart_text": "300+ added to cart",
+    "added_to_cart": 300
+   },
+   "vendor": {
+    "vendor_name": "Rabbit Hole手作的店",
+    "seller_id": "69b821e5ee0c080015f7b42f"
+   },
+   "images": [
+    {
+     "url": "https://mall-i8.xhscdn.com/arkgoods/104103ng31v01ogdb2i06je11skjq00000000007ob8s7e?imageView2/1/w/540/h/720/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+     "width": 540,
+     "height": 720,
+     "aspect_ratio": 0.75
+    }
+   ]
+  }
+ ]
+}

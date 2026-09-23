@@ -1,0 +1,31 @@
+{
+  "name": "@pp/web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 3020",
+    "build": "next build",
+    "start": "next start -p ${PORT:-3020}",
+    "typecheck": "next typegen && tsc --noEmit",
+    "test": "vitest run",
+    "lint": "tsc --noEmit",
+    "gen:icons": "node scripts/gen-icons.mjs"
+  },
+  "dependencies": {
+    "next": "^16.3.6",
+    "react": "latest",
+    "react-dom": "latest",
+    "recharts": "^3.10.1"
+  },
+  "devDependencies": {
+    "@pp/contracts": "workspace:*",
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "boxicons": "^2.1.4",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.1"
+  }
+}

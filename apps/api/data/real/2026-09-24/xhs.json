@@ -1,0 +1,1469 @@
+{
+  "_source": "zen-studio/rednote-product-search-scraper · run OsvNwT8UErfn7dE44 · dataset dsLcSsOr9r9ZEdZB5 · keyword 苹果手表表带 · 2026-09-24 · projected fields: id,title,url,keyword,goods_type,stock_status,price,metrics,vendor.vendor_name,vendor.seller_id,images",
+  "items": [
+    {
+      "id": "6a574d318cb63f00011000ca",
+      "title": "kitty的游乐园·醒醒原创手作·天然水晶手表表带配饰饰品",
+      "url": "https://www.xiaohongshu.com/goods-detail/6a574d318cb63f00011000ca",
+      "keyword": "苹果手表表带",
+      "goods_type": "normal",
+      "stock_status": 1,
+      "price": {
+        "price": 103,
+        "origin_price": 108,
+        "foreign_price": "≈$15.55",
+        "price_description": ""
+      },
+      "metrics": {
+        "added_to_cart_text": "1k added to cart",
+        "added_to_cart": 1000,
+        "saved_text": "173 saved",
+        "saved": 173,
+        "units_sold_text": "306 sold",
+        "units_sold": 306
+      },
+      "vendor": {
+        "vendor_name": "醒醒表带的店",
+        "seller_id": "69ddab7610b3f0001544d5a0"
+      },
+      "images": [
+        {
+          "url": "https://mall-i8.xhscdn.com/arkgoods/104100ao3211bg6h4na46jndbeojs00000000000qd6o9e?imageView2/2/w/540/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+          "width": 540,
+          "height": 540,
+          "aspect_ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "6984635da5576f0001181233",
+      "title": "2026灰狗爪个性NFC门禁卡表带扣半环电话手表iWatch金属表带适配",
+      "url": "https://www.xiaohongshu.com/goods-detail/6984635da5576f0001181233",
+      "keyword": "苹果手表表带",
+      "goods_type": "normal",
+      "stock_status": 1,
+      "price": {
+        "price": 26.9,
+        "origin_price": 29.9,
+        "foreign_price": "≈$4.06",
+        "price_description": ""
+      },
+      "metrics": {
+        "units_sold_text": "29 sold",
+        "units_sold": 29
+      },
+      "vendor": {
+        "vendor_name": "擎上文创的店",
+        "seller_id": "676bc7b280609800159be930"
+      },
+      "images": [
+        {
+          "url": "https://mall-i8.xhscdn.com/arkgoods/1040g0o031s6v9fa75800412ioabo4ioo9c110pg?imageView2/2/w/540/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+          "width": 540,
+          "height": 540,
+          "aspect_ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "681ce3b8794ce20001b9d82d",
+      "title": "定制不退不换】歪心珍珠全华子表带水晶定制手表表带所有型号表型",
+      "url": "https://www.xiaohongshu.com/goods-detail/681ce3b8794ce20001b9d82d",
+      "keyword": "苹果手表表带",
+      "goods_type": "normal",
+      "stock_status": 1,
+      "price": {
+        "price": 219,
+        "origin_price": 219,
+        "foreign_price": "≈$33.05",
+        "price_description": ""
+      },
+      "metrics": {
+        "shop_age_text": "3 yrs shop",
+        "units_sold_text": "1098 sold",
+        "units_sold": 1098,
+        "added_to_cart_text": "3k added to cart",
+        "added_to_cart": 3000,
+        "saved_text": "600 saved",
+        "saved": 600
+      },
+      "vendor": {
+        "vendor_name": "小甜猫sweet cat 华子手作的店",
+        "seller_id": "643450306fdda1000196f72e"
+      },
+      "images": [
+        {
+          "url": "https://mall-i8.xhscdn.com/arkgoods/1040g0ao312kcphf57m0g5nuuqe408evitmi7o2g?imageView2/1/w/540/h/720/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+          "width": 540,
+          "height": 720,
+          "aspect_ratio": 0.75
+        }
+      ]
+    },
+    {
+      "id": "6525506f00f5f80001d59f2e",
+      "title": "天然冰山翠玉石表带 「翠微」适用小米8华为手环8以及iwatch表带",
+      "url": "https://www.xiaohongshu.com/goods-detail/6525506f00f5f80001d59f2e",
+      "keyword": "苹果手表表带",
+      "goods_type": "normal",
+      "stock_status": 1,
+      "price": {
+        "price": 38.8,
+        "origin_price": 38.8,
+        "foreign_price": "≈$5.86",
+        "price_description": ""
+      },
+      "metrics": {
+        "units_sold_text": "451 sold",
+        "units_sold": 451,
+        "added_to_cart_text": "600+ added to cart",
+        "added_to_cart": 600,
+        "saved_text": "410 saved",
+        "saved": 410
+      },
+      "vendor": {
+        "vendor_name": "阿钰手作的店",
+        "seller_id": "63fc8b7038b04800018cb062"
+      },
+      "images": [
+        {
+          "url": "https://mall-i8.xhscdn.com/arkgoods/100100ao2jfbl0mqja00601879cji9ug00465fk7pmi3qm?imageView2/1/w/540/h/720/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+          "width": 540,
+          "height": 720,
+          "aspect_ratio": 0.75
+        }
+      ]
+    },
+    {
+      "id": "6a71ae1067db57000133fb88",
+      "title": "海盐奶冻·珍珠蓝玉髓白水晶表带 清冷温柔手工串珠定制",
+      "url": "https://www.xiaohongshu.com/goods-detail/6a71ae1067db57000133fb88",
+      "keyword": "苹果手表表带",
+      "goods_type": "normal",
+      "stock_status": 1,
+      "price": {
+        "price": 58,
+        "origin_price": 58,
+        "foreign_price": "≈$8.76",
+        "price_description": ""
+      },
+      "metrics": {
+        "units_sold_text": "92 sold",
+        "units_sold": 92,
+        "added_to_cart_text": "300+ added to cart",
+        "added_to_cart": 300
+      },
+      "vendor": {
+        "vendor_name": "Rabbit Hole手作的店",
+        "seller_id": "69b821e5ee0c080015f7b42f"
+      },
+      "images": [
+        {
+          "url": "https://mall-i8.xhscdn.com/arkgoods/104103ng31v01ogdb2i06je11skjq00000000007ob8s7e?imageView2/1/w/540/h/720/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+          "width": 540,
+          "height": 720,
+          "aspect_ratio": 0.75
+        }
+      ]
+    },
+    {
+      "id": "6a4ca8b944362a0001675eb6",
+      "title": "AUDOBIBI气质美神蕾丝手表带iwatch手表链小众复古巴洛克高级感",
+      "url": "https://www.xiaohongshu.com/goods-detail/6a4ca8b944362a0001675eb6",
+      "keyword": "苹果手表表带",
+      "goods_type": "normal",
+      "stock_status": 1,
+      "price": {
+        "price": 88,
+        "origin_price": 88,
+        "foreign_price": "≈$13.28",
+        "price_description": ""
+      },
+      "metrics": {
+        "units_sold_text": "17 sold",
+        "units_sold": 17,
+        "shop_sold_text": "61k+ sold",
+        "shop_sold": 61000,
+        "added_to_cart_text": "100+ added to cart",
+        "added_to_cart": 100
+      },
+      "vendor": {
+        "vendor_name": "A PART OF ME的店",
+        "seller_id": "633ba42901ba12000185cbf4"
+      },
+      "images": [
+        {
+          "url": "https://mall-i8.xhscdn.com/arkgoods/1040g0o0322aho8ui70005oj11mpk12d8qs7v7bg?imageView2/1/w/540/h/720/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+          "width": 540,
+          "height": 720,
+          "aspect_ratio": 0.75
+        }
+      ]
+    },
+    {
+      "id": "6a673851d09fb60001a7d2b5",
+      "title": "【双生花影】原创iwatch表带 彩兔毛水晶手链表带 水晶表链",
+      "url": "https://www.xiaohongshu.com/goods-detail/6a673851d09fb60001a7d2b5",
+      "keyword": "苹果手表表带",
+      "goods_type": "normal",
+      "stock_status": 1,
+      "price": {
+        "price": 94,
+        "origin_price": 99,
+        "foreign_price": "≈$14.19",
+        "price_description": ""
+      },
+      "metrics": {
+        "units_sold_text": "6 sold",
+        "units_sold": 6
+      },
+      "vendor": {
+        "vendor_name": "梵溪晶舍的店",
+        "seller_id": "6a50faa15510e900153b33a6"
+      },
+      "images": [
+        {
+          "url": "https://mall-i8.xhscdn.com/arkgoods/104103ng3234fm5ncna76kk8v94jpq0000000004edlgk6?imageView2/1/w/540/h/720/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+          "width": 540,
+          "height": 720,
+          "aspect_ratio": 0.75
+        }
+      ]
+    },
+    {
+      "id": "68f74344c4f8910001a01a15",
+      "title": "原创陶瓷表带编绳手链小米华为苹果表带",
+      "url": "https://www.xiaohongshu.com/goods-detail/68f74344c4f8910001a01a15",
+      "keyword": "苹果手表表带",
+      "goods_type": "normal",
+      "stock_status": 1,
+      "price": {
+        "price": 21.9,
+        "origin_price": 21.9,
+        "foreign_price": "≈$3.31",
+        "price_description": ""
+      },
+      "metrics": {
+        "shop_age_text": "3 yrs shop",
+        "units_sold_text": "117 sold",
+        "units_sold": 117,
+        "added_to_cart_text": "200+ added to cart",
+        "added_to_cart": 200
+      },
+      "vendor": {
+        "vendor_name": "春夏秋冬里的店",
+        "seller_id": "64d8a1bd6b0df000010fd7cf"
+      },
+      "images": [
+        {
+          "url": "https://mall-i8.xhscdn.com/arkgoods/104100ao320rc45pc62069lu3glqg0000000000aiouu62?imageView2/1/w/540/h/720/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+          "width": 540,
+          "height": 720,
+          "aspect_ratio": 0.75
+        }
+      ]
+    },
+    {
+      "id": "6a5c9fbe8c0a3e00013fc1f4",
+      "title": "手工·原创游到海水变蓝表带手链",
+      "url": "https://www.xiaohongshu.com/goods-detail/6a5c9fbe8c0a3e00013fc1f4",
+      "keyword": "苹果手表表带",
+      "goods_type": "normal",
+      "stock_status": 1,
+      "price": {
+        "price": 29.8,
+        "origin_price": 29.8,
+        "foreign_price": "≈$4.5",
+        "price_description": ""
+      },
+      "metrics": {
+        "shop_sold_text": "23k+ sold",
+        "shop_sold": 23000,
+        "units_sold_text": "761 sold",
+        "units_sold": 761,
+        "added_to_cart_text": "3k added to cart",
+        "added_to_cart": 3000,
+        "saved_text": "218 saved",
+        "saved": 218
+      },
+      "vendor": {
+        "vendor_name": "自由的风Free Wind的店",
+        "seller_id": "671d838219cdeb001599aec8"
+      },
+      "images": [
+        {
+          "url": "https://mall-i8.xhscdn.com/arkgoods/104103ng3222movpnnk7me7c2lh7g0000000000d3o48tm?imageView2/1/w/540/h/720/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+          "width": 540,
+          "height": 720,
+          "aspect_ratio": 0.75
+        }
+      ]
+    },
+    {
+      "id": "68691213a57c6800018506c9",
+      "title": "NNW｜芭蕉叶度假风蜡绳编织表带iwatch/小米/华为小众原创设计",
+      "url": "https://www.xiaohongshu.com/goods-detail/68691213a57c6800018506c9",
+      "keyword": "苹果手表表带",
+      "goods_type": "normal",
+      "stock_status": 1,
+      "price": {
+        "price": 89,
+        "origin_price": 89,
+        "foreign_price": "≈$13.43",
+        "price_description": ""
+      },
+      "metrics": {
+        "units_sold_text": "254 sold",
+        "units_sold": 254,
+        "added_to_cart_text": "1k added to cart",
+        "added_to_cart": 1000,
+        "saved_text": "187 saved",
+        "saved": 187
+      },
+      "vendor": {
+        "vendor_name": "Nirwana的店",
+        "seller_id": "67933260763cfd0015445fc6"
+      },
+      "images": [
+        {
+          "url": "https://mall-i8.xhscdn.com/arkgoods/104103ng31ji99t0s3076f4pic02es00000000083ft4fs?imageView2/1/w/540/h/720/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+          "width": 540,
+          "height": 720,
+          "aspect_ratio": 0.75
+        }
+      ]
+    },
+    {
+      "id": "6a0c75a49cd5530001ac965e",
+      "title": "晴桃·12mm绿萤石马粉清新水晶表带双A白水定制",
+      "url": "https://www.xiaohongshu.com/goods-detail/6a0c75a49cd5530001ac965e",
+      "keyword": "苹果手表表带",
+      "goods_type": "normal",
+      "stock_status": 1,
+      "price": {
+        "price": 88,
+        "origin_price": 88,
+        "foreign_price": "≈$13.28",
+        "price_description": ""
+      },
+      "metrics": {
+        "units_sold_text": "9 sold",
+        "units_sold": 9
+      },
+      "vendor": {
+        "vendor_name": "Rabbit Hole手作的店",
+        "seller_id": "69b821e5ee0c080015f7b42f"
+      },
+      "images": [
+        {
+          "url": "https://mall-i8.xhscdn.com/arkgoods/104100ao320brgmov6206je11skjq00000000005o7pokm?imageView2/1/w/540/h/720/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+          "width": 540,
+          "height": 720,
+          "aspect_ratio": 0.75
+        }
+      ]
+    },
+    {
+      "id": "6968d48230cc0500010a24ac",
+      "title": "2026HELLO个性NFC门禁卡表带扣半环电话手表iWatch金属表带适配",
+      "url": "https://www.xiaohongshu.com/goods-detail/6968d48230cc0500010a24ac",
+      "keyword": "苹果手表表带",
+      "goods_type": "normal",
+      "stock_status": 1,
+      "price": {
+        "price": 26.9,
+        "origin_price": 29.9,
+        "foreign_price": "≈$4.06",
+        "price_description": ""
+      },
+      "metrics": {
+        "added_to_cart_text": "100+ added to cart",
+        "added_to_cart": 100,
+        "units_sold_text": "62 sold",
+        "units_sold": 62
+      },
+      "vendor": {
+        "vendor_name": "擎上文创的店",
+        "seller_id": "676bc7b280609800159be930"
+      },
+      "images": [
+        {
+          "url": "https://mall-i8.xhscdn.com/arkgoods/1040g0o031rc216oj0m00412ioabo4iooms9oamg?imageView2/2/w/540/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+          "width": 540,
+          "height": 540,
+          "aspect_ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "69251e6a2f585e00014e8e9b",
+      "title": "Teng`冬季新款毛昵iwatch表带，适配苹果S7/8/9/10/11，适合通勤",
+      "url": "https://www.xiaohongshu.com/goods-detail/69251e6a2f585e00014e8e9b",
+      "keyword": "苹果手表表带",
+      "goods_type": "normal",
+      "stock_status": 1,
+      "price": {
+        "price": 34.8,
+        "origin_price": 39.8,
+        "foreign_price": "≈$5.26",
+        "price_description": ""
+      },
+      "metrics": {},
+      "vendor": {
+        "vendor_name": "Tengmin.的店",
+        "seller_id": "692417f9cd11fb0015d43e7a"
+      },
+      "images": [
+        {
+          "url": "https://mall-i8.xhscdn.com/arkgoods/1040g0o031pd4mrcvi4005on59fgnjq0n5eqvl3o?imageView2/2/w/540/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+          "width": 540,
+          "height": 540,
+          "aspect_ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "6a8b254bf8a88f0015667ce9",
+      "title": "【平安扣五帝金币】适用苹果s10/s11/s9 华为小米手工串珠编织表",
+      "url": "https://www.xiaohongshu.com/goods-detail/6a8b254bf8a88f0015667ce9",
+      "keyword": "苹果手表表带",
+      "goods_type": "normal",
+      "stock_status": 1,
+      "price": {
+        "price": 21.8,
+        "origin_price": 26.8,
+        "foreign_price": "≈$3.29",
+        "price_description": ""
+      },
+      "metrics": {},
+      "vendor": {
+        "vendor_name": "简腕配饰的店",
+        "seller_id": "6a8ab09ae4a3db0015c79ee5"
+      },
+      "images": [
+        {
+          "url": "https://mall-i8.xhscdn.com/material_space/2243907a-4752-466a-bf78-b4ef536709c0?imageView2/2/w/540/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+          "width": 540,
+          "height": 540,
+          "aspect_ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "6a96cf209811a80001233672",
+      "title": "天然白幽灵白阿塞水晶手链女款iwatch装饰表带时尚个性风",
+      "url": "https://www.xiaohongshu.com/goods-detail/6a96cf209811a80001233672",
+      "keyword": "苹果手表表带",
+      "goods_type": "normal",
+      "stock_status": 1,
+      "price": {
+        "price": 73,
+        "origin_price": 88,
+        "foreign_price": "≈$11.02",
+        "price_description": ""
+      },
+      "metrics": {
+        "units_sold_text": "1 sold",
+        "units_sold": 1
+      },
+      "vendor": {
+        "vendor_name": "Meet柚见Crystal的店",
+        "seller_id": "6a182c5381cc1b0015c00376"
+      },
+      "images": [
+        {
+          "url": "https://mall-i8.xhscdn.com/arkgoods/104103ng3217ohh0f7eamk61a84js00000000003gobeku?imageView2/1/w/540/h/720/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+          "width": 540,
+          "height": 720,
+          "aspect_ratio": 0.75
+        }
+      ]
+    },
+    {
+      "id": "69e8eaae15602900019e572b",
+      "title": "白桃汽水·马粉 温柔斩女超仙气只改不退手工串珠双A白水定制",
+      "url": "https://www.xiaohongshu.com/goods-detail/69e8eaae15602900019e572b",
+      "keyword": "苹果手表表带",
+      "goods_type": "normal",
+      "stock_status": 1,
+      "price": {
+        "price": 88,
+        "origin_price": 88,
+        "foreign_price": "≈$13.28",
+        "price_description": ""
+      },
+      "metrics": {
+        "units_sold_text": "35 sold",
+        "units_sold": 35,
+        "added_to_cart_text": "100+ added to cart",
+        "added_to_cart": 100
+      },
+      "vendor": {
+        "vendor_name": "Rabbit Hole手作的店",
+        "seller_id": "69b821e5ee0c080015f7b42f"
+      },
+      "images": [
+        {
+          "url": "https://mall-i8.xhscdn.com/arkgoods/104103ng31v94q5bfiaemje11skjq00000000003g3efsc?imageView2/1/w/540/h/720/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+          "width": 540,
+          "height": 720,
+          "aspect_ratio": 0.75
+        }
+      ]
+    },
+    {
+      "id": "6a09ebe0fe4ff500156c3d34",
+      "title": "镶钻拼接黑油蜡皮表带适用苹果applewatch手表iwatch表带s11手表",
+      "url": "https://www.xiaohongshu.com/goods-detail/6a09ebe0fe4ff500156c3d34",
+      "keyword": "苹果手表表带",
+      "goods_type": "normal",
+      "stock_status": 1,
+      "price": {
+        "price": 42.8,
+        "origin_price": 52.8,
+        "foreign_price": "≈$6.46",
+        "price_description": ""
+      },
+      "metrics": {
+        "units_sold_text": "1 sold",
+        "units_sold": 1
+      },
+      "vendor": {
+        "vendor_name": "大辣火辣辣的店",
+        "seller_id": "69ba6313c52ca300157bf9ae"
+      },
+      "images": [
+        {
+          "url": "https://mall-i8.xhscdn.com/material_space/cd43345f-ca22-44e7-a4d9-a861a588c661?imageView2/2/w/540/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+          "width": 540,
+          "height": 540,
+          "aspect_ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "6a672610480b5a0001a5a12f",
+      "title": "【紫藤】原创iWatch表带 巴西紫紫水晶表带 水晶表链 福利款",
+      "url": "https://www.xiaohongshu.com/goods-detail/6a672610480b5a0001a5a12f",
+      "keyword": "苹果手表表带",
+      "goods_type": "normal",
+      "stock_status": 1,
+      "price": {
+        "price": 74.9,
+        "origin_price": 79.9,
+        "foreign_price": "≈$11.31",
+        "price_description": ""
+      },
+      "metrics": {
+        "units_sold_text": "1 sold",
+        "units_sold": 1
+      },
+      "vendor": {
+        "vendor_name": "梵溪晶舍的店",
+        "seller_id": "6a50faa15510e900153b33a6"
+      },
+      "images": [
+        {
+          "url": "https://mall-i8.xhscdn.com/arkgoods/104100ao3234c53hq7k3mkk8v94jpq0000000005l4gmmg?imageView2/1/w/540/h/720/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+          "width": 540,
+          "height": 720,
+          "aspect_ratio": 0.75
+        }
+      ]
+    },
+    {
+      "id": "6a893ccdf70dec0015fcffae",
+      "title": "奶油黄爱心环环适用苹果applewatch手表iwatch表带s11手表带",
+      "url": "https://www.xiaohongshu.com/goods-detail/6a893ccdf70dec0015fcffae",
+      "keyword": "苹果手表表带",
+      "goods_type": "normal",
+      "stock_status": 1,
+      "price": {
+        "price": 19.8,
+        "origin_price": 29.8,
+        "foreign_price": "≈$2.99",
+        "price_description": ""
+      },
+      "metrics": {},
+      "vendor": {
+        "vendor_name": "柚柚柚yyy的店",
+        "seller_id": "6a7f23f0a98f5e001579dbab"
+      },
+      "images": [
+        {
+          "url": "https://mall-i8.xhscdn.com/material_space/ea8fc62b-38f7-425f-b8d6-90a7028a5240?imageView2/2/w/540/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+          "width": 540,
+          "height": 540,
+          "aspect_ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "6910b41fa6bcaf00015730ad",
+      "title": "原创陶瓷表带编绳手链小米华为苹果表带",
+      "url": "https://www.xiaohongshu.com/goods-detail/6910b41fa6bcaf00015730ad",
+      "keyword": "苹果手表表带",
+      "goods_type": "normal",
+      "stock_status": 1,
+      "price": {
+        "price": 26.8,
+        "origin_price": 26.8,
+        "foreign_price": "≈£3.03",
+        "price_description": ""
+      },
+      "metrics": {
+        "shop_age_text": "3 yrs shop",
+        "units_sold_text": "117 sold",
+        "units_sold": 117,
+        "added_to_cart_text": "200+ added to cart",
+        "added_to_cart": 200
+      },
+      "vendor": {
+        "vendor_name": "春夏秋冬里的店",
+        "seller_id": "64d8a1bd6b0df000010fd7cf"
+      },
+      "images": [
+        {
+          "url": "https://mall-i10.xhscdn.com/arkgoods/104100ao320rc45pc62069lu3glqg0000000000aiouu62?imageView2/1/w/540/h/720/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+          "width": 540,
+          "height": 720,
+          "aspect_ratio": 0.75
+        }
+      ]
+    },
+    {
+      "id": "69251e6a2f585e00014e8ea1",
+      "title": "Teng`冬季新款毛昵iwatch表带，适配苹果S7/8/9/10/11，适合通勤",
+      "url": "https://www.xiaohongshu.com/goods-detail/69251e6a2f585e00014e8ea1",
+      "keyword": "苹果手表表带",
+      "goods_type": "normal",
+      "stock_status": 1,
+      "price": {
+        "price": 34.8,
+        "origin_price": 39.8,
+        "foreign_price": "≈£3.94",
+        "price_description": ""
+      },
+      "metrics": {},
+      "vendor": {
+        "vendor_name": "Tengmin.的店",
+        "seller_id": "692417f9cd11fb0015d43e7a"
+      },
+      "images": [
+        {
+          "url": "https://mall-i10.xhscdn.com/arkgoods/1040g0o031pd4mrcvi4005on59fgnjq0n5eqvl3o?imageView2/2/w/540/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+          "width": 540,
+          "height": 540,
+          "aspect_ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "69e4ea8077049500154892e7",
+      "title": "蓝灰橙礼帽马表带适用苹果applewatch手表iwatch表带s11手表带",
+      "url": "https://www.xiaohongshu.com/goods-detail/69e4ea8077049500154892e7",
+      "keyword": "苹果手表表带",
+      "goods_type": "normal",
+      "stock_status": 1,
+      "price": {
+        "price": 20.8,
+        "origin_price": 30.8,
+        "foreign_price": "≈£2.36",
+        "price_description": ""
+      },
+      "metrics": {},
+      "vendor": {
+        "vendor_name": "大辣火辣辣的店",
+        "seller_id": "69ba6313c52ca300157bf9ae"
+      },
+      "images": [
+        {
+          "url": "https://mall-i10.xhscdn.com/material_space/94f651b6-f2b5-471f-9149-ff064dff5cae?imageView2/2/w/540/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+          "width": 540,
+          "height": 540,
+          "aspect_ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "6a7c1c4bee44d90001a840b4",
+      "title": "白开水·白水晶x沉香珠净化简约表带双A白水定制",
+      "url": "https://www.xiaohongshu.com/goods-detail/6a7c1c4bee44d90001a840b4",
+      "keyword": "苹果手表表带",
+      "goods_type": "normal",
+      "stock_status": 1,
+      "price": {
+        "price": 98,
+        "origin_price": 98,
+        "foreign_price": "≈£11.08",
+        "price_description": ""
+      },
+      "metrics": {
+        "units_sold_text": "37 sold",
+        "units_sold": 37
+      },
+      "vendor": {
+        "vendor_name": "Rabbit Hole手作的店",
+        "seller_id": "69b821e5ee0c080015f7b42f"
+      },
+      "images": [
+        {
+          "url": "https://mall-i10.xhscdn.com/arkgoods/104100ao31vsc3lddjq06je11skjq00000000000plfqtg?imageView2/1/w/540/h/720/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+          "width": 540,
+          "height": 720,
+          "aspect_ratio": 0.75
+        }
+      ]
+    },
+    {
+      "id": "6a954959cc9be3000188cc43",
+      "title": "【冰蓝碎】原创海蓝宝水晶表带 双圈iWatch表链 清新百搭华为表带",
+      "url": "https://www.xiaohongshu.com/goods-detail/6a954959cc9be3000188cc43",
+      "keyword": "苹果手表表带",
+      "goods_type": "normal",
+      "stock_status": 1,
+      "price": {
+        "price": 104,
+        "origin_price": 109,
+        "foreign_price": "≈£11.76",
+        "price_description": ""
+      },
+      "metrics": {},
+      "vendor": {
+        "vendor_name": "梵溪晶舍的店",
+        "seller_id": "6a50faa15510e900153b33a6"
+      },
+      "images": [
+        {
+          "url": "https://mall-i10.xhscdn.com/arkgoods/104100ao324hf59ncnaimkk8v94jpq0000000003fd9va4?imageView2/1/w/540/h/720/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+          "width": 540,
+          "height": 720,
+          "aspect_ratio": 0.75
+        }
+      ]
+    },
+    {
+      "id": "6a8b254bf8a88f0015667d1f",
+      "title": "【平安扣五帝金币】适用苹果s10/s11/s9 华为小米手工串珠编织表",
+      "url": "https://www.xiaohongshu.com/goods-detail/6a8b254bf8a88f0015667d1f",
+      "keyword": "苹果手表表带",
+      "goods_type": "normal",
+      "stock_status": 1,
+      "price": {
+        "price": 21.8,
+        "origin_price": 26.8,
+        "foreign_price": "≈£2.47",
+        "price_description": ""
+      },
+      "metrics": {},
+      "vendor": {
+        "vendor_name": "简腕配饰的店",
+        "seller_id": "6a8ab09ae4a3db0015c79ee5"
+      },
+      "images": [
+        {
+          "url": "https://mall-i10.xhscdn.com/material_space/2243907a-4752-466a-bf78-b4ef536709c0?imageView2/2/w/540/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+          "width": 540,
+          "height": 540,
+          "aspect_ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "69e4e9f287c1860015564a1e",
+      "title": "咖棕色豹纹表带适用苹果applewatch手表iwatch表带s11手表带",
+      "url": "https://www.xiaohongshu.com/goods-detail/69e4e9f287c1860015564a1e",
+      "keyword": "苹果手表表带",
+      "goods_type": "normal",
+      "stock_status": 1,
+      "price": {
+        "price": 20.8,
+        "origin_price": 30.8,
+        "foreign_price": "≈£2.36",
+        "price_description": ""
+      },
+      "metrics": {
+        "units_sold_text": "2 sold",
+        "units_sold": 2
+      },
+      "vendor": {
+        "vendor_name": "大辣火辣辣的店",
+        "seller_id": "69ba6313c52ca300157bf9ae"
+      },
+      "images": [
+        {
+          "url": "https://mall-i10.xhscdn.com/material_space/74d8b57e-0186-41b6-9175-a9f0c79dd91f?imageView2/2/w/540/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+          "width": 540,
+          "height": 540,
+          "aspect_ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "6aa01d9e1b60640001f15e00",
+      "title": "复古文艺风苹果iwatch S12/11/10/9/8表带ins风简约se保护壳UItra",
+      "url": "https://www.xiaohongshu.com/goods-detail/6aa01d9e1b60640001f15e00",
+      "keyword": "苹果手表表带",
+      "goods_type": "normal",
+      "stock_status": 1,
+      "price": {
+        "price": 19.9,
+        "origin_price": 29.9,
+        "foreign_price": "≈£2.25",
+        "price_description": ""
+      },
+      "metrics": {},
+      "vendor": {
+        "vendor_name": "禾序Wrist的店",
+        "seller_id": "6a9e5feec96b8c0015470d4c"
+      },
+      "images": [
+        {
+          "url": "https://mall-i10.xhscdn.com/arkgoods/104103ng324s1qr64247ml7ivtolbo0000000006ofojo6?imageView2/2/w/540/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+          "width": 540,
+          "height": 540,
+          "aspect_ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "6a6884b9f4c0ad0001bb6c8b",
+      "title": "【人鱼的眼泪】原创iwacth海蓝宝表带 水晶表带 手链式表带 高透",
+      "url": "https://www.xiaohongshu.com/goods-detail/6a6884b9f4c0ad0001bb6c8b",
+      "keyword": "苹果手表表带",
+      "goods_type": "normal",
+      "stock_status": 1,
+      "price": {
+        "price": 124,
+        "origin_price": 129,
+        "foreign_price": "≈£14.02",
+        "price_description": ""
+      },
+      "metrics": {
+        "units_sold_text": "1 sold",
+        "units_sold": 1
+      },
+      "vendor": {
+        "vendor_name": "梵溪晶舍的店",
+        "seller_id": "6a50faa15510e900153b33a6"
+      },
+      "images": [
+        {
+          "url": "https://mall-i10.xhscdn.com/arkgoods/104103ng3235o8ilh7ab6kk8v94jpq0000000003cvfmqa?imageView2/1/w/540/h/720/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+          "width": 540,
+          "height": 720,
+          "aspect_ratio": 0.75
+        }
+      ]
+    },
+    {
+      "id": "69fdeda06eeaf70001dc2c79",
+      "title": "浅海碎月·8mm蓝萤石12mm白水晶表带只改不退定制",
+      "url": "https://www.xiaohongshu.com/goods-detail/69fdeda06eeaf70001dc2c79",
+      "keyword": "苹果手表表带",
+      "goods_type": "normal",
+      "stock_status": 1,
+      "price": {
+        "price": 88,
+        "origin_price": 88,
+        "foreign_price": "≈£9.95",
+        "price_description": ""
+      },
+      "metrics": {
+        "units_sold_text": "7 sold",
+        "units_sold": 7
+      },
+      "vendor": {
+        "vendor_name": "Rabbit Hole手作的店",
+        "seller_id": "69b821e5ee0c080015f7b42f"
+      },
+      "images": [
+        {
+          "url": "https://mall-i10.xhscdn.com/arkgoods/104100ao31vtlf2br2a1mje11skjq00000000003cu31l6?imageView2/1/w/540/h/720/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+          "width": 540,
+          "height": 720,
+          "aspect_ratio": 0.75
+        }
+      ]
+    },
+    {
+      "id": "6a7990218bb06b000149f8bb",
+      "title": "适用s11苹果手表表带单圈尼龙发圈弹力iwatchs10大肠applewatch98",
+      "url": "https://www.xiaohongshu.com/goods-detail/6a7990218bb06b000149f8bb",
+      "keyword": "苹果手表表带",
+      "goods_type": "normal",
+      "stock_status": 1,
+      "price": {
+        "price": 29.4,
+        "origin_price": 40.2,
+        "foreign_price": "≈£3.33",
+        "price_description": ""
+      },
+      "metrics": {},
+      "vendor": {
+        "vendor_name": "优美1y7的店",
+        "seller_id": "6a6aeebc13297700155aa351"
+      },
+      "images": [
+        {
+          "url": "https://mall-i10.xhscdn.com/material_space/0bc4c191-46c2-4a57-bf58-e546419da0c5?imageView2/2/w/540/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+          "width": 540,
+          "height": 540,
+          "aspect_ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "6a180c84818cb80001d109a2",
+      "title": "五月天适用苹果手表s11表带s10米兰Applewatch9潮流文创手环",
+      "url": "https://www.xiaohongshu.com/goods-detail/6a180c84818cb80001d109a2",
+      "keyword": "苹果手表表带",
+      "goods_type": "normal",
+      "stock_status": 1,
+      "price": {
+        "price": 30.58,
+        "origin_price": 39.5,
+        "foreign_price": "≈£3.46",
+        "price_description": ""
+      },
+      "metrics": {},
+      "vendor": {
+        "vendor_name": "卢取通知书的店",
+        "seller_id": "694d3d462b60660015613a99"
+      },
+      "images": [
+        {
+          "url": "https://mall-i10.xhscdn.com/arkgoods/104100ao320n5j26llm06ij9t8oali000000000b9e22de?imageView2/2/w/540/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+          "width": 540,
+          "height": 540,
+          "aspect_ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "6aaa6242c3289e0015ceb1c0",
+      "title": "天然树脂适用s1112苹果appleiwatch345678910三株ultra透明表带",
+      "url": "https://www.xiaohongshu.com/goods-detail/6aaa6242c3289e0015ceb1c0",
+      "keyword": "苹果手表表带",
+      "goods_type": "normal",
+      "stock_status": 1,
+      "price": {
+        "price": 27,
+        "origin_price": 32,
+        "foreign_price": "≈£3.06",
+        "price_description": ""
+      },
+      "metrics": {},
+      "vendor": {
+        "vendor_name": "JOHN PABLO的店",
+        "seller_id": "689ec56bf853210015a6b9c0"
+      },
+      "images": [
+        {
+          "url": "https://mall-i10.xhscdn.com/material_space/c17123cc-61bb-40ec-900e-28f1649506b9?imageView2/2/w/540/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+          "width": 540,
+          "height": 540,
+          "aspect_ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "6a09ebe0ab42de0015f3b589",
+      "title": "镶钻拼接黑油蜡皮表带适用苹果applewatch手表iwatch表带s11手表",
+      "url": "https://www.xiaohongshu.com/goods-detail/6a09ebe0ab42de0015f3b589",
+      "keyword": "苹果手表表带",
+      "goods_type": "normal",
+      "stock_status": 1,
+      "price": {
+        "price": 42.8,
+        "origin_price": 52.8,
+        "foreign_price": "≈£4.84",
+        "price_description": ""
+      },
+      "metrics": {
+        "units_sold_text": "1 sold",
+        "units_sold": 1
+      },
+      "vendor": {
+        "vendor_name": "大辣火辣辣的店",
+        "seller_id": "69ba6313c52ca300157bf9ae"
+      },
+      "images": [
+        {
+          "url": "https://mall-i10.xhscdn.com/material_space/cd43345f-ca22-44e7-a4d9-a861a588c661?imageView2/2/w/540/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+          "width": 540,
+          "height": 540,
+          "aspect_ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "6a687f2bbf81ab0001b92e94",
+      "title": "【冷然】 原创设计白水晶表带 手链式表带 清冷优雅气质高雅",
+      "url": "https://www.xiaohongshu.com/goods-detail/6a687f2bbf81ab0001b92e94",
+      "keyword": "苹果手表表带",
+      "goods_type": "normal",
+      "stock_status": 1,
+      "price": {
+        "price": 74,
+        "origin_price": 79,
+        "foreign_price": "≈£8.37",
+        "price_description": ""
+      },
+      "metrics": {},
+      "vendor": {
+        "vendor_name": "梵溪晶舍的店",
+        "seller_id": "6a50faa15510e900153b33a6"
+      },
+      "images": [
+        {
+          "url": "https://mall-i10.xhscdn.com/arkgoods/104100ao3235niufj0296kk8v94jpq0000000002sggg5i?imageView2/1/w/540/h/720/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+          "width": 540,
+          "height": 720,
+          "aspect_ratio": 0.75
+        }
+      ]
+    },
+    {
+      "id": "6aa4e2c51e46ae0001b03074",
+      "title": "细金属表带*3-3.5mm珍珠手作手链",
+      "url": "https://www.xiaohongshu.com/goods-detail/6aa4e2c51e46ae0001b03074",
+      "keyword": "苹果手表表带",
+      "goods_type": "normal",
+      "stock_status": 1,
+      "price": {
+        "price": 44.9,
+        "origin_price": 49.9,
+        "foreign_price": "≈£5.08",
+        "price_description": ""
+      },
+      "metrics": {},
+      "vendor": {
+        "vendor_name": "醒醒表带的店",
+        "seller_id": "69ddab7610b3f0001544d5a0"
+      },
+      "images": [
+        {
+          "url": "https://mall-i10.xhscdn.com/arkgoods/104103ng3250ma75ajc76jndbeojs000000000020nk55i?imageView2/1/w/540/h/720/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+          "width": 540,
+          "height": 720,
+          "aspect_ratio": 0.75
+        }
+      ]
+    },
+    {
+      "id": "69e4ea1bbe1ced00159753a4",
+      "title": "黑色礼帽马表带适用苹果applewatch手表iwatch表带s11手表带",
+      "url": "https://www.xiaohongshu.com/goods-detail/69e4ea1bbe1ced00159753a4",
+      "keyword": "苹果手表表带",
+      "goods_type": "normal",
+      "stock_status": 1,
+      "price": {
+        "price": 20.8,
+        "origin_price": 30.8,
+        "foreign_price": "≈£2.36",
+        "price_description": ""
+      },
+      "metrics": {
+        "units_sold_text": "1 sold",
+        "units_sold": 1
+      },
+      "vendor": {
+        "vendor_name": "大辣火辣辣的店",
+        "seller_id": "69ba6313c52ca300157bf9ae"
+      },
+      "images": [
+        {
+          "url": "https://mall-i10.xhscdn.com/material_space/75afb47f-e462-4823-9212-93baf7e21f41?imageView2/2/w/540/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+          "width": 540,
+          "height": 540,
+          "aspect_ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "6889856b403edf0015ddf06b",
+      "title": "陶瓷卡通金属抽绳表带适用applewatch苹果手表iwatch98代765工厂",
+      "url": "https://www.xiaohongshu.com/goods-detail/6889856b403edf0015ddf06b",
+      "keyword": "苹果手表表带",
+      "goods_type": "normal",
+      "stock_status": 1,
+      "price": {
+        "price": 53.9,
+        "origin_price": 58.9,
+        "foreign_price": "≈$8.14",
+        "price_description": ""
+      },
+      "metrics": {},
+      "vendor": {
+        "vendor_name": "有点东西 SOMETHING的店",
+        "seller_id": "68875649d1b86e00156e1b63"
+      },
+      "images": [
+        {
+          "url": "https://mall-i8.xhscdn.com/material_space/11b11230-d18d-47c7-bf46-02eb7d4e6559?imageView2/2/w/540/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+          "width": 540,
+          "height": 540,
+          "aspect_ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "695b92db6633860001fe6e2e",
+      "title": "非遗手工扎染真皮手表带男女通用文艺复古苹果手表替换带",
+      "url": "https://www.xiaohongshu.com/goods-detail/695b92db6633860001fe6e2e",
+      "keyword": "苹果手表表带",
+      "goods_type": "normal",
+      "stock_status": 1,
+      "price": {
+        "price": 95.3,
+        "origin_price": 118,
+        "foreign_price": "≈$14.39",
+        "price_description": ""
+      },
+      "metrics": {
+        "shop_age_text": "3 yrs shop"
+      },
+      "vendor": {
+        "vendor_name": "深海蔚蓝扎染的店",
+        "seller_id": "64a406d5d314380001643855"
+      },
+      "images": [
+        {
+          "url": "https://mall-i8.xhscdn.com/arkgoods/104100ao31qv3ro7j7g0698q4hhi00000000000favd1pg?imageView2/2/w/540/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+          "width": 540,
+          "height": 540,
+          "aspect_ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "6a66eb8f55f0ca000103693f",
+      "title": "焦糖琥珀applewatch手工串珠表带",
+      "url": "https://www.xiaohongshu.com/goods-detail/6a66eb8f55f0ca000103693f",
+      "keyword": "苹果手表表带",
+      "goods_type": "normal",
+      "stock_status": 1,
+      "price": {
+        "price": 166,
+        "origin_price": 168,
+        "foreign_price": "≈$25.05",
+        "price_description": ""
+      },
+      "metrics": {},
+      "vendor": {
+        "vendor_name": "月见Yuejian的店",
+        "seller_id": "6a1fb18087e0b00015f09e9b"
+      },
+      "images": [
+        {
+          "url": "https://mall-i8.xhscdn.com/arkgoods/104103ng32346dlt5no76erb8e82f0000000000fb45h4u?imageView2/1/w/540/h/720/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+          "width": 540,
+          "height": 720,
+          "aspect_ratio": 0.75
+        }
+      ]
+    },
+    {
+      "id": "6a7c3c8e891c6a0015a9b6c9",
+      "title": "不锈钢钛钢手链 原创可定制名字模块拼接diy表带小米手环苹果表链",
+      "url": "https://www.xiaohongshu.com/goods-detail/6a7c3c8e891c6a0015a9b6c9",
+      "keyword": "苹果手表表带",
+      "goods_type": "normal",
+      "stock_status": 1,
+      "price": {
+        "price": 32.88,
+        "origin_price": 32.88,
+        "foreign_price": "≈$4.97",
+        "price_description": ""
+      },
+      "metrics": {},
+      "vendor": {
+        "vendor_name": "义乌爱芽电子商务的店",
+        "seller_id": "674824b4c5663c00157a2cf0"
+      },
+      "images": [
+        {
+          "url": "https://mall-i8.xhscdn.com/material_space/89613f00-9cea-49ff-ac92-855eeb005b73?imageView2/2/w/540/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+          "width": 540,
+          "height": 540,
+          "aspect_ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "6a0993ef373bed001543d09c",
+      "title": "其他·蓝猩适用苹果手表带 S系列/Ultra系列AppleWatch手表轻量表带透气",
+      "url": "https://www.xiaohongshu.com/goods-detail/6a0993ef373bed001543d09c",
+      "keyword": "苹果手表表带",
+      "goods_type": "normal",
+      "stock_status": 1,
+      "price": {
+        "price": 119,
+        "origin_price": 119,
+        "foreign_price": "≈$17.96",
+        "price_description": ""
+      },
+      "metrics": {},
+      "vendor": {
+        "vendor_name": "郝金彪店铺的店",
+        "seller_id": "6747fc9d00640d001562c2c8"
+      },
+      "images": [
+        {
+          "url": "https://mall-i8.xhscdn.com/material_space/396ce407-5f8e-46e5-9810-e27c3e048f57?imageView2/2/w/540/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+          "width": 540,
+          "height": 540,
+          "aspect_ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "6a7c207fe3af990015d8dce6",
+      "title": "不锈钢手链 新款蜡笔小新儿童手链表带情侣表链小米模块ins小饰品",
+      "url": "https://www.xiaohongshu.com/goods-detail/6a7c207fe3af990015d8dce6",
+      "keyword": "苹果手表表带",
+      "goods_type": "normal",
+      "stock_status": 1,
+      "price": {
+        "price": 52.89,
+        "origin_price": 52.89,
+        "foreign_price": "≈$7.99",
+        "price_description": ""
+      },
+      "metrics": {},
+      "vendor": {
+        "vendor_name": "义乌爱芽电子商务的店",
+        "seller_id": "674824b4c5663c00157a2cf0"
+      },
+      "images": [
+        {
+          "url": "https://mall-i8.xhscdn.com/material_space/47052c09-202f-4cf4-91e8-bfd07f790eaa?imageView2/2/w/540/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+          "width": 540,
+          "height": 540,
+          "aspect_ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "6a7c222982e3190015ac2cb2",
+      "title": "不锈钢手链 新款原创蜡笔小新模块表链创意卡通表带适用小米苹果",
+      "url": "https://www.xiaohongshu.com/goods-detail/6a7c222982e3190015ac2cb2",
+      "keyword": "苹果手表表带",
+      "goods_type": "normal",
+      "stock_status": 1,
+      "price": {
+        "price": 59.99,
+        "origin_price": 59.99,
+        "foreign_price": "≈$9.06",
+        "price_description": ""
+      },
+      "metrics": {},
+      "vendor": {
+        "vendor_name": "义乌爱芽电子商务的店",
+        "seller_id": "674824b4c5663c00157a2cf0"
+      },
+      "images": [
+        {
+          "url": "https://mall-i8.xhscdn.com/material_space/af85ac0a-5e69-4c46-a568-c449727f5fa3?imageView2/2/w/540/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+          "width": 540,
+          "height": 540,
+          "aspect_ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "6a7c21e3a545700015d77211",
+      "title": "原创可定制名字表链模块手链拼接diy表带小米手环苹果表链情侣款",
+      "url": "https://www.xiaohongshu.com/goods-detail/6a7c21e3a545700015d77211",
+      "keyword": "苹果手表表带",
+      "goods_type": "normal",
+      "stock_status": 1,
+      "price": {
+        "price": 52.89,
+        "origin_price": 52.89,
+        "foreign_price": "≈$7.99",
+        "price_description": ""
+      },
+      "metrics": {},
+      "vendor": {
+        "vendor_name": "义乌爱芽电子商务的店",
+        "seller_id": "674824b4c5663c00157a2cf0"
+      },
+      "images": [
+        {
+          "url": "https://mall-i8.xhscdn.com/material_space/68c2c681-c2e0-460a-bfee-92b9dfa05146?imageView2/2/w/540/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+          "width": 540,
+          "height": 540,
+          "aspect_ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "6a7c20a6b814030015d969bc",
+      "title": "不锈钢手链 新款蜡笔小新模块表链创意卡通表带适用小米苹果表链",
+      "url": "https://www.xiaohongshu.com/goods-detail/6a7c20a6b814030015d969bc",
+      "keyword": "苹果手表表带",
+      "goods_type": "normal",
+      "stock_status": 1,
+      "price": {
+        "price": 52.89,
+        "origin_price": 52.89,
+        "foreign_price": "≈$7.99",
+        "price_description": ""
+      },
+      "metrics": {},
+      "vendor": {
+        "vendor_name": "义乌爱芽电子商务的店",
+        "seller_id": "674824b4c5663c00157a2cf0"
+      },
+      "images": [
+        {
+          "url": "https://mall-i8.xhscdn.com/material_space/a4b0caf7-b625-4d44-ab6b-c31e0277f476?imageView2/2/w/540/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+          "width": 540,
+          "height": 540,
+          "aspect_ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "6a8d56384fda750015389212",
+      "title": "本亦优品·AppleWatch磁吸硅胶贴皮表带ultra适用苹果手表iwatch简约皮质感",
+      "url": "https://www.xiaohongshu.com/goods-detail/6a8d56384fda750015389212",
+      "keyword": "苹果手表表带",
+      "goods_type": "normal",
+      "stock_status": 1,
+      "price": {
+        "price": 152.35,
+        "origin_price": 152.35,
+        "foreign_price": "≈$22.99",
+        "price_description": ""
+      },
+      "metrics": {},
+      "vendor": {
+        "vendor_name": "本亦优品的店",
+        "seller_id": "6a85e253fb97cb00150086bf"
+      },
+      "images": [
+        {
+          "url": "https://mall-i8.xhscdn.com/arkgoods/1040g3no31r48r4oj700g5o2ul5l0bvv661deo40?imageView2/1/w/540/h/720/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+          "width": 540,
+          "height": 720,
+          "aspect_ratio": 0.75
+        }
+      ]
+    },
+    {
+      "id": "640f2c2d34ede0000151b51c",
+      "title": "其他·适用于苹果apple watch8手表全系76543代保护壳套一体替换表带软",
+      "url": "https://www.xiaohongshu.com/goods-detail/640f2c2d34ede0000151b51c",
+      "keyword": "苹果手表表带",
+      "goods_type": "normal",
+      "stock_status": 1,
+      "price": {
+        "price": 41,
+        "origin_price": 41,
+        "foreign_price": "≈$6.19",
+        "price_description": ""
+      },
+      "metrics": {
+        "units_sold_text": "1 sold",
+        "units_sold": 1,
+        "shop_age_text": "3 yrs shop"
+      },
+      "vendor": {
+        "vendor_name": "好端端的表带的店",
+        "seller_id": "640dc4003ce59d00010c64d7"
+      },
+      "images": [
+        {
+          "url": "https://mall-i8.xhscdn.com/material_space/2b18ecbd-6710-4ac7-a611-ebfe487d9964?imageView2/2/w/540/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+          "width": 540,
+          "height": 540,
+          "aspect_ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "6a8d3159f8a88f0015743407",
+      "title": "适用苹果iwatch工字纹运动硅胶表带",
+      "url": "https://www.xiaohongshu.com/goods-detail/6a8d3159f8a88f0015743407",
+      "keyword": "苹果手表表带",
+      "goods_type": "normal",
+      "stock_status": 1,
+      "price": {
+        "price": 113.91,
+        "origin_price": 113.91,
+        "foreign_price": "≈$17.19",
+        "price_description": ""
+      },
+      "metrics": {},
+      "vendor": {
+        "vendor_name": "福芒fullmark的店",
+        "seller_id": "6a7ebfd466b399002391a827"
+      },
+      "images": [
+        {
+          "url": "https://mall-i8.xhscdn.com/arkgoods/1040g0o031oj5933c4s005na47htkn1f81ctqfbo?imageView2/1/w/540/h/720/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+          "width": 540,
+          "height": 720,
+          "aspect_ratio": 0.75
+        }
+      ]
+    },
+    {
+      "id": "6a7d85ddf8cf62001538e40c",
+      "title": "咩咩吖·苹果三珠硅胶磁吸表带 通用iWatch全系列手表表带",
+      "url": "https://www.xiaohongshu.com/goods-detail/6a7d85ddf8cf62001538e40c",
+      "keyword": "苹果手表表带",
+      "goods_type": "normal",
+      "stock_status": 1,
+      "price": {
+        "price": 72.49,
+        "origin_price": 72.49,
+        "foreign_price": "≈$10.94",
+        "price_description": ""
+      },
+      "metrics": {},
+      "vendor": {
+        "vendor_name": "橘子表带的店",
+        "seller_id": "6a7af121cac67e0015cace62"
+      },
+      "images": [
+        {
+          "url": "https://mall-i8.xhscdn.com/arkgoods/1040g3no323q5oq0bn40g5phm654gu6uttum7i2g?imageView2/2/w/540/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+          "width": 540,
+          "height": 719,
+          "aspect_ratio": 0.75
+        }
+      ]
+    },
+    {
+      "id": "6a9682bb82e3190015e5752e",
+      "title": "适用于Apple四叶草磁吸扣头层小牛皮苹果手表真皮表带 Watch11SE",
+      "url": "https://www.xiaohongshu.com/goods-detail/6a9682bb82e3190015e5752e",
+      "keyword": "苹果手表表带",
+      "goods_type": "normal",
+      "stock_status": 1,
+      "price": {
+        "price": 93.1,
+        "origin_price": 93.1,
+        "foreign_price": "≈$14.05",
+        "price_description": ""
+      },
+      "metrics": {},
+      "vendor": {
+        "vendor_name": "弘联精选的店",
+        "seller_id": "6a7ee94dfe66e50015ca30e2"
+      },
+      "images": [
+        {
+          "url": "https://mall-i8.xhscdn.com/arkgoods/1040g0o031r9avtnu0m005n9og4qlkoda37oi4j0?imageView2/2/w/540/format/webp/q/85&ap=3&sc=GOOD_SEARCH",
+          "width": 540,
+          "height": 540,
+          "aspect_ratio": 1
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,851 @@
+{
+ "_source": "REAL smoke run GfItV4KUYkkVKe3RC · zen-studio/douyin-product-search-scraper · 2026-09-24 · keyword 苹果手表表带 · maxResults 5 · includeDetails false · fields raw/affiliate/tagCodes/shopLogo omitted",
+ "_findings": "price.amount is yuan (amountCents also given) · salesTrend dates are YYYYMMDD strings, 30 points, LAST point = today and is 0 (partial day) — exclude it from trend math · category.fourth.name can be '' → drop empty levels · searchPosition = rank · result #2 is a screen protector (保护膜) → accessory_case",
+ "items": [
+  {
+   "productId": "3742299477432729677",
+   "promotionId": "3808751466953441308",
+   "title": "适用苹果手表表带applewatch s11/10/9米兰尼斯表带iwatch ultra2",
+   "detailUrl": "https://haohuo.jinritemai.com/ecommerce/trade/detail/index.html?id=3742299477432729677&origin_type=2631",
+   "mainImage": "https://p9-aio.ecombdimg.com/obj/ecom-shop-material/jpeg_m_f74ade89552ec268d4e9a5e9ed901a11_sx_143570_www1024-1024",
+   "whiteImage": "https://p9-aio.ecombdimg.com/obj/ecom-shop-material/jpeg_m_605392bf7d5523f3090594605aeb11ec_sx_149018_www800-800",
+   "price": {
+    "amount": 6.8,
+    "amountCents": 680,
+    "label": "到手价"
+   },
+   "sales": {
+    "monthlySold": 2647,
+    "goodReviewRatio": 90.2763561924258,
+    "salesTrend": [
+     {
+      "date": "20260825",
+      "units": 84
+     },
+     {
+      "date": "20260826",
+      "units": 119
+     },
+     {
+      "date": "20260827",
+      "units": 120
+     },
+     {
+      "date": "20260828",
+      "units": 85
+     },
+     {
+      "date": "20260829",
+      "units": 109
+     },
+     {
+      "date": "20260830",
+      "units": 82
+     },
+     {
+      "date": "20260831",
+      "units": 86
+     },
+     {
+      "date": "20260901",
+      "units": 94
+     },
+     {
+      "date": "20260902",
+      "units": 90
+     },
+     {
+      "date": "20260903",
+      "units": 58
+     },
+     {
+      "date": "20260904",
+      "units": 82
+     },
+     {
+      "date": "20260905",
+      "units": 79
+     },
+     {
+      "date": "20260906",
+      "units": 99
+     },
+     {
+      "date": "20260907",
+      "units": 97
+     },
+     {
+      "date": "20260908",
+      "units": 61
+     },
+     {
+      "date": "20260909",
+      "units": 70
+     },
+     {
+      "date": "20260910",
+      "units": 51
+     },
+     {
+      "date": "20260911",
+      "units": 65
+     },
+     {
+      "date": "20260912",
+      "units": 99
+     },
+     {
+      "date": "20260913",
+      "units": 98
+     },
+     {
+      "date": "20260914",
+      "units": 73
+     },
+     {
+      "date": "20260915",
+      "units": 107
+     },
+     {
+      "date": "20260916",
+      "units": 78
+     },
+     {
+      "date": "20260917",
+      "units": 76
+     },
+     {
+      "date": "20260918",
+      "units": 73
+     },
+     {
+      "date": "20260919",
+      "units": 109
+     },
+     {
+      "date": "20260920",
+      "units": 120
+     },
+     {
+      "date": "20260921",
+      "units": 90
+     },
+     {
+      "date": "20260922",
+      "units": 105
+     },
+     {
+      "date": "20260923",
+      "units": 0
+     }
+    ]
+   },
+   "category": {
+    "first": {
+     "id": 1000007020,
+     "name": "3C数码及配件"
+    },
+    "second": {
+     "id": 1000007021,
+     "name": "智能设备"
+    },
+    "third": {
+     "id": 1000007047,
+     "name": "智能设备配件"
+    },
+    "fourth": {
+     "id": 0,
+     "name": ""
+    },
+    "leafLayer": 3
+   },
+   "shop": {
+    "shopId": 213957219,
+    "shopName": "夏日入侵数码店",
+    "shopScore": 79
+   },
+   "tags": [
+    "现货"
+   ],
+   "keyword": "苹果手表表带",
+   "searchPosition": 1
+  },
+  {
+   "productId": "3793869989212193095",
+   "title": "渡船角iWatchS12苹果手表表带磨砂透明膜S11背膜全苹果手表保护膜",
+   "detailUrl": "https://haohuo.jinritemai.com/ecommerce/trade/detail/index.html?id=3793869989212193095&origin_type=2631",
+   "mainImage": "https://p3-aio.ecombdimg.com/obj/ecom-shop-material/png_m_8067a9df9542401b52b9a701ca9af03d_sx_6541756_www4000-4000",
+   "whiteImage": null,
+   "price": {
+    "amount": 18.78,
+    "amountCents": 1878,
+    "label": "到手价"
+   },
+   "sales": {
+    "monthlySold": 5371,
+    "goodReviewRatio": 90.86,
+    "salesTrend": [
+     {
+      "date": "20260825",
+      "units": 207
+     },
+     {
+      "date": "20260826",
+      "units": 184
+     },
+     {
+      "date": "20260827",
+      "units": 135
+     },
+     {
+      "date": "20260828",
+      "units": 138
+     },
+     {
+      "date": "20260829",
+      "units": 164
+     },
+     {
+      "date": "20260830",
+      "units": 168
+     },
+     {
+      "date": "20260831",
+      "units": 161
+     },
+     {
+      "date": "20260901",
+      "units": 151
+     },
+     {
+      "date": "20260902",
+      "units": 157
+     },
+     {
+      "date": "20260903",
+      "units": 133
+     },
+     {
+      "date": "20260904",
+      "units": 130
+     },
+     {
+      "date": "20260905",
+      "units": 128
+     },
+     {
+      "date": "20260906",
+      "units": 124
+     },
+     {
+      "date": "20260907",
+      "units": 139
+     },
+     {
+      "date": "20260908",
+      "units": 137
+     },
+     {
+      "date": "20260909",
+      "units": 135
+     },
+     {
+      "date": "20260910",
+      "units": 128
+     },
+     {
+      "date": "20260911",
+      "units": 113
+     },
+     {
+      "date": "20260912",
+      "units": 158
+     },
+     {
+      "date": "20260913",
+      "units": 192
+     },
+     {
+      "date": "20260914",
+      "units": 166
+     },
+     {
+      "date": "20260915",
+      "units": 190
+     },
+     {
+      "date": "20260916",
+      "units": 183
+     },
+     {
+      "date": "20260917",
+      "units": 136
+     },
+     {
+      "date": "20260918",
+      "units": 224
+     },
+     {
+      "date": "20260919",
+      "units": 363
+     },
+     {
+      "date": "20260920",
+      "units": 390
+     },
+     {
+      "date": "20260921",
+      "units": 333
+     },
+     {
+      "date": "20260922",
+      "units": 217
+     },
+     {
+      "date": "20260923",
+      "units": 0
+     }
+    ]
+   },
+   "category": {
+    "first": {
+     "id": 1000007020,
+     "name": "3C数码及配件"
+    },
+    "second": {
+     "id": 1000007021,
+     "name": "智能设备"
+    },
+    "third": {
+     "id": 1000007047,
+     "name": "智能设备配件"
+    },
+    "fourth": {
+     "id": 0,
+     "name": ""
+    },
+    "leafLayer": 3
+   },
+   "shop": {
+    "shopId": 260667404,
+    "shopName": "渡船角数码店",
+    "shopScore": 84
+   },
+   "tags": [
+    "高结算率",
+    "商家投千川",
+    "流量扶持",
+    "券"
+   ],
+   "keyword": "苹果手表表带",
+   "searchPosition": 2
+  },
+  {
+   "productId": "3830936768350388520",
+   "title": "极简小波点适用Appleiwatch苹果s11/10手表表带SE硅胶s9/8小蛮腰",
+   "detailUrl": "https://haohuo.jinritemai.com/ecommerce/trade/detail/index.html?id=3830936768350388520&origin_type=2631",
+   "mainImage": "https://p9-aio.ecombdimg.com/obj/ecom-shop-material/jpeg_m_15d27a307b54d6a1e64aa9c8cfc07523_sx_721759_www1440-1440",
+   "whiteImage": null,
+   "price": {
+    "amount": 16.8,
+    "amountCents": 1680,
+    "label": "到手价"
+   },
+   "sales": {
+    "monthlySold": 22,
+    "goodReviewRatio": 100,
+    "salesTrend": [
+     {
+      "date": "20260825",
+      "units": 1
+     },
+     {
+      "date": "20260826",
+      "units": 0
+     },
+     {
+      "date": "20260827",
+      "units": 2
+     },
+     {
+      "date": "20260828",
+      "units": 0
+     },
+     {
+      "date": "20260829",
+      "units": 0
+     },
+     {
+      "date": "20260830",
+      "units": 1
+     },
+     {
+      "date": "20260831",
+      "units": 0
+     },
+     {
+      "date": "20260901",
+      "units": 0
+     },
+     {
+      "date": "20260902",
+      "units": 0
+     },
+     {
+      "date": "20260903",
+      "units": 1
+     },
+     {
+      "date": "20260904",
+      "units": 3
+     },
+     {
+      "date": "20260905",
+      "units": 1
+     },
+     {
+      "date": "20260906",
+      "units": 1
+     },
+     {
+      "date": "20260907",
+      "units": 2
+     },
+     {
+      "date": "20260908",
+      "units": 1
+     },
+     {
+      "date": "20260909",
+      "units": 1
+     },
+     {
+      "date": "20260910",
+      "units": 0
+     },
+     {
+      "date": "20260911",
+      "units": 1
+     },
+     {
+      "date": "20260912",
+      "units": 0
+     },
+     {
+      "date": "20260913",
+      "units": 0
+     },
+     {
+      "date": "20260914",
+      "units": 0
+     },
+     {
+      "date": "20260915",
+      "units": 0
+     },
+     {
+      "date": "20260916",
+      "units": 2
+     },
+     {
+      "date": "20260917",
+      "units": 0
+     },
+     {
+      "date": "20260918",
+      "units": 0
+     },
+     {
+      "date": "20260919",
+      "units": 4
+     },
+     {
+      "date": "20260920",
+      "units": 0
+     },
+     {
+      "date": "20260921",
+      "units": 1
+     },
+     {
+      "date": "20260922",
+      "units": 0
+     },
+     {
+      "date": "20260923",
+      "units": 0
+     }
+    ]
+   },
+   "category": {
+    "first": {
+     "id": 1000007020,
+     "name": "3C数码及配件"
+    },
+    "second": {
+     "id": 1000007021,
+     "name": "智能设备"
+    },
+    "third": {
+     "id": 1000007047,
+     "name": "智能设备配件"
+    },
+    "fourth": {
+     "id": 0,
+     "name": ""
+    },
+    "leafLayer": 3
+   },
+   "shop": {
+    "shopId": 290959734,
+    "shopName": "官选WATCH智能设备配件",
+    "shopScore": 83
+   },
+   "tags": [
+    "券",
+    "现货",
+    "包邮"
+   ],
+   "keyword": "苹果手表表带",
+   "searchPosition": 3
+  },
+  {
+   "productId": "3835765166289584333",
+   "title": "粉色大小星星适用Apple苹果iwatchS12/11/10小蛮腰S9/8手表表带SE",
+   "detailUrl": "https://haohuo.jinritemai.com/ecommerce/trade/detail/index.html?id=3835765166289584333&origin_type=2631",
+   "mainImage": "https://p3-aio.ecombdimg.com/obj/ecom-shop-material/jpeg_m_2036280737417cbf95ced421e3cf688c_sx_852478_www1440-1440",
+   "whiteImage": null,
+   "price": {
+    "amount": 16.8,
+    "amountCents": 1680,
+    "label": "到手价"
+   },
+   "sales": {
+    "monthlySold": 25,
+    "goodReviewRatio": 100,
+    "salesTrend": [
+     {
+      "date": "20260825",
+      "units": 4
+     },
+     {
+      "date": "20260826",
+      "units": 1
+     },
+     {
+      "date": "20260827",
+      "units": 4
+     },
+     {
+      "date": "20260828",
+      "units": 2
+     },
+     {
+      "date": "20260829",
+      "units": 0
+     },
+     {
+      "date": "20260830",
+      "units": 1
+     },
+     {
+      "date": "20260831",
+      "units": 1
+     },
+     {
+      "date": "20260901",
+      "units": 0
+     },
+     {
+      "date": "20260902",
+      "units": 0
+     },
+     {
+      "date": "20260903",
+      "units": 1
+     },
+     {
+      "date": "20260904",
+      "units": 1
+     },
+     {
+      "date": "20260905",
+      "units": 0
+     },
+     {
+      "date": "20260906",
+      "units": 0
+     },
+     {
+      "date": "20260907",
+      "units": 0
+     },
+     {
+      "date": "20260908",
+      "units": 1
+     },
+     {
+      "date": "20260909",
+      "units": 1
+     },
+     {
+      "date": "20260910",
+      "units": 3
+     },
+     {
+      "date": "20260911",
+      "units": 0
+     },
+     {
+      "date": "20260912",
+      "units": 0
+     },
+     {
+      "date": "20260913",
+      "units": 1
+     },
+     {
+      "date": "20260914",
+      "units": 0
+     },
+     {
+      "date": "20260915",
+      "units": 0
+     },
+     {
+      "date": "20260916",
+      "units": 0
+     },
+     {
+      "date": "20260917",
+      "units": 0
+     },
+     {
+      "date": "20260918",
+      "units": 1
+     },
+     {
+      "date": "20260919",
+      "units": 1
+     },
+     {
+      "date": "20260920",
+      "units": 0
+     },
+     {
+      "date": "20260921",
+      "units": 0
+     },
+     {
+      "date": "20260922",
+      "units": 0
+     },
+     {
+      "date": "20260923",
+      "units": 0
+     }
+    ]
+   },
+   "category": {
+    "first": {
+     "id": 1000007020,
+     "name": "3C数码及配件"
+    },
+    "second": {
+     "id": 1000007021,
+     "name": "智能设备"
+    },
+    "third": {
+     "id": 1000007047,
+     "name": "智能设备配件"
+    },
+    "fourth": {
+     "id": 0,
+     "name": ""
+    },
+    "leafLayer": 3
+   },
+   "shop": {
+    "shopId": 290959734,
+    "shopName": "官选WATCH智能设备配件",
+    "shopScore": 83
+   },
+   "tags": [
+    "券",
+    "24小时发货",
+    "包邮"
+   ],
+   "keyword": "苹果手表表带",
+   "searchPosition": 4
+  },
+  {
+   "productId": "3812087301387976898",
+   "title": "watch10表带米兰尼斯适用苹果s11手表9/8/7/6/5金属磁吸4/3/2/1SE",
+   "detailUrl": "https://haohuo.jinritemai.com/ecommerce/trade/detail/index.html?id=3812087301387976898&origin_type=2631",
+   "mainImage": "https://p9-aio.ecombdimg.com/obj/ecom-shop-material/jpeg_m_acf8445c26eed91855b24beaf5a8cc9c_sx_222477_www2000-2000",
+   "whiteImage": null,
+   "price": {
+    "amount": 15.9,
+    "amountCents": 1590,
+    "label": "到手价"
+   },
+   "sales": {
+    "monthlySold": 56,
+    "goodReviewRatio": 85.96,
+    "salesTrend": [
+     {
+      "date": "20260825",
+      "units": 3
+     },
+     {
+      "date": "20260826",
+      "units": 3
+     },
+     {
+      "date": "20260827",
+      "units": 2
+     },
+     {
+      "date": "20260828",
+      "units": 1
+     },
+     {
+      "date": "20260829",
+      "units": 0
+     },
+     {
+      "date": "20260830",
+      "units": 2
+     },
+     {
+      "date": "20260831",
+      "units": 3
+     },
+     {
+      "date": "20260901",
+      "units": 2
+     },
+     {
+      "date": "20260902",
+      "units": 0
+     },
+     {
+      "date": "20260903",
+      "units": 2
+     },
+     {
+      "date": "20260904",
+      "units": 1
+     },
+     {
+      "date": "20260905",
+      "units": 1
+     },
+     {
+      "date": "20260906",
+      "units": 2
+     },
+     {
+      "date": "20260907",
+      "units": 2
+     },
+     {
+      "date": "20260908",
+      "units": 0
+     },
+     {
+      "date": "20260909",
+      "units": 1
+     },
+     {
+      "date": "20260910",
+      "units": 0
+     },
+     {
+      "date": "20260911",
+      "units": 4
+     },
+     {
+      "date": "20260912",
+      "units": 5
+     },
+     {
+      "date": "20260913",
+      "units": 0
+     },
+     {
+      "date": "20260914",
+      "units": 4
+     },
+     {
+      "date": "20260915",
+      "units": 1
+     },
+     {
+      "date": "20260916",
+      "units": 0
+     },
+     {
+      "date": "20260917",
+      "units": 2
+     },
+     {
+      "date": "20260918",
+      "units": 4
+     },
+     {
+      "date": "20260919",
+      "units": 5
+     },
+     {
+      "date": "20260920",
+      "units": 2
+     },
+     {
+      "date": "20260921",
+      "units": 3
+     },
+     {
+      "date": "20260922",
+      "units": 1
+     },
+     {
+      "date": "20260923",
+      "units": 0
+     }
+    ]
+   },
+   "category": {
+    "first": {
+     "id": 1000007020,
+     "name": "3C数码及配件"
+    },
+    "second": {
+     "id": 1000007021,
+     "name": "智能设备"
+    },
+    "third": {
+     "id": 1000007047,
+     "name": "智能设备配件"
+    },
+    "fourth": {
+     "id": 0,
+     "name": ""
+    },
+    "leafLayer": 3
+   },
+   "shop": {
+    "shopId": 233015613,
+    "shopName": "海口美恩商贸有限公司企业店",
+    "shopScore": 79
+   },
+   "tags": [
+    "商家投千川",
+    "运费险",
+    "现货"
+   ],
+   "keyword": "苹果手表表带",
+   "searchPosition": 5
+  }
+ ]
+}

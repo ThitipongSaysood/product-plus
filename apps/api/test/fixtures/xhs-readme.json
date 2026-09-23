@@ -1,0 +1,17 @@
+{
+  "_unconfirmed": "from README, not a real run",
+  "_source": "zen-studio/rednote-product-search-scraper README output example + handoff §7",
+  "items": [
+    {
+      "id": "6a16107133df70001553ff3e",
+      "title": "尼龙回环表带 适用苹果手表",
+      "url": "https://www.xiaohongshu.com/goods-detail/6a16107133df70001553ff3e",
+      "link": "xhsdiscover://goods_detail/6a16107133df70001553ff3e",
+      "price": { "price": 138, "origin_price": 188 },
+      "images": [{ "url": "https://mall-i8.xhscdn.com/arkgoods/abc?imageView2/2/w/540", "width": 540, "height": 719 }],
+      "vendor": { "vendor_name": "妍妍琦的店", "vendor_link": "xhsdiscover://shop_detail?seller_id=65d1" },
+      "metrics": { "units_sold": 31, "units_sold_text": "31 sold", "shop_sold": 78000, "shop_sold_text": "78k+ sold" },
+      "keyword": "苹果手表表带"
+    }
+  ]
+}

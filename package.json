@@ -1,0 +1,15 @@
+{
+  "name": "product-plus",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@10.34.5",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "dev": "pnpm --parallel --filter @pp/api --filter @pp/web dev",
+    "build": "pnpm --filter @pp/api build && pnpm --filter @pp/web build",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "lint": "pnpm -r lint",
+    "seed": "pnpm --filter @pp/api seed"
+  }
+}

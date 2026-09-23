@@ -1,0 +1,20 @@
+{
+  "_unconfirmed": "from README, not a real run",
+  "_source": "zen-studio/douyin-product-search-scraper README output example + handoff §7",
+  "items": [
+    {
+      "productId": "3821314999977115743",
+      "title": "适用苹果手表表带硅胶运动表带iwatch s9/8/7 41/45mm",
+      "detailUrl": "https://haohuo.jinritemai.com/ecommerce/trade/detail/index.html?id=3821314999977115743&origin_type=2631",
+      "mainImage": "https://p3-aio.ecombdimg.com/obj/ecom-shop-material/jpeg_m_main",
+      "whiteImage": "https://p3-aio.ecombdimg.com/obj/ecom-shop-material/jpeg_m_white",
+      "price": { "amount": 59.0, "amountCents": 5900, "label": "到手价" },
+      "sales": { "monthlySold": 1162, "goodReviewRatio": 88.7, "salesTrend": [{ "date": "20260607", "units": 67 }, { "date": "20260608", "units": 41 }] },
+      "category": { "first": { "id": 1, "name": "3C数码及配件" }, "second": { "id": 2, "name": "智能设备" }, "third": { "id": 3, "name": "智能设备配件" }, "fourth": { "id": 0, "name": "" }, "leafLayer": 3 },
+      "shop": { "shopId": 264515498, "shopName": "桢植专营店", "shopScore": 92 },
+      "keyword": "苹果手表表带",
+      "searchPosition": 1
+    },
+    { "title": "no id → unreadable" }
+  ]
+}
