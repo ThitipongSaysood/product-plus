@@ -8,17 +8,17 @@ Next.js + NestJS (pnpm monorepo)
 
 ## Current goal
 
-Build the full system overnight: spec → plan → build → test → review (backend + frontend).
+System is built and reviewed; waiting for the user to look at it and decide on deploy + Apify token.
 
 ## What just happened
 
-Spec/plan/contracts written. Smoke test on Apify done (≈ $0.15 of a $0.20 cap): Douyin/1688/XHS OK, Temu blocked → Temu dropped by user. Backend and frontend being built by two parallel agents.
+Overnight build finished — see .agents/sessions/2026-09-24-0200-overnight-build.md. Real data for Douyin/1688/XHS loaded (130 products, ≈ $0.95 Apify total incl. smoke). Temu dropped (blocked). Two review rounds fixed.
 
 ## Blockers
 
-- 50-result real runs not done (needs user OK, ≈ $0.83 for 3 platforms).
-- Not deployed (Railway np-nineplus) and repo not pushed yet.
+- Railway deploy needs the user (CLI login + secrets: APP_PASSWORD, CRON_SECRET, SETTINGS_SECRET, APIFY_TOKEN).
+- CI needs `gh auth refresh -s workflow` (file in deploy/ci.yml).
 
 ## Next step
 
-Integrate api + web, browser-test at 375/1280 light/dark th/zh, code review, write session checkpoint.
+Walk the user through the UI (pnpm dev → http://localhost:3020), then deploy per deploy/README.md.

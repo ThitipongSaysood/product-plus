@@ -4,9 +4,15 @@ _Generated: 2026-09-24_
 
 ```
 .
+./.claude
+./.claude/launch.json
+./AGENTS.md
+./CLAUDE.md
 ./apps
 ./apps/api
+./apps/api/README.md
 ./apps/api/config
+./apps/api/data
 ./apps/api/drizzle
 ./apps/api/drizzle.config.ts
 ./apps/api/package.json
@@ -23,14 +29,19 @@ _Generated: 2026-09-24_
 ./apps/web/next.config.ts
 ./apps/web/package.json
 ./apps/web/postcss.config.mjs
+./apps/web/proxy.test.ts
 ./apps/web/proxy.ts
 ./apps/web/scripts
 ./apps/web/test
 ./apps/web/tsconfig.json
 ./apps/web/tsconfig.tsbuildinfo
-./apps/web/vitest.config.ts
+./apps/web/vitest.config.mts
+./deploy
+./deploy/README.md
+./deploy/ci.yml
 ./docs
 ./docs/04-handoff-china-marketplace-scout.md
+./docs/CONTRACT-CHANGES.md
 ./docs/PLAN.md
 ./docs/SMOKE-TEST-2026-09-24.md
 ./docs/SPEC.md
