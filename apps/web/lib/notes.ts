@@ -20,6 +20,7 @@ const PATTERNS: [RegExp, DictKey, string[]][] = [
   [/^Step (\S+) failed: (.*)$/, "notes.stepFailed", ["step", "detail"]],
   [/^Evaluated (\d+) actors; chosen: (.*?)\.?$/, "notes.evaluated", ["n", "chosen"]],
   [/^Highest completeness (\d)\/5 at (\$\d+(?:\.\d+)?) per result\.?$/, "notes.chosenAuto", ["completeness", "cost"]],
+  [/^Verified by smoke test; completeness (\d)\/5 at (\$\d+(?:\.\d+)?) per result\.?$/, "notes.chosenVerified", ["completeness", "cost"]],
   [/^Chosen manually\.?$/, "notes.chosenManual", []],
   [/^Smoke test read (\d+) of (\d+) rows for (\$\d+(?:\.\d+)?)\.?$/, "notes.smokeCost", ["out", "in", "cost"]],
   [/^Smoke test read (\d+) of (\d+) rows\.?$/, "notes.smoke", ["out", "in"]],

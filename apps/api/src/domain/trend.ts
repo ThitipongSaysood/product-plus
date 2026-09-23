@@ -57,8 +57,8 @@ export function computeTrend(snapshots: SnapshotLike[]): TrendDetail {
   if (deltaSold !== null && deltaSold !== 0) {
     if (deltaSold > 0 && (deltaRank ?? 0) >= 0) label = "rising";
     else if (deltaSold < 0 && (deltaRank ?? 0) <= 0) label = "falling";
-  } else if (deltaSold === null && deltaRank !== null && deltaRank !== 0) {
-    label = deltaRank > 0 ? "rising" : "falling";
+  } else if (deltaSold === null && deltaRank !== null && Math.abs(deltaRank) >= RANK_UP_MIN) {
+    label = deltaRank > 0 ? "rising" : "falling"; // without comparable sold, only a big rank move counts
   }
   return { label, deltaSold, deltaRank, douyinRatio: ratio, snapshotCount: n };
 }

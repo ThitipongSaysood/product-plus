@@ -116,3 +116,17 @@ export function chooseActor<T extends Candidate>(cands: T[]): T | null {
   ok.sort((a, b) => Number(verified(b)) - Number(verified(a)) || b.completeness - a.completeness || a.costPerResult50 - b.costPerResult50);
   return ok[0] ?? null;
 }
+
+/** Actual cost when Apify gives no usageTotalUsd: chargedEventCounts × the evaluated event prices.
+ *  null when an event has no known price (keep the provisional cost then). */
+export function costFromEvents(charged: Record<string, number> | null | undefined, prices: { name: string; priceUsd: number | null }[]): number | null {
+  if (!charged) return null;
+  let sum = 0;
+  for (const [name, n] of Object.entries(charged)) {
+    if (!n) continue;
+    const p = prices.find((e) => e.name === name)?.priceUsd;
+    if (p == null) return null;
+    sum += n * p;
+  }
+  return Math.round(sum * 10000) / 10000;
+}

@@ -2,9 +2,12 @@
 // sha1 as storage key, bytes in Postgres. A failed download marks the product image_lost so the
 // UI says so instead of showing an empty box.
 import { createHash } from "node:crypto";
+import { lookup } from "node:dns/promises";
+import { isIP } from "node:net";
 import { and, eq, isNotNull, isNull } from "drizzle-orm";
 import { getDb } from "../db/client.js";
 import { media, products } from "../db/schema.js";
+import { isPrivateIp, normalizeImageType } from "../domain/guards.js";
 import { MOCK_IMAGE_PREFIX, mockSvg } from "../sources/mock.js";
 
 export const MAX_BYTES = 8 * 1024 * 1024;
@@ -13,18 +16,41 @@ const PARALLEL = 6;
 
 type Fetched = { bytes: Buffer; contentType: string };
 
+class Blocked extends Error {}
+const MAX_HOPS = 3;
+
+/** SSRF guard: http(s) only, and every address the host resolves to must be public.
+ *  ponytail: DNS is resolved again by fetch (rebinding window); pin the IP with a custom agent if that matters. */
+export async function assertPublicUrl(u: URL) {
+  if (u.protocol !== "http:" && u.protocol !== "https:") throw new Blocked(u.protocol);
+  const host = u.hostname.replace(/^\[|\]$/g, "");
+  const addrs = isIP(host) ? [{ address: host }] : await lookup(host, { all: true });
+  if (!addrs.length || addrs.some((a) => isPrivateIp(a.address))) throw new Blocked(host);
+}
+
 async function fetchOnce(url: string): Promise<Fetched | null> {
-  const r = await fetch(url, {
-    signal: AbortSignal.timeout(15_000),
-    headers: { "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15" },
-  });
-  if (r.status === 404 || r.status === 403 || r.status === 410) return null; // expired — retrying won't help
-  if (!r.ok) throw new Error(`HTTP ${r.status}`);
-  const type = r.headers.get("content-type") ?? "";
-  if (!type.startsWith("image/")) return null;
-  if (Number(r.headers.get("content-length") ?? 0) > MAX_BYTES) return null;
-  const buf = Buffer.from(await r.arrayBuffer());
-  return buf.length > MAX_BYTES || buf.length === 0 ? null : { bytes: buf, contentType: type.split(";")[0] };
+  let u = new URL(url);
+  for (let hop = 0; ; hop++) {
+    await assertPublicUrl(u);
+    const r = await fetch(u, {
+      redirect: "manual",
+      signal: AbortSignal.timeout(15_000),
+      headers: { "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15" },
+    });
+    if (r.status >= 300 && r.status < 400) {
+      const loc = r.headers.get("location");
+      if (!loc || hop >= MAX_HOPS) return null;
+      u = new URL(loc, u); // re-checked at the top of the loop
+      continue;
+    }
+    if (r.status === 404 || r.status === 403 || r.status === 410) return null; // expired — retrying won't help
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const type = normalizeImageType(r.headers.get("content-type")); // raster only — never SVG/HTML from remote
+    if (!type) return null;
+    if (Number(r.headers.get("content-length") ?? 0) > MAX_BYTES) return null;
+    const buf = Buffer.from(await r.arrayBuffer());
+    return buf.length > MAX_BYTES || buf.length === 0 ? null : { bytes: buf, contentType: type };
+  }
 }
 
 export async function download(url: string): Promise<Fetched | null> {
@@ -35,7 +61,8 @@ export async function download(url: string): Promise<Fetched | null> {
   for (let i = 0; i < TRIES; i++) {
     try {
       return await fetchOnce(url);
-    } catch {
+    } catch (e) {
+      if (e instanceof Blocked) return null; // blocked host: no retry
       await new Promise((r) => setTimeout(r, 500 * (i + 1)));
     }
   }

@@ -164,6 +164,9 @@ export const scrapeRuns = scout.table(
     index("scrape_runs_group_kind_idx").on(t.productGroupId, t.kind, t.startedAt),
     index("scrape_runs_status_idx").on(t.status),
     index("scrape_runs_apify_idx").on(t.apifyRunId),
+    uniqueIndex("scrape_runs_one_running_pipeline_uq")
+      .on(t.productGroupId, t.kind)
+      .where(sql`${t.status} = 'running' AND ${t.kind} = 'pipeline'`),
   ],
 );
 

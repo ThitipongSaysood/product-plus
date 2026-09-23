@@ -136,6 +136,12 @@ export async function productDetail(id: string): Promise<ProductDetail> {
   if (!p) throw notFound("errors.product.notFound");
   const snaps = await db.select().from(productSnapshots).where(eq(productSnapshots.productId, id)).orderBy(asc(productSnapshots.takenAt));
   const latestTrend = [...snaps].reverse().find((s) => s.salesTrend)?.salesTrend ?? null;
+  const runIds = [...new Set(snaps.map((s) => s.scrapeRunId))];
+  const suspectRuns = new Set(
+    runIds.length
+      ? (await db.select({ id: scrapeRuns.id }).from(scrapeRuns).where(and(inArray(scrapeRuns.id, runIds), eq(scrapeRuns.status, "suspect")))).map((r) => r.id)
+      : [],
+  );
   return {
     product: {
       ...toCard(p),
@@ -157,7 +163,7 @@ export async function productDetail(id: string): Promise<ProductDetail> {
       soldLowerBound: s.soldLowerBound,
     })),
     salesTrend: p.platform === "douyin" ? latestTrend : null,
-    trendDetail: computeTrend(snaps.map(toSnapshotLike)),
+    trendDetail: computeTrend(snaps.filter((s) => !suspectRuns.has(s.scrapeRunId)).map(toSnapshotLike)),
     events: await eventsFor(eq(changeEvents.productId, id), 50),
   };
 }

@@ -6,6 +6,8 @@ import type { TriggerResult } from "@pp/contracts";
 import { getDb } from "../db/client.js";
 import { scrapeRuns } from "../db/schema.js";
 import { NOTE } from "../domain/notes.js";
+import { isUniqueViolation } from "../domain/guards.js";
+import { AppError } from "../common/errors.js";
 import { runCategorize } from "./categorize.js";
 import { cacheMedia } from "./media.js";
 import { reconcile } from "./reconcile.js";
@@ -21,15 +23,22 @@ export async function triggerPipeline(g: GroupRecord, opts: { now?: Date; wait?:
   await assertNotRunning(g.id, "pipeline");
   const plan = await planScrape(g, now);
   const db = await getDb();
-  const runId = await createRun(db, {
-    productGroupId: g.id,
-    kind: "pipeline",
-    status: "running",
-    step: PIPELINE_STEPS[0],
-    progressDone: 0,
-    progressTotal: PIPELINE_STEPS.length,
-    startedAt: now,
-  });
+  let runId: string;
+  try {
+    runId = await createRun(db, {
+      productGroupId: g.id,
+      kind: "pipeline",
+      status: "running",
+      step: PIPELINE_STEPS[0],
+      progressDone: 0,
+      progressTotal: PIPELINE_STEPS.length,
+      startedAt: now,
+    });
+  } catch (e) {
+    // partial unique index: one running pipeline per group, even when two requests race past the check
+    if (isUniqueViolation(e)) throw new AppError(400, "errors.job.alreadyRunning");
+    throw e;
+  }
   const p = drive(g, plan, runId, now).catch((e) => finishRun(runId, "failed", NOTE.stepFailed("pipeline", String((e as Error).message).slice(0, 200))));
   if (opts.wait) await p;
   else void p;

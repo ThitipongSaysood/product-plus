@@ -21,6 +21,7 @@ const SAMPLES: [string, string, Record<string, string>][] = [
   ["Step media failed: boom", "notes.stepFailed", { step: "media", detail: "boom" }],
   ["Evaluated 14 actors; chosen: a/b, c/d.", "notes.evaluated", { n: "14", chosen: "a/b, c/d" }],
   ["Highest completeness 4/5 at $0.0023 per result.", "notes.chosenAuto", { completeness: "4", cost: "$0.0023" }],
+  ["Verified by smoke test; completeness 4/5 at $0.0042 per result.", "notes.chosenVerified", { completeness: "4", cost: "$0.0042" }],
   ["Chosen manually.", "notes.chosenManual", {}],
   ["Smoke test read 5 of 5 rows for $0.0210.", "notes.smokeCost", { out: "5", in: "5", cost: "$0.0210" }],
   ["Smoke test read 0 of 0 rows.", "notes.smoke", { out: "0", in: "0" }],

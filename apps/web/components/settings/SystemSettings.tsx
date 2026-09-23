@@ -49,7 +49,11 @@ export function SettingsTable({ rows }: { rows: SettingRow[] }) {
                 {rows.filter((r) => r.group === g).map((r) => (
                   <tr key={r.key}>
                     <td><code>{r.key}</code><div className="ox-xs ox-muted">{t.or(`system.desc.${r.key}`, "")}</div></td>
-                    <td style={{ minWidth: 160 }}>{r.value == null ? <span className="ox-muted">{t("system.unset")}</span> : <code>{r.secret ? `••••${r.value.slice(-4)}` : r.value}</code>}</td>
+                    <td style={{ minWidth: 160 }}>{r.value != null
+                      ? <code>{r.secret ? `••••${r.value.slice(-4)}` : r.value}</code>
+                      // env-only secrets come back null: say whether it is set, never show a value
+                      : r.source === "env" ? <span className="ox-badge ox-badge--success">{t("system.envSet")}</span>
+                      : <span className="ox-muted">{t("system.unset")}</span>}</td>
                     <td><span className={`ox-badge ${SOURCE_TONE[r.source]}`}>{t(`system.src.${r.source}`)}</span></td>
                     <td>
                       <Button size="sm" variant="ghost" icon={<EditIcon size={16} />} onClick={() => { setEdit(r); setValue(r.secret ? "" : r.value ?? ""); setMsg(null); }}>

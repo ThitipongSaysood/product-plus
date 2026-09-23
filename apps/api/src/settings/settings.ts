@@ -87,7 +87,9 @@ export async function listSettings(): Promise<SettingRow[]> {
   const out: SettingRow[] = [];
   for (const e of CATALOG) {
     const { value, source } = await resolveSetting(e.key);
-    out.push({ key: e.key, group: e.group, secret: e.secret, value: value === null ? null : e.secret ? mask(value) : value, source });
+    // env-only secrets never leave the server, not even masked
+    const shown = value === null || e.envOnly ? null : e.secret ? mask(value) : value;
+    out.push({ key: e.key, group: e.group, secret: e.secret, value: shown, source });
   }
   return out;
 }

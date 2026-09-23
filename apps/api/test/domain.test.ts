@@ -134,11 +134,11 @@ describe("budget", () => {
     expect(monthStartBangkok(new Date("2026-09-30T18:00:00Z")).toISOString()).toBe("2026-09-30T17:00:00.000Z");
     expect(monthStartBangkok(new Date("2026-09-30T16:59:00Z")).toISOString()).toBe("2026-08-31T17:00:00.000Z");
   });
-  it("warn at 80%, over when spent ≥ budget, no cap when budget ≤ 0", () => {
+  it("warn at 80%, over when spent ≥ budget, budget 0 = spending paused", () => {
     expect(budgetState(7.99, 10)).toMatchObject({ warn: false, over: false });
     expect(budgetState(8, 10)).toMatchObject({ warn: true, over: false });
     expect(budgetState(10, 10).over).toBe(true);
-    expect(budgetState(100, 0)).toEqual({ over: false, warn: false, pct: null });
+    expect(budgetState(0, 0)).toEqual({ over: true, warn: true, pct: null });
   });
 });
 

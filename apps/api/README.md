@@ -24,18 +24,22 @@ Resolution order: `app_settings` (DB) → env → fallback → unset. Secrets ar
 | `APIFY_WEBHOOK_SECRET` | DB/env, secret | `/api/webhooks/apify?secret=`; webhooks are registered only when `PUBLIC_URL` is set too |
 | `SOURCE_MODE` | DB/env | `mock` \| `apify`; fallback = `apify` if a token exists, else `mock` |
 | `ANTHROPIC_API_KEY` | DB/env, secret | enables categorization layer 3 (`claude-haiku-4-5`, batches of 25) |
-| `APP_PASSWORD` · `CRON_SECRET` · `SETTINGS_SECRET` · `DATABASE_URL` | env only | unset password = open app; unset cron secret = allowed outside production |
+| `APP_PASSWORD` · `CRON_SECRET` · `SETTINGS_SECRET` · `DATABASE_URL` | env only, never returned (value null) | unset password = open app in dev; **production refuses to boot without it**. Unset cron secret = cron endpoints closed (401). |
 | `PORT` (4010) · `DB_AUTO_MIGRATE` (true) · `PGLITE_DIR` (`<repo>/.pglite`) · `PUBLIC_URL` | env | |
 
 ## Mock vs apify
 - A group may pin its source (`product_groups.source_mode`): `demo-mock` = `mock`, `apple-watch-bands` = `apify` (never receives mock rows). Unpinned groups follow `SOURCE_MODE`. `Overview.sourceMode` is the group's mode.
 - **mock**: deterministic per (platform, keyword, date), rows in each actor's real output shape (so normalizers run for real), products drift week to week; images are local SVG placeholders at `/api/media/mock/*.svg` (a few XHS ones "expire" to demo `imageLost`). Cost 0, finishes inline.
 - **apify**: the chosen actor per platform (latest evaluation, `PUT /api/actors/choose` overrides) is started with its input template (`{{keyword}} {{limit}} {{region}}`, empty keys dropped), `maxItems` = limit and `maxTotalChargeUsd` = its share of the group's `runCapUsd`. Rounds whose estimate exceeds the cap are skipped (`skip.runCap`). Runs finish via webhook or reconcile polling (START-LOST 10 min, TIMED-OUT 60 min); `usageTotalUsd` → `cost_usd`.
-- Paid calls happen only from: the pipeline in apify mode with a token (button or Monday 05:00 Asia/Bangkok schedule for `schedule = weekly` groups) and `POST /api/actors/smoke` (`confirm: true` + token). No token is configured today.
+- Budget: a round is skipped (`skip.budget`) when month spend + in-flight provisional costs + the round estimate exceed `monthlyBudgetUsd`; **budget 0 = spending paused** (everything skipped). `runCapUsd` must be ≤ the budget. Each actor's `maxTotalChargeUsd` = min(its share of the cap, remaining budget). An actor with no positive estimate is skipped (`skip.pricingUnknown`).
+- Cost: a started run gets a provisional `cost_usd` = its `maxTotalChargeUsd`; the actual (`usageTotalUsd`, else charged events × evaluated prices) replaces it when known — also later, as a cost-only update on a run already closed as TIMED-OUT.
+- Paid calls happen only from: `POST /api/jobs/pipeline {pg, confirm: true}` on an apify group with a token, the 05:00 Asia/Bangkok tick (every day for `daily` groups, Mondays for `weekly`; also `GET /api/cron/{daily,weekly}` with `Authorization: Bearer $CRON_SECRET`), and `POST /api/actors/smoke` (`confirm: true` + token, capped, never on a mock group). No token is configured today.
+- Every non-GET `/api` request (except the Apify webhook) must be `content-type: application/json` (CSRF) → else 415 `errors.contentType`. `POST /api/auth` is limited to 10/min per IP.
 
 ## Keys returned to the web
-Errors `{ error }`: `errors.validation` `errors.notFound` `errors.internal` `common.unauthorized` `errors.auth.wrongPassword` `errors.group.notFound` `errors.product.notFound` `errors.keyword.notFound` `errors.keyword.duplicate` `errors.media.notFound` `errors.job.alreadyRunning` (+ `progress`) `errors.settings.envOnly` `errors.actors.needsToken` `errors.actors.noTemplate` `errors.actors.noKeyword` `errors.actors.notFound`.
-Skip reasons: `skip.noToken` `skip.noActor` `skip.budget` `skip.runCap` `skip.alreadyRunning` `skip.concurrency` `skip.recentRun` `skip.startFailed`.
+Errors `{ error }`: `errors.validation` `errors.notFound` `errors.internal` `common.unauthorized` `errors.auth.wrongPassword` `errors.group.notFound` `errors.product.notFound` `errors.keyword.notFound` `errors.keyword.duplicate` `errors.media.notFound` `errors.job.alreadyRunning` (+ `progress`) `errors.settings.envOnly` `errors.actors.needsToken` `errors.actors.noTemplate` `errors.actors.noKeyword` `errors.actors.notFound` `errors.contentType` `errors.confirmRequired` `errors.actors.mockGroup` `errors.actors.notChoosable` `errors.auth.rateLimited` `errors.tooLarge` `common.forbidden`.
+Skip reasons: `skip.noToken` `skip.noActor` `skip.budget` `skip.runCap` `skip.pricingUnknown` `skip.alreadyRunning` `skip.concurrency` `skip.recentRun` `skip.startFailed`.
+Progress step labels (`JobStatus.running.step`/`label`): pipeline `scrape` `categorize` `media` `trend`; categorize `fill` `retag`; evaluate `evaluate`.
 Actor exclusions: `actors.excluded.{needsCookie,failRate,pricingUnknown,noImage,noLink,noSold,smokeEmpty,noKeywordSearch}`.
 Settings test detail when no key: `settings.test.noKey`.
 

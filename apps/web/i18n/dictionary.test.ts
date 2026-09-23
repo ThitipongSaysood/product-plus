@@ -14,8 +14,15 @@ describe("dictionary", () => {
     const bad = entries.filter(([, v]) => vars(v.th) !== vars(v.en) || vars(v.th) !== vars(v.zh)).map(([k]) => k);
     expect(bad).toEqual([]);
   });
+  it("null sold is 'no data', not zero sales", () => {
+    expect(dict["sold.none"]).toEqual({ th: "ไม่มีข้อมูลยอดขาย", en: "No sales data", zh: "无销量数据" });
+  });
   it("keeps the keys the backend sends", () => {
-    for (const k of ["skip.noActor", "actors.reason.noneWorking", "errors.actors.needsToken", "errors.job.alreadyRunning", "errors.validation"]) expect(k in dict).toBe(true);
+    for (const k of [
+      "skip.noActor", "skip.runCap", "skip.pricingUnknown", "actors.reason.noneWorking", "errors.actors.needsToken", "errors.job.alreadyRunning", "errors.validation",
+      "job.unit.fill", "job.unit.retag", "job.unit.evaluate", "common.forbidden", "errors.contentType", "errors.confirmRequired",
+      "errors.actors.mockGroup", "errors.actors.notChoosable", "errors.auth.rateLimited", "notes.chosenVerified", "budget.paused", "system.envSet",
+    ]) expect(k in dict).toBe(true);
   });
 });
 

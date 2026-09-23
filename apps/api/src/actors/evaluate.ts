@@ -22,6 +22,7 @@ import {
   verified,
 } from "../domain/cost.js";
 import { NOTE } from "../domain/notes.js";
+import { choosable } from "../domain/guards.js";
 import { apifyPlanTier } from "../settings/settings.js";
 
 const API = "https://api.apify.com/v2";
@@ -226,10 +227,11 @@ export async function chooseManually(platform: Platform, actorId: string) {
   const db = await getDb();
   const rows = await db.select().from(actorEvaluations).where(eq(actorEvaluations.platform, platform));
   const latest = rows.filter((r) => r.actorId === actorId).sort((a, b) => b.evaluatedAt.getTime() - a.evaluatedAt.getTime())[0];
-  if (!latest) return false;
+  if (!latest) return "notFound" as const;
+  if (!choosable(latest)) return "notChoosable" as const; // excluded / unpriced / not pay-per-event
   await db.transaction(async (tx) => {
     await tx.update(actorEvaluations).set({ chosen: false }).where(eq(actorEvaluations.platform, platform));
     await tx.update(actorEvaluations).set({ chosen: true, reason: NOTE.chosenManual() }).where(eq(actorEvaluations.id, latest.id));
   });
-  return true;
+  return "ok" as const;
 }

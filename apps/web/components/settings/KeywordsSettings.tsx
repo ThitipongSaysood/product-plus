@@ -51,6 +51,7 @@ export function GroupForm({ group }: { group: Group }) {
   const limitBad = !Number.isInteger(limitN) || limitN < 1 || limitN > 50;
   const budgetN = Number(budget);
   const budgetBad = budget.trim() === "" || !Number.isFinite(budgetN) || budgetN < 0;
+  const capOverBudget = !runCapBad && !budgetBad && budgetN > 0 && runCapN > budgetN;
 
   return (
     <Card>
@@ -59,7 +60,7 @@ export function GroupForm({ group }: { group: Group }) {
         className="ox-stack"
         onSubmit={(e) => {
           e.preventDefault();
-          if (limitBad || budgetBad || runCapBad || noPlatform) return;
+          if (limitBad || budgetBad || runCapBad || capOverBudget || noPlatform) return;
           void s.run(() => send<Group>("PATCH", `/api/groups/${encodeURIComponent(group.slug)}`, { monthlyBudgetUsd: budgetN, runCapUsd: runCapN, resultLimit: limitN, schedule, platforms: PLATFORM_LIST.filter((p) => platforms.includes(p)) }), t("common.saved"));
         }}
       >
@@ -67,8 +68,8 @@ export function GroupForm({ group }: { group: Group }) {
           <Field label={t("group.budget")} htmlFor="g-budget" help={t("group.budgetHelp")} error={budgetBad ? t("group.budgetInvalid") : undefined}>
             <TextInput id="g-budget" type="number" min={0} step="0.5" inputMode="decimal" value={budget} onChange={(e) => setBudget(e.target.value)} aria-invalid={budgetBad} />
           </Field>
-          <Field label={t("group.runCap")} htmlFor="g-runcap" help={t("group.runCapHelp")} error={runCapBad ? t("group.runCapInvalid") : undefined}>
-            <TextInput id="g-runcap" type="number" min={0.1} step={0.05} inputMode="decimal" value={runCap} onChange={(e) => setRunCap(e.target.value)} aria-invalid={runCapBad} />
+          <Field label={t("group.runCap")} htmlFor="g-runcap" help={t("group.runCapHelp")} error={runCapBad ? t("group.runCapInvalid") : capOverBudget ? t("group.runCapOverBudget") : undefined}>
+            <TextInput id="g-runcap" type="number" min={0.1} step={0.05} inputMode="decimal" value={runCap} onChange={(e) => setRunCap(e.target.value)} aria-invalid={runCapBad || capOverBudget} />
           </Field>
           <Field label={t("group.limit")} htmlFor="g-limit" help={t("group.limitHelp")} error={limitBad ? t("group.limitInvalid") : undefined}>
             <TextInput id="g-limit" type="number" min={1} max={50} step={1} inputMode="numeric" value={limit} onChange={(e) => setLimit(e.target.value)} aria-invalid={limitBad} />
@@ -88,7 +89,7 @@ export function GroupForm({ group }: { group: Group }) {
           </div>
           {noPlatform ? <div className="ox-error" role="alert">{t("group.platformsRequired")}</div> : <div className="ox-help">{t("group.platformsHelp")}</div>}
         </fieldset>
-        <div><Button type="submit" variant="primary" disabled={s.busy || limitBad || budgetBad || runCapBad || noPlatform}>{t("group.save")}</Button></div>
+        <div><Button type="submit" variant="primary" disabled={s.busy || limitBad || budgetBad || runCapBad || capOverBudget || noPlatform}>{t("group.save")}</Button></div>
         <Status msg={s.msg} />
       </form>
     </Card>

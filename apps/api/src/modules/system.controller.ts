@@ -11,7 +11,11 @@ import { entryFor, getSetting, listSettings, saveSetting, sourceMode, testServic
 import { mockSvg } from "../sources/mock.js";
 import { apifyFetch } from "../sources/apify.js";
 import { finishApifyRun } from "../jobs/reconcile.js";
-import { runWeekly } from "./weekly.js";
+import { RateLimiter } from "../domain/guards.js";
+import { runScheduled } from "./weekly.js";
+
+const authLimiter = new RateLimiter(10, 60_000); // POST /api/auth: 10 tries per minute per IP
+const MEDIA_HEADERS = { "x-content-type-options": "nosniff", "content-security-policy": "default-src 'none'; style-src 'unsafe-inline'" };
 
 const THIRTY_DAYS = 30 * 24 * 3600 * 1000;
 
@@ -31,7 +35,8 @@ export class SystemController {
 
   @Post("auth")
   @HttpCode(200)
-  login(@Body(new ZodPipe(z.object({ password: z.string().max(200) }))) body: { password: string }, @Res({ passthrough: true }) res: Response) {
+  login(@Body(new ZodPipe(z.object({ password: z.string().max(200) }))) body: { password: string }, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    if (!authLimiter.allow(req.ip ?? "?")) throw new AppError(429, "errors.auth.rateLimited");
     const password = process.env.APP_PASSWORD;
     if (!password) return { ok: true };
     if (!safeEqual(body.password, password)) throw new AppError(401, "errors.auth.wrongPassword");
@@ -74,6 +79,7 @@ export class SystemController {
 
   @Get("media/mock/:file")
   mockMedia(@Param("file") file: string, @Res() res: Response) {
+    res.set(MEDIA_HEADERS);
     const svg = mockSvg(file);
     if (!svg) return res.status(404).json({ error: "errors.media.notFound" });
     res.setHeader("content-type", "image/svg+xml");
@@ -83,13 +89,13 @@ export class SystemController {
 
   @Get("media/:id")
   async media(@Param("id") id: string, @Res() res: Response) {
+    res.set(MEDIA_HEADERS);
     if (!/^[0-9a-f-]{36}$/i.test(id)) return res.status(404).json({ error: "errors.media.notFound" });
     const db = await getDb();
     const [m] = await db.select().from(media).where(eq(media.id, id));
     if (!m) return res.status(404).json({ error: "errors.media.notFound" });
     res.setHeader("content-type", m.contentType);
     res.setHeader("cache-control", "public, max-age=31536000, immutable");
-    if (m.contentType === "image/svg+xml") res.setHeader("content-security-policy", "default-src 'none'; style-src 'unsafe-inline'");
     return res.send(m.bytes);
   }
 
@@ -103,18 +109,24 @@ export class SystemController {
     if (!apifyRunId) return { ok: true, ignored: true };
     const db = await getDb();
     const [run] = await db.select().from(scrapeRuns).where(eq(scrapeRuns.apifyRunId, apifyRunId));
-    if (!run || run.status !== "running") return { ok: true, ignored: true };
+    if (!run) return { ok: true, ignored: true };
     const token = await getSetting("APIFY_TOKEN");
     if (!token) return { ok: true, ignored: true };
     const res = await apifyFetch(token, apifyRunId, 50);
     if (!res.finished) return { ok: true, ignored: true };
-    await finishApifyRun(run, res);
-    return { ok: true };
+    const r = await finishApifyRun(run, res); // closed run → cost-only update, never re-ingested
+    return r.ignored ? { ok: true, ignored: true } : { ok: true };
   }
 
   @Get("cron/weekly")
   async weekly(@Req() req: Request) {
     if (!cronAuthorized(req)) throw new AppError(401, "common.unauthorized");
-    return { ok: true, ...(await runWeekly()) };
+    return { ok: true, ...(await runScheduled(["weekly"])) };
+  }
+
+  @Get("cron/daily")
+  async daily(@Req() req: Request) {
+    if (!cronAuthorized(req)) throw new AppError(401, "common.unauthorized");
+    return { ok: true, ...(await runScheduled(["daily"])) };
   }
 }

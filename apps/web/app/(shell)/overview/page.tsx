@@ -78,7 +78,7 @@ export default async function OverviewPage(props: PageProps<"/overview">) {
         <div className="ox-kpi">
           <div className="ox-kpi__label">{t("kpi.spend")}</div>
           <div className="ox-kpi__value">{formatMoney(t.locale, o.kpis.spendMonthUsd)}</div>
-          <div className="ox-kpi__delta">{o.kpis.budgetUsd > 0 ? t("kpi.spendSub", { budget: formatMoney(t.locale, o.kpis.budgetUsd) }) : t("budget.unlimited")}</div>
+          <div className="ox-kpi__delta">{o.kpis.budgetUsd > 0 ? t("kpi.spendSub", { budget: formatMoney(t.locale, o.kpis.budgetUsd) }) : <span style={{ color: "var(--omnix-warning-fg)" }}>{t("budget.paused")}</span>}</div>
           {g.group ? <div className="ox-kpi__delta ox-num">{t("budget.runCap", { cap: formatMoney(t.locale, g.group.runCapUsd) })}</div> : null}
         </div>
       </div>

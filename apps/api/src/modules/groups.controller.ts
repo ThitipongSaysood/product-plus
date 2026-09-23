@@ -8,6 +8,7 @@ import { keywords, productGroups } from "../db/schema.js";
 import { AppError, notFound } from "../common/errors.js";
 import { ZodPipe } from "../common/http.js";
 import { UNCLASSIFIED } from "../domain/categorize.js";
+import { capsValid } from "../domain/guards.js";
 import { PLATFORM_LIST } from "../domain/types.js";
 import { applyCategoryMap } from "../jobs/categorize.js";
 import { groupBySlug } from "../jobs/runs.js";
@@ -55,6 +56,7 @@ export class GroupsController {
   @Patch("groups/:slug")
   async patchGroup(@Param("slug") slug: string, @Body(new ZodPipe(groupPatch)) body: z.infer<typeof groupPatch>) {
     const g = await groupBySlug(slug);
+    if (!capsValid(body.monthlyBudgetUsd ?? g.monthlyBudgetUsd, body.runCapUsd ?? g.runCapUsd)) throw new AppError(400, "errors.validation");
     const db = await getDb();
     const [row] = await db
       .update(productGroups)

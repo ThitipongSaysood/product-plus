@@ -7,7 +7,8 @@ import { getDb } from "../db/client.js";
 import { actorEvaluations, keywords, productGroups } from "../db/schema.js";
 import { AppError } from "../common/errors.js";
 import { ZodPipe } from "../common/http.js";
-import { budgetState } from "../domain/budget.js";
+import { planRound } from "../domain/budget.js";
+import { confirmMissing, smokeCap } from "../domain/guards.js";
 import { NOTE } from "../domain/notes.js";
 import { PLATFORM_LIST } from "../domain/types.js";
 import { chooseManually, evaluateActors } from "../actors/evaluate.js";
@@ -15,7 +16,7 @@ import { runCategorize } from "../jobs/categorize.js";
 import { triggerPipeline } from "../jobs/pipeline.js";
 import { reconcile } from "../jobs/reconcile.js";
 import { assertNotRunning, createRun, finishRun, groupBySlug, jobStatus, updateRun } from "../jobs/runs.js";
-import { monthSpend } from "../jobs/scrape.js";
+import { groupMode, monthSpend } from "../jobs/scrape.js";
 import { apifyStart } from "../sources/apify.js";
 import { getSetting } from "../settings/settings.js";
 
@@ -55,8 +56,10 @@ const toEval = (r: typeof actorEvaluations.$inferSelect): ActorEvaluation => ({
 export class JobsController {
   @Post("jobs/pipeline")
   @HttpCode(200)
-  async pipeline(@Body(new ZodPipe(z.object({ pg: z.string().optional() }))) body: { pg?: string }): Promise<TriggerResult> {
-    return triggerPipeline(await groupBySlug(body.pg));
+  async pipeline(@Body(new ZodPipe(z.object({ pg: z.string().min(1), confirm: z.boolean().optional() }))) body: { pg: string; confirm?: boolean }): Promise<TriggerResult> {
+    const g = await groupBySlug(body.pg); // explicit group only — never the default one
+    if (confirmMissing(await groupMode(g), body.confirm)) throw new AppError(400, "errors.confirmRequired");
+    return triggerPipeline(g);
   }
 
   @Post("jobs/categorize")
@@ -122,16 +125,27 @@ export class JobsController {
     const [kw] = await db.select().from(keywords).where(eq(keywords.platform, body.platform)).limit(1);
     if (!kw) throw new AppError(400, "errors.actors.noKeyword");
     const g = (await db.select().from(productGroups).where(eq(productGroups.id, kw.productGroupId)))[0];
-    if (budgetState(await monthSpend(g.id), g.monthlyBudgetUsd).over)
-      return { runId: null, started: [], skipped: [{ platform: body.platform, keyword: kw.keyword, reason: "skip.budget" }] };
-    const runId = await createRun(db, { productGroupId: g.id, keyword: kw.keyword, platform: body.platform, actorId: body.actorId, kind: "smoke", status: "running" });
+    if ((await groupMode(g)) === "mock") throw new AppError(400, "errors.actors.mockGroup");
+    await assertNotRunning(g.id, "smoke");
+    const cap = smokeCap(ev.startFee, ev.pricePerResult);
+    const budget = planRound({ budgetUsd: g.monthlyBudgetUsd, spentUsd: await monthSpend(g.id), inFlightUsd: 0, capUsd: Math.max(cap, g.runCapUsd), estimates: [cap] });
+    if (!budget.ok) return { runId: null, started: [], skipped: [{ platform: body.platform, keyword: kw.keyword, reason: budget.reason }] };
+    const runId = await createRun(db, {
+      productGroupId: g.id,
+      keyword: kw.keyword,
+      platform: body.platform,
+      actorId: body.actorId,
+      kind: "smoke",
+      status: "running",
+      costUsd: cap, // provisional until Apify reports the actual cost
+    });
     const res = await apifyStart(
       token,
-      { platform: body.platform, keyword: kw.keyword, region: kw.region, limit: 5, now: new Date(), actorId: body.actorId, inputTemplate: template },
+      { platform: body.platform, keyword: kw.keyword, region: kw.region, limit: 5, now: new Date(), actorId: body.actorId, inputTemplate: template, maxTotalChargeUsd: cap },
       await getSetting("APIFY_WEBHOOK_SECRET"),
     );
     if (!res.ok) {
-      await finishRun(runId, "failed", NOTE.startFailed(res.reason));
+      await finishRun(runId, "failed", NOTE.startFailed(res.reason), { costUsd: 0 });
       return { runId, started: [], skipped: [{ platform: body.platform, keyword: kw.keyword, reason: "skip.startFailed" }] };
     }
     if ("externalRunId" in res) await updateRun(runId, { apifyRunId: res.externalRunId });
@@ -140,7 +154,9 @@ export class JobsController {
 
   @Put("actors/choose")
   async choose(@Body(new ZodPipe(z.object({ platform, actorId: z.string().max(200) }))) body: { platform: Platform; actorId: string }) {
-    if (!(await chooseManually(body.platform, body.actorId))) throw new AppError(404, "errors.actors.notFound");
+    const r = await chooseManually(body.platform, body.actorId);
+    if (r === "notFound") throw new AppError(404, "errors.actors.notFound");
+    if (r === "notChoosable") throw new AppError(400, "errors.actors.notChoosable");
     return { ok: true };
   }
 }

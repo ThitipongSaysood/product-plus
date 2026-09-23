@@ -2,13 +2,13 @@ import { formatMoney, formatPercent, type T } from "@/i18n";
 import { cn } from "@/lib/cn";
 import { Alert, ProgressBar } from "./ui";
 
-/** Warn at 80 %; level told by colour AND text. No budget = "unlimited" warning, never 0 %. */
+/** Warn at 80 %; level told by colour AND text. Budget 0 = spending paused (api blocks every paid run), never "0 %". */
 export function BudgetMeter({ t, spent, budget, runCap, variant = "card" }: { t: T; spent: number | null; budget: number | null; runCap?: number | null; variant?: "card" | "mini" }) {
   const cap = runCap != null ? <span className="ox-xs ox-muted ox-num">{t("budget.runCap", { cap: formatMoney(t.locale, runCap) })}</span> : null;
   if (budget == null || budget <= 0) {
     return variant === "mini"
-      ? <div className="ap-budget ap-budget--mini"><span className="ap-budget__text is-warn">{t("budget.unlimited")}</span>{cap}</div>
-      : <Alert tone="warning">{t("budget.unlimited")}{cap ? <> · {cap}</> : null}</Alert>;
+      ? <div className="ap-budget ap-budget--mini"><span className="ap-budget__text is-over">{t("budget.paused")}</span>{cap}</div>
+      : <Alert tone="warning">{t("budget.paused")}{cap ? <> · {cap}</> : null}</Alert>;
   }
   const s = spent ?? 0;
   const ratio = s / budget;

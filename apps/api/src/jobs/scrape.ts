@@ -4,7 +4,7 @@ import { and, desc, eq, gte, inArray, sql } from "drizzle-orm";
 import type { Platform, SourceMode, TriggerResult } from "@pp/contracts";
 import { getDb } from "../db/client.js";
 import { actorEvaluations, keywords, scrapeRuns } from "../db/schema.js";
-import { budgetState, monthStartBangkok, splitRunCap } from "../domain/budget.js";
+import { monthStartBangkok, planRound } from "../domain/budget.js";
 import { MAX_RESULTS } from "../domain/types.js";
 import { NOTE } from "../domain/notes.js";
 import { apifyStart } from "../sources/apify.js";
@@ -64,9 +64,9 @@ export async function planScrape(g: GroupRecord, now = new Date()) {
     out.skipped.push({ platform: k.platform as Platform, keyword: k.keyword, reason });
 
   const token = mode === "apify" ? await getSetting("APIFY_TOKEN") : null;
-  const over = budgetState(await monthSpend(g.id, now), g.monthlyBudgetUsd).over;
+  const spent = await monthSpend(g.id, now);
   const running = await db
-    .select({ platform: scrapeRuns.platform, keyword: scrapeRuns.keyword, groupId: scrapeRuns.productGroupId, apify: scrapeRuns.apifyRunId })
+    .select({ platform: scrapeRuns.platform, keyword: scrapeRuns.keyword, groupId: scrapeRuns.productGroupId, apify: scrapeRuns.apifyRunId, cost: scrapeRuns.costUsd })
     .from(scrapeRuns)
     .where(and(inArray(scrapeRuns.kind, ["scrape", "smoke"]), eq(scrapeRuns.status, "running")));
   let slots = APIFY_CONCURRENCY - running.filter((r) => r.apify !== null).length;
@@ -82,10 +82,6 @@ export async function planScrape(g: GroupRecord, now = new Date()) {
       skip(k, "skip.noActor");
       continue;
     }
-    if (over) {
-      skip(k, "skip.budget");
-      continue;
-    }
     if (running.some((r) => r.groupId === g.id && r.platform === platform && r.keyword === k.keyword)) {
       skip(k, "skip.alreadyRunning");
       continue;
@@ -94,8 +90,13 @@ export async function planScrape(g: GroupRecord, now = new Date()) {
       skip(k, "skip.concurrency");
       continue;
     }
-    if (mode === "apify") slots--;
     const limit = Math.min(g.resultLimit, MAX_RESULTS);
+    const estimateUsd = actor.startFee + limit * actor.pricePerResult;
+    if (mode === "apify" && !(estimateUsd > 0)) {
+      skip(k, "skip.pricingUnknown");
+      continue;
+    }
+    if (mode === "apify") slots--;
     targets.push({
       keywordId: k.id,
       platform,
@@ -103,19 +104,20 @@ export async function planScrape(g: GroupRecord, now = new Date()) {
       region: k.region,
       actorId: actor.actorId,
       inputTemplate: actor.inputTemplate,
-      estimateUsd: actor.startFee + limit * actor.pricePerResult,
+      estimateUsd,
       maxTotalChargeUsd: null,
     });
   }
-  // per-round spend cap: estimate the whole round; too expensive → skip everything, else give each
-  // actor its share of the cap as Apify's maxTotalChargeUsd so Apify itself stops billing there.
-  if (mode === "apify" && targets.length) {
-    const split = splitRunCap(g.runCapUsd, targets.map((t) => t.estimateUsd));
-    if (!split.ok) {
-      for (const t of targets) skip(t, "skip.runCap");
-      return { mode, targets: [], result: out, estimateUsd: split.total };
+  // monthly budget (spent + in-flight provisional + this round) then per-round cap; each actor's
+  // maxTotalChargeUsd = min(cap share, remaining budget) so Apify itself stops billing there.
+  if (targets.length) {
+    const inFlightUsd = running.filter((r) => r.groupId === g.id).reduce((s, r) => s + (r.cost ?? 0), 0);
+    const plan = planRound({ budgetUsd: g.monthlyBudgetUsd, spentUsd: spent - inFlightUsd, inFlightUsd, capUsd: g.runCapUsd, estimates: targets.map((t) => t.estimateUsd) });
+    if (!plan.ok) {
+      for (const t of targets) skip(t, plan.reason);
+      return { mode, targets: [], result: out, estimateUsd: plan.total };
     }
-    targets.forEach((t, i) => (t.maxTotalChargeUsd = split.shares[i]));
+    if (mode === "apify") targets.forEach((t, i) => (t.maxTotalChargeUsd = plan.shares[i]));
   }
   out.started.push(...targets.map((t) => ({ platform: t.platform, keyword: t.keyword })));
   return { mode, targets, result: out, estimateUsd: targets.reduce((s, t) => s + t.estimateUsd, 0) };
@@ -139,16 +141,18 @@ export async function startTargets(g: GroupRecord, mode: SourceMode, targets: Ta
       parentRunId,
       status: "running",
       startedAt: now,
+      // provisional cost = the cap Apify may charge; replaced by the actual cost when known (never null)
+      costUsd: mode === "apify" ? t.maxTotalChargeUsd : 0,
     });
     runIds.push(runId);
     const target = { ...t, limit, now };
     try {
       const res = mode === "mock" ? await mockStart(target) : await apifyStart(token!, target, webhookSecret);
-      if (!res.ok) await finishRun(runId, "failed", NOTE.startFailed(res.reason));
+      if (!res.ok) await finishRun(runId, "failed", NOTE.startFailed(res.reason), { costUsd: 0 });
       else if ("inline" in res) await ingestRun(runId, { rows: res.inline.rows, costUsd: res.inline.costUsd }, now);
       else await updateRun(runId, { apifyRunId: res.externalRunId });
     } catch (e) {
-      await finishRun(runId, "failed", NOTE.startFailed((e as Error).message.slice(0, 200)));
+      await finishRun(runId, "failed", NOTE.startFailed((e as Error).message.slice(0, 200)), { costUsd: 0 });
     }
   }
   return runIds;

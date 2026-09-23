@@ -25,7 +25,7 @@ export async function ingestRun(runId: string, payload: IngestPayload, now = new
     const { items, itemsIn, readable } = normalizeRows(platform, payload.rows, keyword, group.resultLimit);
 
     const [prev] = await tx
-      .select({ n: scrapeRuns.itemsOut })
+      .select({ n: scrapeRuns.itemsOut, finishedAt: scrapeRuns.finishedAt })
       .from(scrapeRuns)
       .where(
         and(
@@ -52,7 +52,10 @@ export async function ingestRun(runId: string, payload: IngestPayload, now = new
         .select({ id: products.id, externalId: products.externalId, missedRuns: products.missedRuns, lastSeenAt: products.lastSeenAt })
         .from(products)
         .where(and(eq(products.productGroupId, group.id), eq(products.platform, platform), eq(products.keyword, keyword), eq(products.isActive, true)));
-      const d = diffRun(scope, items.map((i) => i.externalId), gate.processRetirements);
+      // products seen by ANOTHER keyword's run since this keyword was last ingested are not missing.
+      // Compared with the previous run's finishedAt (= its ingest time = the last_seen_at it wrote), not its
+      // start: an Apify run is ingested minutes after it starts, so "after start" would match its own products.
+      const d = diffRun(scope, items.map((i) => i.externalId), gate.processRetirements, prev?.finishedAt ?? null);
 
       const ids = items.map((i) => i.externalId);
       const known = ids.length
@@ -111,7 +114,7 @@ export async function ingestRun(runId: string, payload: IngestPayload, now = new
         } else {
           const [ins] = await tx
             .insert(products)
-            .values({ ...fields, productGroupId: group.id, platform, externalId: item.externalId, keyword: item.keyword, firstSeenAt: now })
+            .values({ ...fields, productGroupId: group.id, platform, externalId: item.externalId, keyword, firstSeenAt: now })
             .returning({ id: products.id });
           productId = ins.id;
           ev(productId, "new");
@@ -154,7 +157,7 @@ export async function ingestRun(runId: string, payload: IngestPayload, now = new
         note: payload.note ?? gate.note,
         itemsIn,
         itemsOut: items.length,
-        costUsd: payload.costUsd,
+        costUsd: payload.costUsd ?? run.costUsd, // unknown actual → keep the provisional cost
         finishedAt: now,
         step: null,
       })

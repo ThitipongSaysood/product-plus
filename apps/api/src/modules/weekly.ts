@@ -1,19 +1,21 @@
-// Weekly schedule (SPEC §3 #6): Monday 05:00 Asia/Bangkok in-process, plus GET /api/cron/weekly for an
-// external timer. Only groups with schedule === "weekly"; a pipeline started < 12 h ago is not repeated.
+// Schedules (SPEC §3 #6): one in-process tick every day 05:00 Asia/Bangkok runs "daily" groups, and on
+// Mondays also "weekly" groups; GET /api/cron/{daily,weekly} for an external timer. A pipeline started
+// < 12 h ago is not repeated.
 import { Injectable } from "@nestjs/common";
 import { Cron } from "@nestjs/schedule";
-import { and, eq, gte } from "drizzle-orm";
-import type { TriggerResult } from "@pp/contracts";
+import { and, eq, gte, inArray } from "drizzle-orm";
+import type { Schedule, TriggerResult } from "@pp/contracts";
 import { getDb } from "../db/client.js";
 import { productGroups, scrapeRuns } from "../db/schema.js";
 import { AppError } from "../common/errors.js";
+import { schedulesDue } from "../domain/guards.js";
 import { triggerPipeline } from "../jobs/pipeline.js";
 import { reconcile } from "../jobs/reconcile.js";
 
-export async function runWeekly() {
+export async function runScheduled(schedules: Schedule[]) {
   await reconcile().catch(() => 0);
   const db = await getDb();
-  const groups = await db.select().from(productGroups).where(eq(productGroups.schedule, "weekly"));
+  const groups = await db.select().from(productGroups).where(inArray(productGroups.schedule, schedules));
   const started: (TriggerResult["started"][number] & { group: string })[] = [];
   const skipped: (TriggerResult["skipped"][number] & { group: string })[] = [];
   const since = new Date(Date.now() - 12 * 3_600_000);
@@ -41,9 +43,10 @@ export async function runWeekly() {
 
 @Injectable()
 export class WeeklyCron {
-  @Cron("0 5 * * 1", { timeZone: "Asia/Bangkok", name: "weekly-pipeline" })
+  @Cron("0 5 * * *", { timeZone: "Asia/Bangkok", name: "scheduled-pipelines" })
   async tick() {
-    const r = await runWeekly();
-    console.log(`[cron] weekly: started ${r.started.length}, skipped ${r.skipped.length}`);
+    const due = schedulesDue(new Date());
+    const r = await runScheduled(due);
+    console.log(`[cron] ${due.join("+")}: started ${r.started.length}, skipped ${r.skipped.length}`);
   }
 }

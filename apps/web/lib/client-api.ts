@@ -5,8 +5,9 @@ export async function send<T>(method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE
   try {
     const res = await fetch(path, {
       method,
-      headers: body === undefined ? undefined : { "content-type": "application/json" },
-      body: body === undefined ? undefined : JSON.stringify(body),
+      // api rejects writes without JSON content-type (415 errors.contentType) — every write sends a JSON body
+      headers: method === "GET" ? { accept: "application/json" } : { "content-type": "application/json", accept: "application/json" },
+      body: method === "GET" ? undefined : JSON.stringify(body ?? {}),
       cache: "no-store",
     });
     const json: unknown = await res.json().catch(() => null);

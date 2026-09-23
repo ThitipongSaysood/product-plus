@@ -4,6 +4,7 @@ import { getDb } from "../db/client.js";
 import { categoryMap, productGroups, products } from "../db/schema.js";
 import { categorize, pathKey, UNCLASSIFIED } from "../domain/categorize.js";
 import { NOTE } from "../domain/notes.js";
+import { fillEligible } from "../domain/guards.js";
 import { getSetting } from "../settings/settings.js";
 import { llmCategorize } from "./llm.js";
 
@@ -20,14 +21,22 @@ export async function runCategorize(groupId: string, mode: "fill" | "retag", onP
   const taxonomy = group.taxonomy as TaxonomyEntry[];
   const map = await loadCategoryMap();
   const rows = await db
-    .select({ id: products.id, platform: products.platform, title: products.title, path: products.platformCategoryPath })
+    .select({
+      id: products.id,
+      platform: products.platform,
+      title: products.title,
+      path: products.platformCategoryPath,
+      categorySource: products.categorySource,
+      categoryTaggedAt: products.categoryTaggedAt,
+    })
     .from(products)
     .where(
       and(
         eq(products.productGroupId, groupId),
         mode === "fill" ? isNull(products.categorySource) : or(isNull(products.categorySource), ne(products.categorySource, "manual")),
       ),
-    );
+    )
+    .then((rs) => (mode === "fill" ? rs.filter((r) => fillEligible(r, new Date())) : rs)); // fill: skip tries < 7 days old
   const decided = new Map<string, { key: string; source: string }>();
   const undecided: { id: string; title: string | null }[] = [];
   for (const r of rows) {

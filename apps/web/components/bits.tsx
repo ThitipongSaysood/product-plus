@@ -105,13 +105,16 @@ export function ApiErrorAlert({ t, error }: { t: T; error: string }) {
   );
 }
 
+/** api stores detail {from, to, period?} for sales_surge / rank_up / price_drop (apps/api domain/trend.ts detectEvents). */
 export function eventText(t: T, e: ChangeEvent): string {
   const d = (e.detail ?? {}) as Record<string, unknown>;
-  const num = (k: string) => (typeof d[k] === "number" ? formatNumber(t.locale, d[k] as number) : "—");
+  const from = typeof d.from === "number" ? d.from : null;
+  const to = typeof d.to === "number" ? d.to : null;
+  const both = from != null && to != null;
   switch (e.kind) {
-    case "sales_surge": return t("event.sales_surge.detail", { n: num("deltaSold") });
-    case "rank_up": return t("event.rank_up.detail", { n: num("deltaRank") });
-    case "price_drop": return t("event.price_drop.detail", { pct: typeof d.pct === "number" ? formatNumber(t.locale, Math.abs(d.pct as number) * (Math.abs(d.pct as number) <= 1 ? 100 : 1), 0) : "—" });
+    case "sales_surge": return t("event.sales_surge.detail", { n: both ? formatNumber(t.locale, to - from) : "—" });
+    case "rank_up": return t("event.rank_up.detail", { n: both ? formatNumber(t.locale, from - to) : "—" });
+    case "price_drop": return t("event.price_drop.detail", { pct: both && from > 0 ? formatNumber(t.locale, ((from - to) / from) * 100, 1) : "—" });
     default: return t(`event.${e.kind}.detail`);
   }
 }

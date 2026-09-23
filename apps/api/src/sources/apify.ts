@@ -16,7 +16,7 @@ export async function apifyStart(token: string, t: ScrapeTarget, webhookSecret: 
     const client = new ApifyClient({ token });
     const run = await client.actor(t.actorId).start(input, {
       maxItems: t.limit,
-      ...(t.maxTotalChargeUsd ? { maxTotalChargeUsd: t.maxTotalChargeUsd } : {}),
+      ...(t.maxTotalChargeUsd != null ? { maxTotalChargeUsd: t.maxTotalChargeUsd } : {}),
       ...(base && webhookSecret
         ? {
             webhooks: [
@@ -39,5 +39,6 @@ export async function apifyFetch(token: string, runId: string, limit: number): P
   const run = await client.run(runId).get();
   if (!run || !TERMINAL.has(run.status)) return { finished: false };
   const rows = run.defaultDatasetId ? (await client.dataset(run.defaultDatasetId).listItems({ limit: limit * 3 })).items : [];
-  return { finished: true, apifyStatus: run.status, rows, costUsd: typeof run.usageTotalUsd === "number" ? run.usageTotalUsd : null };
+  const charged = (run as { chargedEventCounts?: Record<string, number> }).chargedEventCounts ?? null;
+  return { finished: true, apifyStatus: run.status, rows, costUsd: typeof run.usageTotalUsd === "number" ? run.usageTotalUsd : null, charged };
 }

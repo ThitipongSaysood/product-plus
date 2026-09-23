@@ -32,7 +32,8 @@ type Props = {
   size?: "sm";
   block?: boolean;
   initial?: JobStatus | null;
-  confirm?: string;
+  /** a fixed message, or an async check returning the message to confirm (null = no dialog needed) */
+  confirm?: string | (() => Promise<string | null>);
   disabled?: boolean;
 };
 
@@ -78,9 +79,10 @@ export function JobButton({ kind, pg, path, body, label, icon, variant = "second
   }, []);
 
   async function start() {
-    if (confirm && !window.confirm(confirm)) return;
     setBusy(true);
     setMessage(null);
+    const msg = typeof confirm === "function" ? await confirm() : confirm;
+    if (msg && !window.confirm(msg)) { setBusy(false); return; }
     const r = await send<TriggerResult | { runId: string }>("POST", path, body ?? (pg ? { pg } : {}));
     setBusy(false);
     if (r.error) {

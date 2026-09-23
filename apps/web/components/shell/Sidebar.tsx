@@ -1,7 +1,8 @@
 "use client";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import type { Group } from "@pp/contracts";
+import type { Group, Overview } from "@pp/contracts";
+import { send } from "@/lib/client-api";
 import { formatAgo } from "@/i18n";
 import { useT } from "@/i18n/client";
 import { cn } from "@/lib/cn";
@@ -67,7 +68,12 @@ export function Sidebar({ groups }: { groups: Group[] }) {
             size="sm"
             block
             initial={d?.job ?? null}
-            confirm={d?.sourceMode === "mock" ? undefined : t("sync.confirmPaid")}
+            body={{ pg, confirm: true }}
+            confirm={async () => {
+              // fresh mode per click — never trust cached state for a paid run; unknown counts as paid
+              const r = await send<Overview>("GET", `/api/overview?pg=${encodeURIComponent(pg)}`);
+              return r.data?.sourceMode === "mock" ? null : t("sync.confirmPaid");
+            }}
           />
         </div>
         {d ? <BudgetMeter t={t} spent={d.spend} budget={d.budget} runCap={groups.find((g) => g.slug === pg)?.runCapUsd ?? null} variant="mini" /> : null}

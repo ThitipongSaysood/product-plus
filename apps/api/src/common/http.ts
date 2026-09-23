@@ -38,13 +38,11 @@ export class AuthGuard implements CanActivate {
   }
 }
 
-/** CRON_SECRET via Bearer or ?secret=. Unset → allowed only outside production. */
-export function cronAuthorized(req: Request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return process.env.NODE_ENV !== "production";
-  const bearer = req.headers.authorization?.replace(/^Bearer\s+/i, "") ?? "";
-  const q = typeof req.query.secret === "string" ? req.query.secret : "";
-  return safeEqual(bearer, secret) || safeEqual(q, secret);
+/** CRON_SECRET via `Authorization: Bearer` only. Fails closed: unset secret → nobody. */
+export function cronAuthorized(req: Pick<Request, "headers">, secret = process.env.CRON_SECRET) {
+  if (!secret) return false;
+  const bearer = req.headers.authorization?.match(/^Bearer\s+(.+)$/i)?.[1] ?? "";
+  return safeEqual(bearer, secret);
 }
 
 export class ZodPipe<T extends z.ZodType> implements PipeTransform {
@@ -62,6 +60,8 @@ const STATUS_KEYS: Record<number, string> = {
   403: "common.forbidden",
   404: "errors.notFound",
   413: "errors.tooLarge",
+  415: "errors.contentType",
+  429: "errors.auth.rateLimited",
 };
 
 @Catch()

@@ -8,10 +8,23 @@ export function monthStartBangkok(now: Date): Date {
   return new Date(Date.UTC(local.getUTCFullYear(), local.getUTCMonth(), 1) - BKK_MS);
 }
 
-/** over is EXACTLY the condition the trigger uses to skip (spent ≥ budget). Budget ≤ 0 = no cap. */
+/** over is EXACTLY the condition the trigger uses to skip (spent ≥ budget). Budget ≤ 0 = spending paused. */
 export function budgetState(spent: number, budget: number) {
-  if (!(budget > 0)) return { over: false, warn: false, pct: null as number | null };
+  if (!(budget > 0)) return { over: true, warn: true, pct: null as number | null };
   return { over: spent >= budget, warn: spent >= WARN_AT * budget, pct: spent / budget };
+}
+
+/** Whole-round guard: monthly budget (spent + in-flight provisional costs + this round's estimate) first,
+ *  then the per-round cap. Each actor's maxTotalChargeUsd = min(its cap share, remaining budget). */
+export function planRound(i: { budgetUsd: number; spentUsd: number; inFlightUsd: number; capUsd: number; estimates: number[] }) {
+  const total = i.estimates.reduce((s, e) => s + e, 0);
+  const committed = i.spentUsd + i.inFlightUsd;
+  if (!(i.budgetUsd > 0) || committed >= i.budgetUsd || committed + total > i.budgetUsd)
+    return { ok: false as const, reason: "skip.budget", total, shares: [] as number[] };
+  const split = splitRunCap(i.capUsd, i.estimates);
+  if (!split.ok) return { ok: false as const, reason: "skip.runCap", total, shares: [] as number[] };
+  const remaining = Math.floor((i.budgetUsd - committed) * 10000) / 10000;
+  return { ok: true as const, reason: null, total, shares: split.shares.map((s) => Math.min(s, remaining)) };
 }
 
 /** Per-round cap: the round is skipped when the estimate exceeds the cap; otherwise each actor gets
