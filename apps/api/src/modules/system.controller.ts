@@ -6,12 +6,12 @@ import { z } from "zod";
 import { getDb } from "../db/client.js";
 import { media, scrapeRuns } from "../db/schema.js";
 import { AppError } from "../common/errors.js";
-import { cronAuthorized, safeEqual, SESSION_COOKIE, sessionToken, ZodPipe } from "../common/http.js";
+import { cronAuthorized, safeEqual, issueSession, SESSION_COOKIE, ZodPipe } from "../common/http.js";
 import { entryFor, getSetting, listSettings, saveSetting, sourceMode, testService } from "../settings/settings.js";
 import { mockSvg } from "../sources/mock.js";
 import { apifyFetch } from "../sources/apify.js";
 import { finishApifyRun } from "../jobs/reconcile.js";
-import { RateLimiter } from "../domain/guards.js";
+import { clientIp, RateLimiter } from "../domain/guards.js";
 import { runScheduled } from "./weekly.js";
 
 const authLimiter = new RateLimiter(10, 60_000); // POST /api/auth: 10 tries per minute per IP
@@ -36,11 +36,11 @@ export class SystemController {
   @Post("auth")
   @HttpCode(200)
   login(@Body(new ZodPipe(z.object({ password: z.string().max(200) }))) body: { password: string }, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
-    if (!authLimiter.allow(req.ip ?? "?")) throw new AppError(429, "errors.auth.rateLimited");
+    if (!authLimiter.allow(clientIp(req.socket.remoteAddress, req.headers["x-forwarded-for"]))) throw new AppError(429, "errors.auth.rateLimited");
     const password = process.env.APP_PASSWORD;
     if (!password) return { ok: true };
     if (!safeEqual(body.password, password)) throw new AppError(401, "errors.auth.wrongPassword");
-    res.cookie(SESSION_COOKIE, sessionToken(password), {
+    res.cookie(SESSION_COOKIE, issueSession(password), {
       httpOnly: true,
       sameSite: "lax",
       secure: process.env.NODE_ENV === "production",

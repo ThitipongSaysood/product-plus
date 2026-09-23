@@ -8,7 +8,7 @@ import { actorEvaluations, keywords, productGroups } from "../db/schema.js";
 import { AppError } from "../common/errors.js";
 import { ZodPipe } from "../common/http.js";
 import { planRound } from "../domain/budget.js";
-import { confirmMissing, smokeCap } from "../domain/guards.js";
+import { choosable, confirmMissing, isUniqueViolation, smokeCap } from "../domain/guards.js";
 import { NOTE } from "../domain/notes.js";
 import { PLATFORM_LIST } from "../domain/types.js";
 import { chooseManually, evaluateActors } from "../actors/evaluate.js";
@@ -122,6 +122,7 @@ export class JobsController {
       .limit(1);
     const template = (ev?.raw as { inputTemplate?: Record<string, unknown> } | null)?.inputTemplate ?? null;
     if (!ev || !template) throw new AppError(400, "errors.actors.noTemplate");
+    if (!choosable(ev)) throw new AppError(400, "errors.actors.notChoosable"); // excluded / unpriced / not PPE
     const [kw] = await db.select().from(keywords).where(eq(keywords.platform, body.platform)).limit(1);
     if (!kw) throw new AppError(400, "errors.actors.noKeyword");
     const g = (await db.select().from(productGroups).where(eq(productGroups.id, kw.productGroupId)))[0];
@@ -130,15 +131,21 @@ export class JobsController {
     const cap = smokeCap(ev.startFee, ev.pricePerResult);
     const budget = planRound({ budgetUsd: g.monthlyBudgetUsd, spentUsd: await monthSpend(g.id), inFlightUsd: 0, capUsd: Math.max(cap, g.runCapUsd), estimates: [cap] });
     if (!budget.ok) return { runId: null, started: [], skipped: [{ platform: body.platform, keyword: kw.keyword, reason: budget.reason }] };
-    const runId = await createRun(db, {
-      productGroupId: g.id,
-      keyword: kw.keyword,
-      platform: body.platform,
-      actorId: body.actorId,
-      kind: "smoke",
-      status: "running",
-      costUsd: cap, // provisional until Apify reports the actual cost
-    });
+    let runId: string;
+    try {
+      runId = await createRun(db, {
+        productGroupId: g.id,
+        keyword: kw.keyword,
+        platform: body.platform,
+        actorId: body.actorId,
+        kind: "smoke",
+        status: "running",
+        costUsd: cap, // provisional until Apify reports the actual cost
+      });
+    } catch (e) {
+      if (isUniqueViolation(e)) throw new AppError(400, "errors.job.alreadyRunning"); // same partial unique index as pipeline
+      throw e;
+    }
     const res = await apifyStart(
       token,
       { platform: body.platform, keyword: kw.keyword, region: kw.region, limit: 5, now: new Date(), actorId: body.actorId, inputTemplate: template, maxTotalChargeUsd: cap },

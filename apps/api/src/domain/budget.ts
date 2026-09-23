@@ -15,7 +15,7 @@ export function budgetState(spent: number, budget: number) {
 }
 
 /** Whole-round guard: monthly budget (spent + in-flight provisional costs + this round's estimate) first,
- *  then the per-round cap. Each actor's maxTotalChargeUsd = min(its cap share, remaining budget). */
+ *  then the per-round cap. Shares are scaled so their sum never exceeds the remaining budget. */
 export function planRound(i: { budgetUsd: number; spentUsd: number; inFlightUsd: number; capUsd: number; estimates: number[] }) {
   const total = i.estimates.reduce((s, e) => s + e, 0);
   const committed = i.spentUsd + i.inFlightUsd;
@@ -23,8 +23,12 @@ export function planRound(i: { budgetUsd: number; spentUsd: number; inFlightUsd:
     return { ok: false as const, reason: "skip.budget", total, shares: [] as number[] };
   const split = splitRunCap(i.capUsd, i.estimates);
   if (!split.ok) return { ok: false as const, reason: "skip.runCap", total, shares: [] as number[] };
-  const remaining = Math.floor((i.budgetUsd - committed) * 10000) / 10000;
-  return { ok: true as const, reason: null, total, shares: split.shares.map((s) => Math.min(s, remaining)) };
+  const remaining = i.budgetUsd - committed;
+  if (remaining < total) return { ok: false as const, reason: "skip.budget", total, shares: [] as number[] };
+  // scale so the SUM of all actors' maxTotalChargeUsd stays within the remaining budget
+  const sum = split.shares.reduce((a, b) => a + b, 0);
+  const k = sum > 0 ? Math.min(1, remaining / sum) : 1;
+  return { ok: true as const, reason: null, total, shares: split.shares.map((s) => Math.floor(s * k * 10000) / 10000) };
 }
 
 /** Per-round cap: the round is skipped when the estimate exceeds the cap; otherwise each actor gets

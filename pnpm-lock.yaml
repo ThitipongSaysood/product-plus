@@ -46,6 +46,9 @@ importers:
       rxjs:
         specifier: latest
         version: 7.8.2
+      undici:
+        specifier: ^8.11.0
+        version: 8.11.0
       zod:
         specifier: ^4
         version: 4.6.5
@@ -2481,6 +2484,10 @@ packages:
   undici-types@8.9.0:
     resolution: {integrity: sha512-KTDyRTYX8sWmKXAikPHHSyc63CRPETMctyjKFupcC6OBLXT3xsN0e9aF7m+mIXutFWpUXuedtowG7iLOzp0kQg==}
 
+  undici@8.11.0:
+    resolution: {integrity: sha512-AdzuGcAkzhbha3GgCSoUBx2P0quwym6qdFNCQz/fDGZc8w9XJ741wHUbt2kTmfPz+ZIOMkySFkiY7RXmiDDC8w==}
+    engines: {node: '>=22.19.0'}
+
   unpipe@1.0.0:
     resolution: {integrity: sha512-pjy2bYhSsufwWlKwPc+l3cN7+wuJlK6uz0YdJEOlQDbl6jo/YlPi4mb8agUkVC8BF7V8NuzeyPNqRksA3hztKQ==}
     engines: {node: '>= 0.8'}
@@ -4586,6 +4593,8 @@ snapshots:
   uint8array-extras@1.5.0: {}
 
   undici-types@8.9.0: {}
+
+  undici@8.11.0: {}
 
   unpipe@1.0.0: {}
 

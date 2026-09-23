@@ -1,10 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { cronAuthorized } from "../src/common/http.js";
+import { cronAuthorized, issueSession, verifySession } from "../src/common/http.js";
+import { pickActualCost } from "../src/domain/cost.js";
+import { shouldPoll } from "../src/jobs/reconcile.js";
 import { planRound } from "../src/domain/budget.js";
 import { costFromEvents } from "../src/domain/cost.js";
 import { diffRun } from "../src/domain/diff.js";
 import {
   bootError,
+  clientIp,
   capsValid,
   choosable,
   confirmMissing,
@@ -145,5 +148,58 @@ describe("diff across keywords / trend / fill", () => {
     expect(fillEligible({ categorySource: null, categoryTaggedAt: new Date("2026-09-20T00:00:00Z") }, now)).toBe(false);
     expect(fillEligible({ categorySource: null, categoryTaggedAt: new Date("2026-09-16T00:00:00Z") }, now)).toBe(true);
     expect(fillEligible({ categorySource: "rules", categoryTaggedAt: null }, now)).toBe(false);
+  });
+});
+
+describe("re-review fixes", () => {
+  it("N1: IPv4-mapped / compat IPv6 in normalised URL forms are private", () => {
+    for (const h of ["[::ffff:7f00:1]", "::ffff:7f00:1", "[::127.0.0.1]", "::7f00:1", "[::ffff:a9fe:a9fe]", "::ffff:169.254.169.254", "::ffff:a00:1", "2002:c0a8:101::1", "fe80::1%en0"])
+      expect(isPrivateIp(h), h).toBe(true);
+    for (const h of ["::ffff:808:808", "[::ffff:8.8.8.8]", "2002:808:808::1"]) expect(isPrivateIp(h), h).toBe(false);
+    expect(isPrivateIp(new URL("http://[::ffff:127.0.0.1]/").hostname)).toBe(true);
+  });
+  it("N2: CSRF check ignores path case; only the webhook is exempt", () => {
+    expect(needsJson415("POST", "/API/auth", "application/x-www-form-urlencoded")).toBe(true);
+    expect(needsJson415("POST", "/Api/Jobs/Pipeline", undefined)).toBe(true);
+    expect(needsJson415("POST", "/API/WEBHOOKS/APIFY/", "text/plain")).toBe(false);
+  });
+  it("N3: shares never sum above the remaining budget; remaining < estimate → skip", () => {
+    const r = planRound({ budgetUsd: 10, spentUsd: 9.3, inFlightUsd: 0, capUsd: 1, estimates: [0.3, 0.3] });
+    expect(r.ok).toBe(true);
+    expect(r.shares.reduce((a, b) => a + b, 0)).toBeLessThanOrEqual(0.7 + 1e-9);
+    r.shares.forEach((x) => expect(x).toBeGreaterThanOrEqual(0.3 - 1e-4));
+    expect(planRound({ budgetUsd: 10, spentUsd: 9.5, inFlightUsd: 0, capUsd: 1, estimates: [0.3, 0.3] })).toMatchObject({ ok: false, reason: "skip.budget" });
+  });
+  it("N4: rate-limit key = client from X-Forwarded-For only behind a private hop", () => {
+    expect(clientIp("127.0.0.1", "203.0.113.9")).toBe("203.0.113.9");
+    expect(clientIp("::ffff:10.0.0.2", "198.51.100.1, 10.0.0.5")).toBe("198.51.100.1");
+    expect(clientIp("203.0.113.50", "1.2.3.4")).toBe("203.0.113.50"); // public peer: XFF ignored
+    expect(clientIp("127.0.0.1", undefined)).toBe("127.0.0.1");
+  });
+  it("(a) actual cost = max(usageTotalUsd, charged events)", () => {
+    expect(pickActualCost(0.2, 0.245)).toBe(0.245);
+    expect(pickActualCost(0.3, 0.245)).toBe(0.3);
+    expect(pickActualCost(null, 0.1)).toBe(0.1);
+    expect(pickActualCost(0.1, null)).toBe(0.1);
+    expect(pickActualCost(null, null)).toBeNull();
+  });
+  it("(b) Apify polling: running ≤ 1/min, closed-awaiting-cost ≤ 1/10 min per run", () => {
+    const seen = new Map<string, number>();
+    expect(shouldPoll("r1", true, 0, seen)).toBe(true);
+    expect(shouldPoll("r1", true, 30_000, seen)).toBe(false);
+    expect(shouldPoll("r1", true, 60_000, seen)).toBe(true);
+    expect(shouldPoll("c1", false, 0, seen)).toBe(true);
+    expect(shouldPoll("c1", false, 9 * 60_000, seen)).toBe(false);
+    expect(shouldPoll("c1", false, 10 * 60_000, seen)).toBe(true);
+  });
+  it("(e) session cookie <expiry>.<hmac> with 30-day expiry", () => {
+    const now = Date.UTC(2026, 8, 24);
+    const c = issueSession("pw", now);
+    expect(c).toMatch(/^\d+\.[0-9a-f]{64}$/);
+    expect(Number(c.split(".")[0])).toBe(now / 1000 + 30 * 86400);
+    expect(verifySession(c, "pw", now)).toBe(true);
+    expect(verifySession(c, "other", now)).toBe(false);
+    expect(verifySession(c, "pw", now + 31 * 86_400_000)).toBe(false); // expired
+    expect(verifySession(c.replace(/^\d+/, String(now / 1000 + 40 * 86400)), "pw", now)).toBe(false); // extended/tampered
   });
 });

@@ -28,6 +28,7 @@
     "pg": "latest",
     "reflect-metadata": "latest",
     "rxjs": "latest",
+    "undici": "^8.11.0",
     "zod": "^4"
   },
   "devDependencies": {

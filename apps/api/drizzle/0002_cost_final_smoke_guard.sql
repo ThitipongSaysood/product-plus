@@ -1,0 +1,3 @@
+DROP INDEX "scout"."scrape_runs_one_running_pipeline_uq";--> statement-breakpoint
+ALTER TABLE "scout"."scrape_runs" ADD COLUMN "cost_final" boolean DEFAULT false NOT NULL;--> statement-breakpoint
+CREATE UNIQUE INDEX "scrape_runs_one_running_job_uq" ON "scout"."scrape_runs" USING btree ("product_group_id","kind") WHERE "scout"."scrape_runs"."status" = 'running' AND "scout"."scrape_runs"."kind" IN ('pipeline', 'smoke');

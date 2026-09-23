@@ -110,14 +110,15 @@ export async function planScrape(g: GroupRecord, now = new Date()) {
   }
   // monthly budget (spent + in-flight provisional + this round) then per-round cap; each actor's
   // maxTotalChargeUsd = min(cap share, remaining budget) so Apify itself stops billing there.
-  if (targets.length) {
+  if (mode === "apify" && targets.length) {
+    // mock rounds cost $0: budget / run cap apply to paid (apify) groups only
     const inFlightUsd = running.filter((r) => r.groupId === g.id).reduce((s, r) => s + (r.cost ?? 0), 0);
     const plan = planRound({ budgetUsd: g.monthlyBudgetUsd, spentUsd: spent - inFlightUsd, inFlightUsd, capUsd: g.runCapUsd, estimates: targets.map((t) => t.estimateUsd) });
     if (!plan.ok) {
       for (const t of targets) skip(t, plan.reason);
       return { mode, targets: [], result: out, estimateUsd: plan.total };
     }
-    if (mode === "apify") targets.forEach((t, i) => (t.maxTotalChargeUsd = plan.shares[i]));
+    targets.forEach((t, i) => (t.maxTotalChargeUsd = plan.shares[i]));
   }
   out.started.push(...targets.map((t) => ({ platform: t.platform, keyword: t.keyword })));
   return { mode, targets, result: out, estimateUsd: targets.reduce((s, t) => s + t.estimateUsd, 0) };

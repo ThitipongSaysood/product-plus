@@ -15,6 +15,13 @@
       "when": 1790188781180,
       "tag": "0001_one_running_pipeline",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790189302627,
+      "tag": "0002_cost_final_smoke_guard",
+      "breakpoints": true
     }
   ]
 }

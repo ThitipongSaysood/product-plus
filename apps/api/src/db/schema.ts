@@ -158,15 +158,17 @@ export const scrapeRuns = scout.table(
     itemsIn: integer("items_in"),
     itemsOut: integer("items_out"),
     costUsd: numeric("cost_usd", { precision: 10, scale: 4, mode: "number" }),
+    costFinal: boolean("cost_final").notNull().default(false), // true once the actual Apify cost replaced the provisional one
     note: text("note"),
   },
   (t) => [
     index("scrape_runs_group_kind_idx").on(t.productGroupId, t.kind, t.startedAt),
     index("scrape_runs_status_idx").on(t.status),
     index("scrape_runs_apify_idx").on(t.apifyRunId),
-    uniqueIndex("scrape_runs_one_running_pipeline_uq")
+    // one running pipeline and one running smoke test per group (atomic "already running" guard)
+    uniqueIndex("scrape_runs_one_running_job_uq")
       .on(t.productGroupId, t.kind)
-      .where(sql`${t.status} = 'running' AND ${t.kind} = 'pipeline'`),
+      .where(sql`${t.status} = 'running' AND ${t.kind} IN ('pipeline', 'smoke')`),
   ],
 );
 

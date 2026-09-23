@@ -1,5 +1,6 @@
 import "reflect-metadata";
 import { NestFactory } from "@nestjs/core";
+import type { NestExpressApplication } from "@nestjs/platform-express";
 import cookieParser from "cookie-parser";
 import type { NextFunction, Request, Response } from "express";
 import { AppModule } from "./app.module.js";
@@ -15,7 +16,10 @@ async function main() {
   }
   await getDb(); // opens + migrates before the first request
   await closeOrphaned();
-  const app = await NestFactory.create(AppModule, { logger: ["error", "warn", "log"] });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, { logger: ["error", "warn", "log"] });
+  // the web (Next) proxies /api from loopback/private hops: trust only those, so req.ip = the real client
+  // from X-Forwarded-For (login rate limit is keyed on it); a public hop's XFF is ignored.
+  app.set("trust proxy", "loopback, linklocal, uniquelocal");
   app.setGlobalPrefix("api");
   app.use(cookieParser());
   // CSRF: mutating calls must be JSON (a cross-site form/img cannot send that content type)

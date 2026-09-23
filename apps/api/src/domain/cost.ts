@@ -130,3 +130,10 @@ export function costFromEvents(charged: Record<string, number> | null | undefine
   }
   return Math.round(sum * 10000) / 10000;
 }
+
+/** usageTotalUsd and charged events × prices can disagree; bill-side safety = take the larger. */
+export function pickActualCost(usageUsd: number | null, fromEvents: number | null): number | null {
+  if (usageUsd === null) return fromEvents;
+  if (fromEvents === null) return usageUsd;
+  return Math.max(usageUsd, fromEvents);
+}

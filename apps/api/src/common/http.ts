@@ -14,7 +14,23 @@ import type { z } from "zod";
 import { AppError } from "./errors.js";
 
 export const SESSION_COOKIE = "pp_session";
-export const sessionToken = (password: string) => createHmac("sha256", password).update("pp-session-v1").digest("hex");
+export const SESSION_TTL_S = 30 * 24 * 3600;
+const sessionSig = (password: string, exp: number) => createHmac("sha256", password).update(`pp-session-v1|${exp}`).digest("hex");
+
+/** Cookie value `<expiryEpochSeconds>.<hex HMAC-SHA256(key=APP_PASSWORD, msg="pp-session-v1|<expiry>")>`. */
+export function issueSession(password: string, nowMs = Date.now()) {
+  const exp = Math.floor(nowMs / 1000) + SESSION_TTL_S;
+  return `${exp}.${sessionSig(password, exp)}`;
+}
+
+export function verifySession(cookie: string, password: string, nowMs = Date.now()) {
+  const m = cookie.match(/^(\d{1,12})\.([0-9a-f]{64})$/);
+  if (!m) return false;
+  const exp = Number(m[1]);
+  const now = Math.floor(nowMs / 1000);
+  if (exp <= now || exp > now + SESSION_TTL_S + 60) return false;
+  return safeEqual(m[2], sessionSig(password, exp));
+}
 
 export function safeEqual(a: string, b: string) {
   const x = Buffer.from(a);
@@ -33,7 +49,7 @@ export class AuthGuard implements CanActivate {
     const req = ctx.switchToHttp().getRequest<Request>();
     if (PUBLIC.some((re) => re.test(req.path))) return true;
     const cookie = (req.cookies as Record<string, string> | undefined)?.[SESSION_COOKIE] ?? "";
-    if (safeEqual(cookie, sessionToken(password))) return true;
+    if (verifySession(cookie, password)) return true;
     throw new AppError(401, "common.unauthorized");
   }
 }

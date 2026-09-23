@@ -6,7 +6,7 @@ import { getDb } from "../db/client.js";
 import { actorEvaluations, scrapeRuns } from "../db/schema.js";
 import { NOTE } from "../domain/notes.js";
 import { normalizeRows } from "../domain/normalize/index.js";
-import { costFromEvents } from "../domain/cost.js";
+import { costFromEvents, pickActualCost } from "../domain/cost.js";
 import type { Platform } from "@pp/contracts";
 import { apifyFetch } from "../sources/apify.js";
 import type { FetchResult } from "../sources/types.js";
@@ -20,7 +20,6 @@ const IN_PROCESS = ["pipeline", "categorize", "media", "trend", "evaluate"];
 
 /** Actual cost: usageTotalUsd, else chargedEventCounts × evaluated prices, else null (keep provisional). */
 async function actualCost(run: RunRecord, res: Extract<FetchResult, { finished: true }>) {
-  if (res.costUsd !== null) return res.costUsd;
   const db = await getDb();
   const [ev] = await db
     .select({ raw: actorEvaluations.raw })
@@ -29,17 +28,21 @@ async function actualCost(run: RunRecord, res: Extract<FetchResult, { finished: 
     .orderBy(desc(actorEvaluations.evaluatedAt))
     .limit(1);
   const events = (ev?.raw as { events?: { name: string; priceUsd: number | null }[] } | null)?.events ?? [];
-  return costFromEvents(res.charged, events);
+  return pickActualCost(res.costUsd, costFromEvents(res.charged, events));
 }
 
 export async function finishApifyRun(run: RunRecord, res: Extract<FetchResult, { finished: true }>) {
   const cost = await actualCost(run, res);
   if (run.status !== "running") {
     // closed already (TIMED-OUT / START-LOST / earlier webhook): cost-only update, never re-ingest
-    if (cost !== null) await (await getDb()).update(scrapeRuns).set({ costUsd: cost }).where(eq(scrapeRuns.id, run.id));
+    if (cost !== null) await (await getDb()).update(scrapeRuns).set({ costUsd: cost, costFinal: true }).where(eq(scrapeRuns.id, run.id));
     return { ignored: true as const };
   }
-  if (run.kind === "scrape") return ingestRun(run.id, { rows: res.rows, costUsd: cost ?? run.costUsd, apifyStatus: res.apifyStatus });
+  if (run.kind === "scrape") {
+    const r = await ingestRun(run.id, { rows: res.rows, costUsd: cost ?? run.costUsd, apifyStatus: res.apifyStatus });
+    if (cost !== null) await (await getDb()).update(scrapeRuns).set({ costFinal: true }).where(eq(scrapeRuns.id, run.id));
+    return r;
+  }
   // smoke: record what the actor really returned against the evaluation row
   const { items, itemsIn } = normalizeRows(run.platform as Platform, res.rows, run.keyword ?? "", 5);
   const db = await getDb();
@@ -52,11 +55,22 @@ export async function finishApifyRun(run: RunRecord, res: Extract<FetchResult, {
     itemsIn,
     itemsOut: items.length,
     costUsd: cost ?? run.costUsd,
+    costFinal: cost !== null,
   });
   return { ignored: false };
 }
 
 let inFlight: Promise<number> | null = null;
+const lastPoll = new Map<string, number>();
+/** Apify polling per run: running runs at most every 60 s (the webhook is the fast path), closed runs
+ *  waiting for their cost at most every 10 min — never on every /jobs/status call. */
+export function shouldPoll(runId: string, running: boolean, nowMs: number, seen = lastPoll) {
+  const gap = running ? 60_000 : 10 * 60_000;
+  const last = seen.get(runId);
+  if (last !== undefined && nowMs - last < gap) return false;
+  seen.set(runId, nowMs);
+  return true;
+}
 
 export function reconcile(now = new Date()): Promise<number> {
   inFlight ??= doReconcile(now).finally(() => (inFlight = null));
@@ -65,8 +79,8 @@ export function reconcile(now = new Date()): Promise<number> {
 
 async function doReconcile(now: Date) {
   const db = await getDb();
-  // running runs + runs we closed as TIMED-OUT in the last 24 h (Apify may still finish them: cost-only update)
-  // ponytail: those are re-polled every reconcile for 24 h; add an "actual cost known" flag if that gets chatty.
+  // running runs + runs we closed as TIMED-OUT in the last 24 h whose actual cost is still unknown
+  // (Apify may still finish them → cost-only update; cost_final stops the polling).
   const running = await db
     .select()
     .from(scrapeRuns)
@@ -75,7 +89,12 @@ async function doReconcile(now: Date) {
         inArray(scrapeRuns.kind, ["scrape", "smoke"]),
         or(
           eq(scrapeRuns.status, "running"),
-          and(eq(scrapeRuns.note, NOTE.timedOut()), isNotNull(scrapeRuns.apifyRunId), gte(scrapeRuns.finishedAt, new Date(now.getTime() - 86_400_000))),
+          and(
+            eq(scrapeRuns.note, NOTE.timedOut()),
+            eq(scrapeRuns.costFinal, false),
+            isNotNull(scrapeRuns.apifyRunId),
+            gte(scrapeRuns.finishedAt, new Date(now.getTime() - 86_400_000)),
+          ),
         ),
       ),
     );
@@ -90,7 +109,7 @@ async function doReconcile(now: Date) {
       }
       continue;
     }
-    if (token) {
+    if (token && shouldPoll(run.id, run.status === "running", now.getTime())) {
       try {
         const res = await apifyFetch(token, run.apifyRunId, 50);
         if (res.finished) {

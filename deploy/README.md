@@ -31,3 +31,9 @@ Only `web` needs a public domain; the browser reaches the api through the web's 
 - Apify console → Billing → **monthly spending limit** (second layer under the app's own budget).
 - In the app: Settings → Keywords & Taxonomy → group budget ($10/month default) and **per-round cap** ($1.00 default; each actor run gets its share as `maxTotalChargeUsd`).
 - A weekly round of 3 platforms × 50 ≈ $0.96 at FREE-tier prices (≈ $4/month).
+
+## CI
+`deploy/ci.yml` is a ready GitHub Actions workflow (install → typecheck → test). It is not in `.github/workflows/` because the token used to push lacked the `workflow` scope. Enable it with:
+```bash
+gh auth refresh -s workflow && mkdir -p .github/workflows && git mv deploy/ci.yml .github/workflows/ci.yml && git commit -m "Add CI" && git push
+```
