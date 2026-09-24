@@ -14,6 +14,7 @@ export const NAV: NavGroup[] = [
     { href: "/actors", key: "nav.actors", short: "nav.short.actors", icon: "Analyse" },
   ] },
   { key: "nav.group.settings", items: [
+    { href: "/settings/groups", key: "nav.groups", short: "nav.short.groups", icon: "Package" },
     { href: "/settings/keywords", key: "nav.keywords", short: "nav.short.keywords", icon: "Tag" },
     { href: "/settings/system", key: "nav.system", short: "nav.short.system", icon: "Cog" },
   ] },

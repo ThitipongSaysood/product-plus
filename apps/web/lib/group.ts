@@ -8,8 +8,10 @@ export function groupPlatforms(group: Group | null | undefined): Platform[] {
   return PLATFORM_LIST.filter((p) => on.has(p));
 }
 
+/** An empty `pg` means "no ?pg= in the url" — the api answers for its oldest group, so resolve to the same
+ *  one here. Without this the page loses the group's taxonomy and prints raw category keys. */
 export async function loadGroup(pg: string) {
   const r = await api<Group[]>("/groups");
-  const group = r.data?.find((g) => g.slug === pg) ?? null;
+  const group = (pg ? r.data?.find((g) => g.slug === pg) : r.data?.[0]) ?? null;
   return { group, platforms: groupPlatforms(group), error: r.error ?? (r.data && !group ? ("errors.group.notFound" as const) : undefined) };
 }

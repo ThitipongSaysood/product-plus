@@ -28,6 +28,7 @@ const ALLOW_GRID: Record<string, string> = {
   ".ap-lane__row": "44px thumb | title | number row — fixed thumb column, title is minmax(0,1fr)",
   ".ap-bottomnav": "mobile bottom bar: 5 equal slots (§4.2)",
   ".ap-bottomnav__sheet": "More sheet is 2 columns of nav links (§4.2)",
+  ".ap-tiers": "price ladder: two content-sized columns (\"1–9 เส้น\" + ¥13.50) — ~160px total, safe at 320px",
 };
 const ALLOW_WIDTH: Record<string, string> = {};
 const ALLOW_FONT: Record<string, number> = { ".ap-bottomnav__label": 11 }; // §3: bottom-bar labels only

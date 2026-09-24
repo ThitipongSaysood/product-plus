@@ -14,6 +14,9 @@ import { finishApifyRun } from "../jobs/reconcile.js";
 import { clientIp, RateLimiter } from "../domain/guards.js";
 import { runScheduled } from "./weekly.js";
 
+/** A currency rate is a plain positive number — "4.85", never "4,85 baht" or an expression. */
+const isRate = (v: string) => /^\d+(\.\d+)?$/.test(v.trim()) && Number(v) > 0 && Number(v) < 1000;
+
 const authLimiter = new RateLimiter(10, 60_000); // POST /api/auth: 10 tries per minute per IP
 const MEDIA_HEADERS = { "x-content-type-options": "nosniff", "content-security-policy": "default-src 'none'; style-src 'unsafe-inline'" };
 
@@ -67,6 +70,9 @@ export class SystemController {
     if (!e) throw new AppError(400, "errors.validation");
     if (e.envOnly) throw new AppError(400, "errors.settings.envOnly");
     if (body.key === "SOURCE_MODE" && body.value && !["mock", "apify"].includes(body.value)) throw new AppError(400, "errors.validation");
+    // An FX rate that does not parse would be stored and then silently ignored at read time, leaving
+    // prices with no baht at all and no explanation. Reject it here instead.
+    if (e.group === "money" && body.value !== null && !isRate(body.value)) throw new AppError(400, "errors.settings.badRate");
     await saveSetting(body.key, body.value);
     return listSettings();
   }

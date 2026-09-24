@@ -15,6 +15,8 @@ const PATTERNS: [RegExp, DictKey, string[]][] = [
   [/^Could not start the actor: (.*)$/, "notes.startFailed", ["detail"]],
   [/^Categorized (\d+) products: (\d+) by platform map, (\d+) by rules, (\d+) by AI, (\d+) unclassified\.?$/, "notes.categorized", ["n", "platform_n", "rules", "llm", "unclassified"]],
   [/^AI categorization failed: (.*)$/, "notes.llmFailed", ["detail"]],
+  [/^Translated (\d+) of (\d+) titles\.?$/, "notes.translated", ["done", "total"]],
+  [/^AI translation failed: (.*)$/, "notes.translateFailed", ["detail"]],
   [/^Cached (\d+) images, (\d+) failed\.?$/, "notes.media", ["ok", "failed"]],
   [/^Pipeline finished: (\d+) of (\d+) scrapes succeeded, (\d+) skipped\.?$/, "notes.pipeline", ["ok", "total", "skipped"]],
   [/^Step (\S+) failed: (.*)$/, "notes.stepFailed", ["step", "detail"]],

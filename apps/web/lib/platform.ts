@@ -23,4 +23,6 @@ export function first(v: string | string[] | undefined): string | undefined {
   return Array.isArray(v) ? v[0] : v;
 }
 
-export const DEFAULT_PG = "apple-watch-bands";
+/** No ?pg= in the URL. Left out of api calls, and the api then answers for its oldest group — so the
+ *  app keeps working after any single group (including the one seeded first) is deleted. */
+export const DEFAULT_PG = "";

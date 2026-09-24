@@ -64,7 +64,7 @@ export function GroupForm({ group }: { group: Group }) {
           void s.run(() => send<Group>("PATCH", `/api/groups/${encodeURIComponent(group.slug)}`, { monthlyBudgetUsd: budgetN, runCapUsd: runCapN, resultLimit: limitN, schedule, platforms: PLATFORM_LIST.filter((p) => platforms.includes(p)) }), t("common.saved"));
         }}
       >
-        <div className="ap-form-row">
+        <div className="ap-form-row ap-form-row--level">
           <Field label={t("group.budget")} htmlFor="g-budget" help={t("group.budgetHelp")} error={budgetBad ? t("group.budgetInvalid") : undefined}>
             <TextInput id="g-budget" type="number" min={0} step="0.5" inputMode="decimal" value={budget} onChange={(e) => setBudget(e.target.value)} aria-invalid={budgetBad} />
           </Field>
@@ -156,7 +156,7 @@ export function KeywordsEditor({ pg, keywords, platforms }: { pg: string; keywor
         </TableScroll>
       )}
       <form
-        className="ap-form-row"
+        className="ap-form-row ap-form-row--level"
         onSubmit={async (e) => {
           e.preventDefault();
           if (!keyword.trim()) return;

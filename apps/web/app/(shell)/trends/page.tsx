@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { TrendRow, TrendsResponse } from "@pp/contracts";
-import { ApiErrorAlert, BrandMark, SoldBadge } from "@/components/bits";
+import { ApiErrorAlert, BrandMark, shownTitle, SoldBadge } from "@/components/bits";
 import { HBarChart } from "@/components/charts";
 import { PlatformFilter } from "@/components/PlatformFilter";
 import { Alert, EmptyState, SectionTitle, TableScroll } from "@/components/ui";
@@ -42,7 +42,7 @@ function TrendSection({ t, kind, rows, pg, from }: { t: T; kind: "rising" | "fal
   const pct = (r: TrendRow) => Math.abs(r.changePct ?? 0) * 100;
   const sorted = rows.slice().sort((a, b) => pct(b) - pct(a));
   const max = Math.max(1, ...sorted.map(pct));
-  const top = sorted.slice(0, 10).map((r) => ({ label: r.title ?? t("product.untitled"), delta: Math.round(pct(r) * 10) / 10 }));
+  const top = sorted.slice(0, 10).map((r) => ({ label: shownTitle(t, r).text, delta: Math.round(pct(r) * 10) / 10 }));
   const title = t(kind === "rising" ? "trends.rising" : "trends.falling");
   return (
     <section className="ox-stack">
@@ -77,7 +77,7 @@ function TrendSection({ t, kind, rows, pg, from }: { t: T; kind: "rising" | "fal
                 {sorted.map((r) => (
                   <tr key={r.id}>
                     <td style={{ minWidth: 220 }}>
-                      <Link href={`/products/${encodeURIComponent(r.id)}?pg=${encodeURIComponent(pg)}&from=${encodeURIComponent(from)}`} className="line-clamp-2" lang="zh-CN">{r.title ?? t("product.untitled")}</Link>
+                      <Link href={`/products/${encodeURIComponent(r.id)}?pg=${encodeURIComponent(pg)}&from=${encodeURIComponent(from)}`} className="line-clamp-2" lang={shownTitle(t, r).lang} title={r.title ?? undefined}>{shownTitle(t, r).text}</Link>
                     </td>
                     <td><BrandMark t={t} platform={r.platform} /></td>
                     <td><SoldBadge t={t} sold={r.sold} /></td>

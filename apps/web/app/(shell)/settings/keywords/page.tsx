@@ -8,11 +8,12 @@ import { groupPlatforms } from "@/lib/group";
 
 export default async function KeywordsSettingsPage(props: PageProps<"/settings/keywords">) {
   const sp = await props.searchParams;
-  const pg = getPg(sp);
   const t = await getT();
+  // These endpoints take the slug in the path, so an absent ?pg= has to be resolved before they are called.
+  const groups = await api<Group[]>("/groups");
+  const pg = getPg(sp) || groups.data?.[0]?.slug || "";
   const slug = encodeURIComponent(pg);
-  const [groups, keywords, taxonomy, unmapped] = await Promise.all([
-    api<Group[]>("/groups"),
+  const [keywords, taxonomy, unmapped] = await Promise.all([
     api<Keyword[]>(`/groups/${slug}/keywords`),
     api<TaxonomyEntry[]>(`/groups/${slug}/taxonomy`),
     api<UnmappedCategory[]>(`/category-map/unmapped${qs({ pg })}`),

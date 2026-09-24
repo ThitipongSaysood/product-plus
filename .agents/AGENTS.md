@@ -31,6 +31,14 @@
 6. **Re-generate** `.agents/index/repo-tree.md` if the directory structure
    changes significantly.
 
+## Skills
+
+Skill routing for this repo is a hard rule and lives in the root `AGENTS.md` — read it, do not
+duplicate it here. Short version: `using-superpowers` when unsure · `anthropic-skills:omnix-design-system` +
+`frontend-design` + `ui-ux-pro-max` before any UI · `web-design-guidelines` before calling UI done ·
+`grill-with-docs` before implementing a plan that touches actors, contracts or money guards ·
+`session-notes` for these files.
+
 ## Project rules
 
 - Source of truth: `docs/04-handoff-china-marketplace-scout.md` (logic) · `docs/design-system.md` (UI) · `docs/SPEC.md` (decisions) · `docs/PLAN.md` (API + layout) · `packages/contracts/src/index.ts` (API types, `import type` only).

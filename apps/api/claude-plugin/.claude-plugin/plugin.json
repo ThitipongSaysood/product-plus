@@ -1,0 +1,6 @@
+{
+  "name": "product-plus",
+  "description": "Skills the Product Plus api runs through the claude CLI. Loaded explicitly with --plugin-dir; nothing else on the host is loaded.",
+  "version": "1.0.0",
+  "author": { "name": "Product Plus" }
+}

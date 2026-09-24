@@ -1,26 +1,40 @@
 // groups · keywords · taxonomy · category map
 import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query } from "@nestjs/common";
-import { and, eq } from "drizzle-orm";
+import { and, eq, notExists, sql } from "drizzle-orm";
 import { z } from "zod";
 import type { TaxonomyEntry } from "@pp/contracts";
 import { getDb } from "../db/client.js";
-import { keywords, productGroups } from "../db/schema.js";
+import { keywords, media, productGroups, products, scrapeRuns } from "../db/schema.js";
 import { AppError, notFound } from "../common/errors.js";
 import { ZodPipe } from "../common/http.js";
 import { UNCLASSIFIED } from "../domain/categorize.js";
-import { capsValid } from "../domain/guards.js";
+import { capsValid, isUniqueViolation, slugify } from "../domain/guards.js";
 import { PLATFORM_LIST } from "../domain/types.js";
 import { applyCategoryMap } from "../jobs/categorize.js";
 import { groupBySlug } from "../jobs/runs.js";
 import { toGroup, toKeyword, unmapped } from "./queries.js";
 
 const platform = z.enum(PLATFORM_LIST as ["douyin", "1688", "temu", "xhs"]);
+const slugIn = z.string().trim().regex(/^[a-z0-9]([a-z0-9-]{0,58}[a-z0-9])?$/);
 const groupPatch = z.object({
+  name: z.string().trim().min(1).max(80).optional(), // display name only — the slug is immutable
   monthlyBudgetUsd: z.number().min(0).max(10000).optional(),
   resultLimit: z.number().int().min(1).max(50).optional(),
   runCapUsd: z.number().min(0.1).max(1000).optional(),
   schedule: z.enum(["weekly", "daily", "manual"]).optional(),
   platforms: z.array(platform).min(1).max(4).optional(),
+});
+// A new group starts with spending paused ($0) so creating one can never begin an Apify charge.
+const groupCreate = z.object({
+  name: z.string().trim().min(1).max(80),
+  slug: slugIn.optional(),
+  platforms: z.array(platform).min(1).max(4),
+  schedule: z.enum(["weekly", "daily", "manual"]).default("weekly"),
+  resultLimit: z.number().int().min(1).max(50).default(50),
+  monthlyBudgetUsd: z.number().min(0).max(10000).default(0),
+  runCapUsd: z.number().min(0.1).max(1000).default(1),
+  sourceMode: z.enum(["mock", "apify"]).default("apify"),
+  copyTaxonomyFrom: z.string().trim().min(1).max(60).optional(),
 });
 const keywordIn = z.object({
   platform,
@@ -50,7 +64,41 @@ export class GroupsController {
   @Get("groups")
   async groups() {
     const db = await getDb();
-    return (await db.select().from(productGroups).orderBy(productGroups.createdAt)).map(toGroup);
+    // productCount rides along so the delete dialog can say what is about to be lost.
+    const counts = new Map(
+      (await db.select({ id: products.productGroupId, n: sql<number>`count(*)::int` }).from(products).groupBy(products.productGroupId)).map((r) => [r.id, r.n]),
+    );
+    return (await db.select().from(productGroups).orderBy(productGroups.createdAt)).map((g) => ({ ...toGroup(g), productCount: counts.get(g.id) ?? 0 }));
+  }
+
+  @Post("groups")
+  async createGroup(@Body(new ZodPipe(groupCreate)) body: z.infer<typeof groupCreate>) {
+    const slug = body.slug ?? slugify(body.name);
+    // Thai/Chinese names leave nothing to slugify — ask for one rather than inventing an opaque id.
+    if (!slugIn.safeParse(slug).success) throw new AppError(400, "errors.group.slugRequired");
+    if (!capsValid(body.monthlyBudgetUsd, body.runCapUsd)) throw new AppError(400, "errors.validation");
+    const taxonomy = body.copyTaxonomyFrom ? (await groupBySlug(body.copyTaxonomyFrom)).taxonomy : [];
+    const db = await getDb();
+    try {
+      const [row] = await db
+        .insert(productGroups)
+        .values({
+          slug,
+          name: body.name,
+          platforms: [...new Set(body.platforms)],
+          monthlyBudgetUsd: body.monthlyBudgetUsd,
+          resultLimit: body.resultLimit,
+          runCapUsd: body.runCapUsd,
+          schedule: body.schedule,
+          sourceMode: body.sourceMode,
+          taxonomy,
+        })
+        .returning();
+      return toGroup(row);
+    } catch (e) {
+      if (isUniqueViolation(e)) throw new AppError(409, "errors.group.slugTaken");
+      throw e;
+    }
   }
 
   @Patch("groups/:slug")
@@ -64,6 +112,28 @@ export class GroupsController {
       .where(eq(productGroups.id, g.id))
       .returning();
     return toGroup(row);
+  }
+
+  /** Destructive: products, snapshots, runs, keywords and change events all cascade from the group row. */
+  @Delete("groups/:slug")
+  async deleteGroup(@Param("slug") slug: string, @Body(new ZodPipe(z.object({ confirm: z.literal(true) }))) _body: { confirm: true }) {
+    const g = await groupBySlug(slug);
+    const db = await getDb();
+    const [{ n: total }] = await db.select({ n: sql<number>`count(*)::int` }).from(productGroups);
+    if (total <= 1) throw new AppError(400, "errors.group.lastOne"); // the app always needs one group to show
+    const running = await db
+      .select({ id: scrapeRuns.id })
+      .from(scrapeRuns)
+      .where(and(eq(scrapeRuns.productGroupId, g.id), eq(scrapeRuns.status, "running")))
+      .limit(1);
+    if (running.length) throw new AppError(400, "errors.job.alreadyRunning");
+    await db.delete(productGroups).where(eq(productGroups.id, g.id));
+    // products are gone, but media rows only lost their reference (set null) — drop the now-unreachable blobs.
+    const orphans = await db
+      .delete(media)
+      .where(notExists(db.select({ x: sql`1` }).from(products).where(eq(products.imageMediaId, media.id))))
+      .returning({ id: media.id });
+    return { ok: true, mediaRemoved: orphans.length };
   }
 
   @Get("groups/:slug/keywords")

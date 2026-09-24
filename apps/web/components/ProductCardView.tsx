@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { ProductCard } from "@pp/contracts";
 import { formatMoney, type T } from "@/i18n";
-import { BrandMark, ProductImage, SoldBadge, TrendTile } from "./bits";
+import { BrandMark, ProductImage, shownTitle, SoldBadge, TrendTile } from "./bits";
 
 export function categoryLabel(t: T, key: string, taxonomy: { key: string; th: string; en: string; zh: string }[]): string {
   if (key === "unclassified") return t("category.unclassified");
@@ -21,11 +21,13 @@ export function ProductCardView({ t, p, pg, from, categoryText }: { t: T; p: Pro
           </div>
         </div>
         <div className="ap-wall__body">
-          <div className="ap-wall__title line-clamp-2" lang="zh-CN" title={p.title ?? undefined}>{p.title ?? t("product.untitled")}</div>
+          <div className="ap-wall__title line-clamp-2" lang={shownTitle(t, p).lang} title={p.title ?? undefined}>{shownTitle(t, p).text}</div>
           <div className="ox-xs ox-muted line-clamp-2">{categoryText}</div>
           <div className="ap-wall__foot">
             <div className="ox-stack" style={{ gap: 6, minWidth: 0 }}>
-              <span className="ap-wall__price">{p.price == null ? "—" : formatMoney(t.locale, p.price, p.currency ?? "CNY")}</span>
+              {/* entryPrice first: `price` is the ladder's cheapest rung, which is often a bulk rate the
+                  buyer cannot take at the minimum order — the detail page would then disagree with this card. */}
+              <span className="ap-wall__price">{p.entryPrice ?? p.price ? formatMoney(t.locale, (p.entryPrice ?? p.price)!, p.currency ?? "CNY") : "—"}</span>
               <SoldBadge t={t} sold={p.sold} />
             </div>
             <TrendTile t={t} trend={p.trend} />

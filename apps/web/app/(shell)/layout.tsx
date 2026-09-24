@@ -25,6 +25,7 @@ export default async function ShellLayout({ children }: { children: React.ReactN
   const initial: ShellData = {
     pg,
     sourceMode: ov.data?.sourceMode ?? null,
+    canFetchReal: ov.data?.canFetchReal ?? false,
     spend: ov.data?.kpis.spendMonthUsd ?? null,
     budget: ov.data?.kpis.budgetUsd ?? null,
     lastRunAt: ov.data?.summary.lastRunAt ?? null,

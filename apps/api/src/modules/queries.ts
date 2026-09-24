@@ -18,13 +18,16 @@ import type {
   TrendsResponse,
   UnmappedCategory,
 } from "@pp/contracts";
-import { getDb } from "../db/client.js";
-import { changeEvents, keywords, productGroups, products, productSnapshots, scrapeRuns } from "../db/schema.js";
+import { getDb, type Db } from "../db/client.js";
+import { appSettings, changeEvents, keywords, productGroups, products, productSnapshots, scrapeRuns } from "../db/schema.js";
 import { fromPlatformMap, pathKey, UNCLASSIFIED, UNCLASSIFIED_LABEL } from "../domain/categorize.js";
+import { supplyTerms } from "../domain/normalize/supply.js";
+import { brandMarks } from "../domain/brand.js";
 import { computeTrend } from "../domain/trend.js";
 import { loadCategoryMap } from "../jobs/categorize.js";
 import { toRunRow, type GroupRecord } from "../jobs/runs.js";
 import { groupMode, monthSpend } from "../jobs/scrape.js";
+import { getSetting } from "../settings/settings.js";
 import { toSnapshotLike } from "../jobs/trend.js";
 import { notFound } from "../common/errors.js";
 
@@ -55,11 +58,14 @@ export const toCard = (p: ProductRecord): ProductCard => ({
   id: p.id,
   platform: p.platform as Platform,
   title: p.title,
+  titleTh: p.titleTh,
   productUrl: p.productUrl,
   imageId: p.imageMediaId,
   imageSourceUrl: p.imageSourceUrl,
   imageLost: p.imageLost,
   price: p.price,
+  // `price` is the ladder's cheapest rung; this is the rung you are allowed to buy at the minimum order.
+  entryPrice: supplyTerms(p.platform as Platform, p.raw)?.entryPrice ?? null,
   currency: (p.currency as ProductCard["currency"]) ?? null,
   sold: { count: p.latestSoldCount, period: p.latestSoldPeriod as SoldPeriod, lowerBound: p.latestSoldLowerBound, text: p.latestSoldText },
   categoryKey: p.categoryKey ?? UNCLASSIFIED,
@@ -129,6 +135,16 @@ async function eventsFor(where: SQL | undefined, limit: number): Promise<ChangeE
   }));
 }
 
+/** The hand-entered THB rate for `currency`, with the day it was entered. Read straight from the
+ *  settings table rather than getSetting(), because a stale rate has to show its age to be honest. */
+async function fxThb(db: Db, currency: string | null): Promise<{ rate: number; updatedAt: string } | null> {
+  const key = currency === "USD" ? "FX_USD_THB" : currency === "CNY" ? "FX_CNY_THB" : null;
+  if (!key) return null;
+  const [row] = await db.select().from(appSettings).where(eq(appSettings.key, key));
+  const rate = row ? Number(row.value) : NaN;
+  return Number.isFinite(rate) && rate > 0 ? { rate, updatedAt: row!.updatedAt.toISOString() } : null;
+}
+
 export async function productDetail(id: string): Promise<ProductDetail> {
   const db = await getDb();
   if (!/^[0-9a-f-]{36}$/i.test(id)) throw notFound("errors.product.notFound");
@@ -153,7 +169,12 @@ export async function productDetail(id: string): Promise<ProductDetail> {
       attrs: p.attrs,
       keyword: p.keyword,
       platformSignals: p.platformSignals ?? null,
+      brandMarks: brandMarks(p.title),
+      // Read from the stored actor row, not a column: ingest rewrites `raw` every run, so this cannot
+      // go stale and needed no migration. Null for every platform but 1688.
+      supply: supplyTerms(p.platform as Platform, p.raw),
     },
+    fxThb: await fxThb(db, p.currency),
     snapshots: snaps.map((s) => ({
       takenAt: s.takenAt.toISOString(),
       rank: s.rank,
@@ -170,6 +191,7 @@ export async function productDetail(id: string): Promise<ProductDetail> {
 
 export async function overview(g: GroupRecord): Promise<Overview> {
   const db = await getDb();
+  const mode = await groupMode(g);
   const scrapes = await db
     .select()
     .from(scrapeRuns)
@@ -224,7 +246,9 @@ export async function overview(g: GroupRecord): Promise<Overview> {
   const douyinSeries = [...daily.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([date, sold]) => ({ date, sold }));
 
   return {
-    sourceMode: await groupMode(g),
+    sourceMode: mode,
+    // Configured for real data is not the same as able to fetch it — without a token every run is mock.
+    canFetchReal: mode === "apify" && Boolean(await getSetting("APIFY_TOKEN")),
     summary: { newCount: c("new"), goneCount: c("gone"), surgeCount: c("sales_surge"), priceDropCount: c("price_drop"), lastRunAt: lastRunAt?.toISOString() ?? null },
     alerts,
     kpis: {

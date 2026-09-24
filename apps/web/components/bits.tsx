@@ -9,6 +9,13 @@ import { Alert } from "./ui";
 import { ReloadButton } from "./ReloadButton";
 import { SafeImg } from "./SafeImg";
 
+/** Thai title when the translate job has produced one, otherwise the scraped original.
+ *  `lang` matters: the browser picks a Chinese font for the original and a Thai one for the translation. */
+export function shownTitle(t: T, p: { title: string | null; titleTh?: string | null }): { text: string; lang: string } {
+  if (p.titleTh) return { text: p.titleTh, lang: "th" };
+  return { text: p.title ?? t("product.untitled"), lang: "zh-CN" };
+}
+
 export function platformName(t: T, p: Platform | string): string {
   return t.or(`platform.${p}`, p);
 }

@@ -119,6 +119,18 @@ export const smokeCap = (startFee: number, perResult: number) => Math.max(0.02, 
 /** Group caps: while a budget is set, a single round may not be allowed to spend more than the month. */
 export const capsValid = (budgetUsd: number, runCapUsd: number) => !(budgetUsd > 0) || runCapUsd <= budgetUsd;
 
+/** URL slug from a display name. Thai/Chinese names keep no ASCII at all, so "" is a normal result —
+ *  the caller then has to ask for an explicit slug instead of inventing one. */
+export function slugify(name: string): string {
+  return name
+    .normalize("NFKD")
+    .replace(/[̀-ͯ]/g, "") // "Café" → "Cafe"
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .slice(0, 60)
+    .replace(/^-+|-+$/g, "");
+}
+
 /** Client IP for rate limiting behind the web proxy: trust X-Forwarded-For only when the direct peer is a
  *  loopback/private hop, then take the right-most address that is not itself such a hop. */
 export function clientIp(remote: string | undefined, xff: string | string[] | undefined): string {

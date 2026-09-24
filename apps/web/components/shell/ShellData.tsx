@@ -8,6 +8,7 @@ import { DEFAULT_PG } from "@/lib/platform";
 export type ShellData = {
   pg: string;
   sourceMode: SourceMode | null;
+  canFetchReal: boolean;
   spend: number | null;
   budget: number | null;
   lastRunAt: string | null;
@@ -40,6 +41,7 @@ export function ShellDataProvider({ initial, children }: { initial: ShellData; c
       setFetched({
         pg,
         sourceMode: ov.data?.sourceMode ?? null,
+        canFetchReal: ov.data?.canFetchReal ?? false,
         spend: ov.data?.kpis.spendMonthUsd ?? null,
         budget: ov.data?.kpis.budgetUsd ?? null,
         lastRunAt: ov.data?.summary.lastRunAt ?? null,

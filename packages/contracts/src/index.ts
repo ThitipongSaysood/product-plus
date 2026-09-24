@@ -9,7 +9,7 @@ export type SoldPeriod = "30d" | "lifetime" | "unknown";
 export type TrendLabel = "rising" | "falling" | "flat" | "insufficient_history";
 export type CategorySource = "platform" | "rules" | "llm" | "manual";
 export type RunStatus = "running" | "succeeded" | "failed" | "suspect";
-export type RunKind = "scrape" | "categorize" | "media" | "trend" | "evaluate" | "smoke" | "pipeline";
+export type RunKind = "scrape" | "categorize" | "media" | "trend" | "evaluate" | "smoke" | "pipeline" | "translate";
 export type EventKind = "new" | "gone" | "price_drop" | "sales_surge" | "rank_up";
 export type SourceMode = "mock" | "apify";
 export type Schedule = "weekly" | "daily" | "manual";
@@ -32,6 +32,30 @@ export type Group = {
   runCapUsd: number; // max Apify spend per pipeline round (default 1.00); passed to actors as maxTotalChargeUsd
   schedule: Schedule;
   taxonomy: TaxonomyEntry[];
+  productCount?: number; // GET /groups only — what a delete would take with it
+};
+
+// POST /groups. A new group starts with spending paused (budget 0) and no taxonomy unless one is copied.
+export type GroupCreate = {
+  name: string;
+  slug?: string; // omitted → derived from name; required when the name has no ASCII (Thai/Chinese)
+  platforms: Platform[];
+  schedule?: Schedule;
+  resultLimit?: number;
+  monthlyBudgetUsd?: number; // default 0 = spending paused
+  runCapUsd?: number;
+  sourceMode?: SourceMode; // pins the group; "mock" never spends
+  copyTaxonomyFrom?: string; // slug of an existing group
+};
+
+// PATCH /groups/:slug. The slug itself is immutable so shared links keep working.
+export type GroupPatch = {
+  name?: string;
+  monthlyBudgetUsd?: number;
+  resultLimit?: number;
+  runCapUsd?: number;
+  schedule?: Schedule;
+  platforms?: Platform[];
 };
 
 export type Keyword = {
@@ -54,11 +78,14 @@ export type ProductCard = {
   id: string;
   platform: Platform;
   title: string | null;
+  titleTh: string | null; // Thai translation when the translate job has run; original title is never overwritten
   productUrl: string | null;
   imageId: string | null; // cached media → GET /api/media/:id
   imageSourceUrl: string | null; // fallback when not cached yet
   imageLost: boolean; // cache failed and source expired → UI must say so
-  price: number | null;
+  price: number | null; // the CHEAPEST rung of any wholesale ladder — not always purchasable
+  /** What one minimum order costs per unit, when the listing has a ladder. Prefer this for display. */
+  entryPrice: number | null;
   currency: Currency | null;
   sold: SoldInfo;
   categoryKey: string; // "unclassified" when unknown
@@ -105,11 +132,33 @@ export type ProductDetail = {
     attrs: { sizes?: string[]; models?: string[] };
     keyword: string | null;
     platformSignals: { isTrending?: boolean; demandScore?: number } | null; // Temu only, kept separate from our trend
+    /** Apparel/luxury marks the seller's own title claims (not device names it merely fits). Usually []. */
+    brandMarks: string[];
+    supply: SupplyTerms | null; // 1688 only — the retail platforms have no minimum order or price ladder
   };
+  /** Manually-entered THB rate for this product's currency, so the page can price in the money the
+   *  buyer actually spends. Null when no rate is set. `updatedAt` is shown — a hand-set rate goes stale
+   *  and must never read as a live quote. */
+  fxThb: { rate: number; updatedAt: string } | null;
   snapshots: Snapshot[];
   salesTrend: { date: string; units: number }[] | null; // Douyin only
   trendDetail: TrendDetail;
   events: ChangeEvent[];
+};
+
+/** One rung of a wholesale price ladder: "1~499条 ¥6". `maxQty` null means the rung is open-ended. */
+export type PriceTier = { minQty: number; maxQty: number | null; price: number };
+
+/** How a listing is actually bought. `ProductCard.price` is the CHEAPEST rung, which on 1688 is often a
+ *  bulk price the buyer cannot reach — `entryPrice` is what one minimum order costs per unit. */
+export type SupplyTerms = {
+  moq: number | null;
+  unit: string | null; // the platform's own unit word, still in Chinese
+  tiers: PriceTier[]; // ascending by minQty; empty when the listing has no ladder
+  entryPrice: number | null;
+  lowestPrice: number | null;
+  orderCount: number | null; // distinct orders, NOT units sold, and with no time window
+  videoUrl: string | null;
 };
 
 export type TrendDetail = {
@@ -150,7 +199,10 @@ export type RunRow = {
 
 // ---------- overview ----------
 export type Overview = {
-  sourceMode: SourceMode;
+  sourceMode: SourceMode; // what the GROUP is configured to use
+  /** Whether a real scrape could actually run right now: configured for apify AND a token is present.
+   *  Configuration alone was showing a reassuring "real data" badge on a system that could fetch nothing. */
+  canFetchReal: boolean;
   summary: { newCount: number; goneCount: number; surgeCount: number; priceDropCount: number; lastRunAt: string | null };
   alerts: RunRow[]; // latest suspect/failed per platform×keyword
   kpis: {
@@ -237,7 +289,7 @@ export type TriggerResult = {
 // ---------- settings ----------
 export type SettingRow = {
   key: string;
-  group: "apify" | "ai" | "app";
+  group: "apify" | "ai" | "app" | "money";
   secret: boolean;
   value: string | null; // masked to last 4 when secret
   source: "db" | "env" | "fallback" | "unset";

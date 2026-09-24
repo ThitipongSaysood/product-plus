@@ -18,6 +18,7 @@ import {
   normalizeImageType,
   RateLimiter,
   schedulesDue,
+  slugify,
   smokeCap,
 } from "../src/domain/guards.js";
 import { computeTrend } from "../src/domain/trend.js";
@@ -76,6 +77,15 @@ describe("budget + caps", () => {
     expect(capsValid(10, 1)).toBe(true);
     expect(capsValid(0.5, 1)).toBe(false);
     expect(capsValid(0, 1)).toBe(true); // paused budget: cap irrelevant
+  });
+  it("slugifies a display name, and gives back nothing when there is no ascii to keep", () => {
+    expect(slugify("Phone Cases")).toBe("phone-cases");
+    expect(slugify("  Apple Watch — Bands!! ")).toBe("apple-watch-bands");
+    expect(slugify("Café Straps")).toBe("cafe-straps");
+    expect(slugify("เคสมือถือ")).toBe(""); // caller must ask for an explicit slug
+    expect(slugify("手机壳")).toBe("");
+    expect(slugify("x".repeat(80))).toHaveLength(60);
+    expect(slugify("a".repeat(59) + " bands")).toMatch(/[a-z0-9]$/); // never ends on the cut dash
   });
   it("smoke cap = start + 5 × per-result × 1.2, at least $0.02", () => {
     expect(smokeCap(0.005, 0.008)).toBe(0.053);

@@ -259,7 +259,7 @@ select.ox-control { appearance: none; padding-right: var(--omnix-space-8); backg
 .ox-alert--danger { background: var(--omnix-danger-bg); color: var(--omnix-danger-fg); border-color: transparent; }
 .ox-alert--info { background: var(--omnix-info-bg); color: var(--omnix-info-fg); border-color: transparent; }
 .ox-modal-mask { position: fixed; inset: 0; background: rgb(0 0 0 / .45); display: grid; place-items: center; padding: var(--omnix-space-4); z-index: 60; }
-.ox-modal { width: min(520px, 100%); max-height: 90vh; overflow-y: auto; background: var(--omnix-surface); border: 1px solid var(--omnix-border); border-radius: var(--omnix-radius-xl); display: flex; flex-direction: column; }
+.ox-modal { width: min(520px, 100%); max-height: 90vh; overflow-y: auto; overscroll-behavior: contain; background: var(--omnix-surface); border: 1px solid var(--omnix-border); border-radius: var(--omnix-radius-xl); display: flex; flex-direction: column; }
 .ox-modal--wide { width: min(820px, 100%); }
 .ox-modal__head { padding: var(--omnix-space-4); border-bottom: 1px solid var(--omnix-border); font-weight: 600; }
 .ox-modal__body { padding: var(--omnix-space-4); display: flex; flex-direction: column; gap: var(--omnix-space-3); }
@@ -294,6 +294,8 @@ select.ox-control { appearance: none; padding-right: var(--omnix-space-8); backg
 .ox-skeleton { background: linear-gradient(90deg, var(--omnix-surface-2) 25%, var(--omnix-border) 50%, var(--omnix-surface-2) 75%); background-size: 200% 100%; animation: ox-shimmer 1.2s linear infinite; border-radius: var(--omnix-radius-lg); }
 @keyframes ox-shimmer { to { background-position: -200% 0; } }
 .ox-chart__empty { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; color: var(--omnix-fg-muted); font-size: var(--omnix-text-xs); padding: var(--omnix-space-4); }
+/* A chart with nothing to draw should say so in one line, not reserve a full 260px canvas. */
+.ox-chart__empty--inline { position: static; min-height: 72px; }
 
 /* ===== ap-* patterns (design-system §5/§7) ===== */
 .ap-sticky { position: sticky; top: 52px; z-index: 20; background: color-mix(in srgb, var(--omnix-bg) 92%, transparent); backdrop-filter: blur(6px); padding: var(--omnix-space-2) 0; }
@@ -316,6 +318,11 @@ select.ox-control { appearance: none; padding-right: var(--omnix-space-8); backg
 @keyframes ap-indeterminate { from { transform: translateX(-100%); } to { transform: translateX(250%); } }
 
 .ap-jobstatus { display: flex; flex-direction: column; gap: var(--omnix-space-2); font-size: var(--omnix-text-xs); color: var(--omnix-fg-muted); }
+/* A column flex box stretches its children to the width of the widest one, so a long finished-job
+   line ("ประเมิน 44 actor · เลือก: …") blew the button out from 141px to the full 1145px row.
+   Only the button opts out: the progress bar has no width of its own and still needs the stretch,
+   and a --block button keeps its explicit width:100%, so the sidebar sync button is unaffected. */
+.ap-jobstatus > .ox-btn { align-self: flex-start; }
 
 .ap-budget { display: flex; flex-direction: column; gap: var(--omnix-space-2); padding: var(--omnix-space-3); border-radius: var(--omnix-radius-lg); border: 1px solid var(--omnix-border); background: var(--omnix-surface); }
 .ap-budget--mini { padding: 0; border: 0; background: transparent; font-size: var(--omnix-text-xs); }
@@ -385,19 +392,72 @@ select.ox-control { appearance: none; padding-right: var(--omnix-space-8); backg
 .ap-lane__thumb { width: 44px; height: 44px; border-radius: var(--omnix-radius-md); background: var(--omnix-surface-2); overflow: hidden; display: grid; place-items: center; color: var(--omnix-fg-muted); }
 .ap-lane__thumb img { width: 100%; height: 100%; object-fit: contain; }
 
+/* Wholesale price ladder inside a fact cell: two aligned columns, not a nested table. Up to 3 rungs
+   in real data, capped at 12 by the api. */
+.ap-tiers { display: grid; grid-template-columns: auto auto; gap: var(--omnix-space-1) var(--omnix-space-3); justify-content: start; }
+.ap-tiers__row { display: contents; }
+
 /* product detail */
 .ap-detail { display: grid; gap: var(--omnix-space-5); }
-@media (min-width: 1024px) { .ap-detail { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); align-items: start; } }
-.ap-media-full { width: 100%; height: 360px; max-height: 520px; background: var(--omnix-surface-2); border-radius: var(--omnix-radius-lg); display: grid; place-items: center; overflow: hidden; }
-.ap-media-full img { width: 100%; height: 100%; object-fit: contain; }
+@media (min-width: 1024px) {
+  /* Stretching the image pane to match the table only produced a tall grey box around a
+     width-limited photo. The pane keeps its own size and sticks instead, so the picture stays
+     in view while the facts scroll — the leftover space is never empty on screen. */
+  .ap-detail { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); align-items: start; }
+  .ap-gallery-pane { position: sticky; top: calc(52px + var(--omnix-space-4)); }
+}
+/* From 1280 up the facts no longer need three fifths of the row — the values are short and the column
+   was mostly air. The picture takes the slack (it is what you actually judge a band by) and the two
+   columns then end within ~15px of each other instead of leaving a 220px hole under the photo. */
+@media (min-width: 1280px) {
+  .ap-detail { grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); }
+}
+/* flex, not grid+place-items: in a centred grid the child's max-height:100% resolves against its own
+   auto-sized row and stops constraining, which clipped the top and bottom off square listing photos. */
+/* square frame: a listing photo is square far more often than not, so the picture fills the panel
+   instead of floating in grey. */
+.ap-media-full { position: relative; width: 100%; aspect-ratio: 1; background: var(--omnix-surface-2); border-radius: var(--omnix-radius-lg); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+/* max-* not width/height: a centred grid item with height:100% sizes to its own square and gets clipped
+   by the shorter box — the listing photo must never lose its top and bottom. */
+.ap-media-full img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; }
+.ap-media-full__zoom { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; padding: var(--omnix-space-2); border: 0; background: transparent; cursor: zoom-in; }
+/* prev/next sit over the picture; 44px is the minimum comfortable tap target */
+.ap-media-nav { position: absolute; top: 50%; transform: translateY(-50%); display: grid; place-items: center; width: 44px; height: 44px; border-radius: var(--omnix-radius-full); border: 1px solid var(--omnix-border); background: var(--omnix-surface); color: var(--omnix-fg); cursor: pointer; z-index: 1; }
+.ap-media-nav:hover { background: var(--omnix-surface-2); }
+.ap-media-nav.is-prev { left: var(--omnix-space-3); }
+.ap-media-nav.is-next { right: var(--omnix-space-3); }
+.ap-media-count { position: absolute; right: var(--omnix-space-3); bottom: var(--omnix-space-3); padding: 2px var(--omnix-space-2); border-radius: var(--omnix-radius-full); background: var(--omnix-surface); border: 1px solid var(--omnix-border); color: var(--omnix-fg-muted); font-size: var(--omnix-text-xs); font-variant-numeric: tabular-nums; }
+
+/* lightbox: the picture at its natural size, capped by the viewport — never cropped */
+.ap-lightbox { padding: var(--omnix-space-6); overscroll-behavior: contain; }
+.ap-lightbox__stage { display: flex; align-items: center; justify-content: center; max-width: 100%; max-height: 100%; }
+.ap-lightbox__stage img { max-width: min(1200px, 92vw); max-height: 88vh; width: auto; height: auto; object-fit: contain; border-radius: var(--omnix-radius-lg); background: var(--omnix-surface); }
+.ap-lightbox .ap-media-nav { width: 48px; height: 48px; }
+.ap-lightbox .ap-media-nav.is-prev { left: var(--omnix-space-4); }
+.ap-lightbox .ap-media-nav.is-next { right: var(--omnix-space-4); }
+.ap-lightbox .ap-media-count { right: 50%; transform: translateX(50%); bottom: var(--omnix-space-4); }
+.ap-lightbox__close { position: absolute; top: var(--omnix-space-4); right: var(--omnix-space-4); display: grid; place-items: center; width: 44px; height: 44px; border-radius: var(--omnix-radius-full); border: 1px solid var(--omnix-border); background: var(--omnix-surface); color: var(--omnix-fg); cursor: pointer; }
+.ap-lightbox__close:hover { background: var(--omnix-surface-2); }
 .ap-gallery { display: flex; gap: var(--omnix-space-2); overflow-x: auto; }
-.ap-gallery__thumb { width: 64px; height: 64px; flex: 0 0 auto; border-radius: var(--omnix-radius-md); border: 1px solid var(--omnix-border); background: var(--omnix-surface-2); overflow: hidden; }
-.ap-gallery__thumb img { width: 100%; height: 100%; object-fit: contain; }
+.ap-gallery__thumb { width: 64px; height: 64px; flex: 0 0 auto; padding: 0; border-radius: var(--omnix-radius-md); border: 1px solid var(--omnix-border); background: var(--omnix-surface-2); overflow: hidden; cursor: pointer; }
+.ap-gallery__thumb.is-active { border-color: var(--omnix-accent); box-shadow: inset 0 0 0 1px var(--omnix-accent); }
+.ap-gallery__thumb img { width: 100%; height: 100%; object-fit: contain; }  /* both dims set → contain letterboxes, no crop */
 
 /* settings */
 .ap-kv { display: flex; flex-direction: column; gap: var(--omnix-space-2); }
 .ap-form-row { display: flex; flex-wrap: wrap; gap: var(--omnix-space-3); align-items: flex-end; }
 .ap-form-row > .ox-field { flex: 1 1 160px; }
+/* Same row, but label / control / help sit on shared rows, so columns stay level however long the
+   help text runs — help strings differ per language, and flex-end would stagger the inputs. */
+.ap-form-row--level { display: flex; flex-wrap: wrap; gap: var(--omnix-space-3); align-items: start; }
+.ap-form-row--level > .ox-field { flex: 1 1 160px; }
+@media (min-width: 768px) {
+  /* row-gap matches the gap inside a field, so the subgrid tracks line up with the parent's */
+  .ap-form-row--level { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); grid-template-rows: auto auto auto; gap: var(--omnix-space-1) var(--omnix-space-3); }
+  .ap-form-row--level > .ox-field { grid-row: span 3; display: grid; grid-template-rows: subgrid; gap: 0; }
+  /* a trailing submit button is not a field — keep it on the control row, next to the inputs */
+  .ap-form-row--level > :not(.ox-field) { grid-row: 2; align-self: start; }
+}
 
 /* bottom nav (mobile) */
 .ap-bottomnav { display: none; }
@@ -430,7 +490,7 @@ select.ox-control { appearance: none; padding-right: var(--omnix-space-8); backg
   .ap-longevity__n { font-size: 22px; }
   .ap-wall__media { height: 160px; }
   .ap-thumb { width: 56px; height: 56px; }
-  .ap-media-full { height: 280px; }
+  .ap-media-full { aspect-ratio: 1; }
   .ap-bottomnav { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); position: fixed; left: 0; right: 0; bottom: 0; z-index: 45; height: calc(56px + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); background: var(--omnix-surface); border-top: 1px solid var(--omnix-border); }
   .ap-bottomnav__item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 44px; border: 0; background: transparent; color: var(--omnix-fg-muted); font: inherit; cursor: pointer; }
   .ap-bottomnav__item:hover { text-decoration: none; }
@@ -440,6 +500,8 @@ select.ox-control { appearance: none; padding-right: var(--omnix-space-8); backg
   .ap-bottomnav__sheet { position: fixed; left: 0; right: 0; bottom: calc(56px + env(safe-area-inset-bottom)); z-index: 46; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--omnix-space-2); padding: var(--omnix-space-4); background: var(--omnix-surface); border-top: 1px solid var(--omnix-border); border-radius: var(--omnix-radius-xl) var(--omnix-radius-xl) 0 0; box-shadow: var(--omnix-shadow-lg); }
   .ap-bottomnav__sheet .ox-nav-item { min-height: 44px; }
   .ap-brandname { display: none; }
+  /* secondary table columns: six columns cannot be read on a phone even inside a scroller */
+  .ap-col-wide { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

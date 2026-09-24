@@ -96,6 +96,10 @@ export const products = scout.table(
     externalId: text("external_id").notNull(),
     keyword: text("keyword"),
     title: text("title"),
+    // Thai translation of the (Chinese) title, filled by the manual translate job — the original is kept
+    // because it is what you paste back into the platform to find the listing again.
+    titleTh: text("title_th"),
+    titleThAt: ts("title_th_at"),
     productUrl: text("product_url"),
     imageMediaId: uuid("image_media_id").references(() => media.id, { onDelete: "set null" }),
     imageSourceUrl: text("image_source_url"),

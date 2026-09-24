@@ -4,6 +4,8 @@ import { ApiErrorAlert } from "@/components/bits";
 import { ChevronLeftIcon, ChevronRightIcon } from "@/components/icons";
 import { ProductCardView, categoryLabel } from "@/components/ProductCardView";
 import { ProductFilters } from "@/components/ProductFilters";
+import { JobButton } from "@/components/JobButton";
+import { GlobeIcon } from "@/components/icons";
 import { EmptyState } from "@/components/ui";
 import { formatNumber } from "@/i18n";
 import { getT } from "@/i18n/server";
@@ -39,6 +41,18 @@ export default async function ProductsPage(props: PageProps<"/products">) {
         <div>
           <h1 className="ox-page-title">{t("products.title")}</h1>
           <p className="ox-muted">{t("products.sub")}</p>
+        </div>
+        <div className="ox-page-head__actions">
+          <JobButton
+            key={`tr-${pg}`}
+            kind="translate"
+            pg={pg}
+            path="/api/jobs/translate"
+            body={{ pg }}
+            label={t("translate.run")}
+            icon={<GlobeIcon size={16} />}
+            confirm={t("translate.confirm")}
+          />
         </div>
       </div>
       <ProductFilters platforms={g.platforms} categories={taxonomy.map((c) => ({ key: c.key, label: { th: c.th, en: c.en, zh: c.zh } }))} />

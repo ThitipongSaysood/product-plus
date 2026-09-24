@@ -16,6 +16,8 @@ export const NOTE = {
   categorized: (n: number, platform: number, rules: number, llm: number, unclassified: number) =>
     `Categorized ${n} products: ${platform} by platform map, ${rules} by rules, ${llm} by AI, ${unclassified} unclassified.`,
   llmFailed: (detail: string) => `AI categorization failed: ${detail}`,
+  translated: (done: number, total: number) => `Translated ${done} of ${total} titles.`,
+  translateFailed: (detail: string) => `AI translation failed: ${detail}`,
   pipeline: (ok: number, total: number, skipped: number) =>
     `Pipeline finished: ${ok} of ${total} scrapes succeeded, ${skipped} skipped.`,
   stepFailed: (step: string, detail: string) => `Step ${step} failed: ${detail}`,

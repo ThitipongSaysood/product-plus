@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { CategoriesResponse } from "@pp/contracts";
-import { ApiErrorAlert, platformName, ProductImage, SoldBadge } from "@/components/bits";
+import { ApiErrorAlert, platformName, ProductImage, shownTitle, SoldBadge } from "@/components/bits";
 import { PlatformFilter } from "@/components/PlatformFilter";
 import { Alert, EmptyState } from "@/components/ui";
 import { formatNumber, formatPercent } from "@/i18n";
@@ -56,7 +56,7 @@ export default async function CategoriesPage(props: PageProps<"/categories">) {
                       <Link key={p.id} className="ap-lane__row" href={`/products/${encodeURIComponent(p.id)}?pg=${encodeURIComponent(pg)}&from=${encodeURIComponent(from)}`}>
                         <span className="ap-lane__thumb"><ProductImage t={t} product={p} size={20} /></span>
                         <span style={{ minWidth: 0 }}>
-                          <span className="line-clamp-2 ox-xs" lang="zh-CN">{p.title ?? t("product.untitled")}</span>
+                          <span className="line-clamp-2 ox-xs" lang={shownTitle(t, p).lang} title={p.title ?? undefined}>{shownTitle(t, p).text}</span>
                           <span className="ox-xs ox-muted">{platformName(t, p.platform)}</span>
                         </span>
                         <SoldBadge t={t} sold={p.sold} />
