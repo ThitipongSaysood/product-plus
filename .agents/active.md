@@ -1,82 +1,49 @@
 # Active Task
 
-_Last updated: 2026-09-24 20:24_
+## Last Updated
+2026-09-24 23:10 (Asia/Bangkok)
 
-## Project type (auto-detected)
+## Last Agent
+Claude Opus 5.5 (1M context) — Claude Code desktop, session "keywords: AI translate, textarea, cleanup"
 
-Next.js + NestJS (pnpm monorepo) · PostgreSQL 18
+## Project type
+Next.js 16 (apps/web :3020) + NestJS (apps/api :4010) · pnpm monorepo · **PGlite for now** (no `apps/api/.env`)
 
-## Current goal
+## Current Task
+Keyword settings for a Group — type a Keyword once in any language, AI makes the Chinese term (Douyin · 1688 · XHS)
+and the English term (Temu); the whole list is edited as text like the taxonomy.
 
-กลุ่มที่สอง `tempered-glass-screen-protector` ถูกสร้างและดึงข้อมูลแล้ว แต่**ดึงมาผิดสินค้าทั้งหมด**
-เพราะใช้คีย์เวิร์ดภาษาอังกฤษบนแพลตฟอร์มจีน — ต้องตั้งคีย์เวิร์ดใหม่แล้วดึงรอบใหม่
+## Status
+✅ Done and pushed (`main` = `904f244` + this checkpoint). typecheck clean · tests api 154 · web 111.
+⚠️ Both real groups are still **over their per-round cap**, so no scheduled round would run (and there is no
+`APIFY_TOKEN` yet, so nothing paid can run anyway).
 
-## What just happened
-
-เซสชัน 24 ก.ย. 2026 — ทุก commit อยู่บน main และ push ครบแล้ว (ล่าสุด `73e6e9f`)
-
-รอบเช้า–บ่าย (รายละเอียด: `sessions/2026-09-24-0917-run-ui-review.md`):
-แก้บั๊กราคา · เงื่อนไขการซื้อ 1688 · ย้าย PGlite → PostgreSQL · agent คัดเลือกผลิตภัณฑ์ ·
-`deploy/README.md` · ยกภาษาเป็นทางการ · ปรับ UI หน้า /trends · เปลี่ยนชื่อฟีเจอร์เป็น "ผลิตภัณฑ์น่าสนใจ" ·
-**คะแนนบนการ์ด** 2 ด้าน (ความต้องการในกลุ่มตัวเอง · ต้นทุนเทียบค่ากลางหมวด)
-
-รอบเย็น (รายละเอียด: `sessions/2026-09-24-1645-group-editing-and-keywords.md`):
-- รหัสสำหรับลิงก์แปลงจากชื่อที่เขียนติดกันได้ (`TemperedGlassScreenProtector` → `tempered-glass-screen-protector`)
-- ปุ่มดินสอในตารางกลุ่มแก้ได้ทุกช่อง — ฟอร์มเดียวใน `components/settings/group-edit.tsx` ใช้ร่วมสองที่
-- ตารางกลุ่มไม่ตกบรรทัดแล้ว (85px → 59px)
-- คีย์เวิร์ดใส่ทีละหลายคำ หลายแพลตฟอร์มได้ พร้อมบอกจำนวนแถวและเตือนค่าใช้จ่ายก่อนกด
-
-รอบค่ำ (รายละเอียด: `sessions/2026-09-24-2024-keyword-trial-and-suggestions.md`) — `69fb923` `f118b21` `d03a616`:
-- **ทดลอง 5 ผล** ในฟอร์มคีย์เวิร์ด (จ่ายน้อย ไม่เข้ากลุ่ม นับในงบเดือน · กลุ่ม mock ฟรี)
-- **AI แนะนำคีย์เวิร์ด** จากชื่อสินค้าภาษาใดก็ได้ → ภาษาของแต่ละแพลตฟอร์ม + คำพบบ่อยในชื่อสินค้า + คำค้นที่เกี่ยวข้อง XHS
-- **กันภาษาไม่ตรงแพลตฟอร์ม** ทั้งฟอร์ม (เตือน + ติ๊กยืนยัน) และ API (400 เว้นแต่ allowLanguageMismatch)
+## What's Done (this session — details in sessions/2026-09-24-2310-keywords-ai-textarea.md)
+- Keyword card is a textarea: `keyword | Chinese term | English term`, one Keyword per line; empty or wrong-language
+  terms are filled by AI in **one** call on save; deleting a line deletes the Keyword (`PUT /groups/:slug/keyword-list`).
+- AI suggestions (product name → whole lines) in a disclosure under the box; tap adds a line.
+- Live cost line: "N คีย์เวิร์ด ≈ $X ต่อรอบ · เพดาน $Y" + warning when over (`GET /groups/:slug/round-estimate`).
+- Fixed "เซิร์ฟเวอร์ตอบกลับผิดพลาด" on save: the /api proxy gave up at 30 s while AI ran per line
+  → batched AI, `experimental.proxyTimeout: 180_000`, keyword AI jobs stop at 150 s.
+- Removed at the user's request: keyword trial (5-result), language-guard checkbox, frequent-term chips, platform chips.
+- Cleaned data (user OK; backups in `.agents/private/keywords-before-cleanup-*.json`):
+  `apple-watch-bands` → 1 Keyword · `apple-watch` → 9 Keywords with fixed languages.
+- Glossary `CONTEXT.md`: Group · Keyword · Platform term · Round · Smoke test · Keyword suggestion.
 
 ## Blockers
+- **Per-round cap vs cost** (user decides, money setting — never change it without asking):
+  `apple-watch-bands` ≈ $1.46/round vs cap $1.00 · `apple-watch` ≈ $13.14/round (9 Keywords) vs cap $4.90.
+- **Postgres volume wiped 2026-09-24 ~19:44** (not by an AI session per the notes) — everything created in Postgres that
+  afternoon is gone (group `tempered-glass-screen-protector`, brand reports, System settings). User chose PGlite for now.
+- `FX_CNY_THB` = 4.85 is a placeholder — needs the real rate (ตั้งค่า › ระบบ).
+- No `APIFY_TOKEN` in the app; paid runs need the user's explicit OK and a $ cap every time.
+- CI: `gh auth refresh -s workflow`, then move `deploy/ci.yml` into `.github/workflows/`.
 
-- 22:50 keyword cleanup (user OK, backups in .agents/private/keywords-before-cleanup-*.json):
-  apple-watch-bands → 1 Keyword (สายนาฬิกา Apple Watch) ≈ $1.46/round, **still > cap $1.00** (cap not changed — user's call);
-  apple-watch → 9 Keywords, wrong-language terms fixed, duplicates merged ≈ $13.14/round, **> cap $4.90**.
-
-- **Keyword form reverted to the 17:11 version + AI suggestion panel** (session 2026-09-24-2105). Keyword trial,
-  language guard and frequent-term chips were removed at the user's request.
-- 16 junk keywords deleted 21:20 (user OK). `apple-watch-bands` now: 苹果手表表带 (douyin/1688/xhs) + apple watch band (temu, us)
-  → a round ≈ $1.46, still above the $1.00 per-round cap — user has not decided.
-- Keyword card (22:10): a textarea like the taxonomy — `keyword | Chinese term | English term`, one Keyword per line;
-  empty terms are filled by AI (skill translate-keyword) on save; a removed line deletes the Keyword (PUT /groups/:slug/keyword-list,
-  pure planner domain/keywords.ts planKeywordList). AI suggestion chips add lines. apple-watch-bands: 2 Keywords ≈ $2.92/round vs $1 cap.
-
-- **Postgres volume was wiped 2026-09-24 ~19:44** (container + volume `product-plus_omnix_pgdata` recreated empty,
-  `apps/api/.env` gone — not by an AI session as far as the notes show). Everything created in Postgres after the
-  afternoon move is lost: group `tempered-glass-screen-protector`, brand reports, System settings. No backup found.
-  **User chose (20:40) to stay on PGlite for now** — api runs without `.env` → `.pglite` (apple-watch-bands + demo-mock).
-  Actor evaluation re-run on PGlite (free) so trial estimates work. Going back to Postgres = new `.env` from
-  `.env.example` + new `SETTINGS_SECRET` + `pnpm seed`; ask the user first.
-
-- **กลุ่ม `tempered-glass-screen-protector` มีข้อมูลขยะ 150 รายการ** — `Tempered Glass` เป็นคำอังกฤษ
-  1688/Temu ให้ฟิล์มมือถือ · XHS ให้กระจกปูโต๊ะร้านอาหาร · Douyin ให้ 0 แถว
-  **0 จาก 150 เป็นสินค้านาฬิกา** เสียไปแล้ว ≈$2.05 (ดึง $1.46 + วิเคราะห์ $0.59)
-  รายงาน "ผลิตภัณฑ์น่าสนใจ" ของกลุ่มนี้จึงวิเคราะห์ของผิดหมวดทั้งฉบับ — อย่าเชื่อ
-- **`FX_CNY_THB` = 4.85 เป็นค่าตัวอย่าง** ต้องแก้เป็นอัตราจริง (ตั้งค่า › ระบบ)
-- **เพดานต่อรอบของ `apple-watch-bands` = $1.00 ต่ำกว่าค่าจริง $1.46** → รอบอัตโนมัติจะถูกข้าม
-  (`skip.runCap`) ต้องตัดสินใจก่อนถึงคิวจันทร์ 05:00
-- **`grill-with-docs` ใช้ไม่ได้** — สกิลย่อย `grilling` + `domain-modeling` ไม่ได้ติดตั้ง ใช้ `scrutinize` แทน
-- CI ต้อง `gh auth refresh -s workflow` แล้วย้าย `deploy/ci.yml` เข้า `.github/workflows/`
-
-## Next step
-
-0. **api ที่รันอยู่ไม่มี `apps/api/.env` → กำลังใช้ PGlite ไม่ใช่ Postgres** (กลุ่ม tempered-glass จึงไม่ปรากฏ) —
-   ตรวจว่าตั้งใจหรือไม่ ก่อนแก้ข้อมูลอะไร
-
-1. **แก้คีย์เวิร์ดกลุ่ม tempered glass** (กด "ทดลอง 5 ผล" ดูชื่อก่อนได้แล้ว) — ลบ `Tempered Glass` ทั้ง 4 แถว แล้วใส่
-   `苹果手表钢化膜` + `苹果手表保护膜` ให้ 1688 · Douyin · XHS และ `apple watch screen protector` ให้ Temu
-2. **ลบสินค้า 150 รายการของกลุ่มนั้นทิ้ง** ก่อนดึงรอบใหม่ ไม่งั้นของเก่าปนกับของใหม่
-3. ดึงข้อมูลรอบใหม่ (≈$1.46 ต่อคีย์เวิร์ด ต้องขออนุญาตผู้ใช้พร้อมระบุวงเงินทุกครั้ง)
-   แล้ว**ดูชื่อสินค้าก่อน** จึงค่อยกดวิเคราะห์ ($0.59)
-
-งานเก็บกวาดที่เหลือ:
-- สาขา `feat/buying-terms-and-detail-page` (local + remote ที่ `942fe49`) รวมเข้า main หมดแล้ว ลบได้
-- `.pglite` 133MB ยังอยู่เป็นทางถอย ลบได้เมื่อมั่นใจ Postgres แล้ว
-- รายงาน brand ของ `apple-watch-bands` ยังเป็นข้อความโทนเดิม (เขียนก่อนแก้ skill) — กดวิเคราะห์ใหม่ ≈$0.65 ถึงจะเปลี่ยน
-- **ยังไม่ได้ทำ:** เวลาโดยประมาณของงานที่กำลังรัน — `progressOf()` ฮาร์ดโค้ด `pct: null` ไว้ที่
-  [runs.ts:69](apps/api/src/jobs/runs.ts#L69) ทั้งที่ `scrape_runs` มีประวัติรอบที่สำเร็จพอจะหาค่ากลางได้
-  (brand ใช้เวลาจริง 1:25 / 2:10 / 2:25 / 3:51 / 4:36) ผู้ใช้เคยบ่นว่า "ประมาณเวลาไม่ได้ ถือว่านานมาก"
+## Next Steps
+1. Ask the user how to fit the cap: raise `apple-watch-bands` to ≥ $1.50 / turn Temu off / result limit 30;
+   trim `apple-watch` to ≤ 3 Keywords or raise its cap.
+2. Group `apple-watch` holds generic watches (wristwatch, quartz, vintage…) under the name "Apple Watch" — confirm intent.
+3. If Postgres again: `.env` from `.env.example`, new `SETTINGS_SECRET`, `pnpm seed` — ask first.
+4. Re-create a screen-protector group if still wanted (Keyword e.g. `ฟิล์มกระจก Apple Watch`).
+5. Left over: estimated time for running jobs (`progressOf()` returns `pct: null`, `apps/api/src/jobs/runs.ts`);
+   delete branch `feat/buying-terms-and-detail-page`; `.pglite` stays while PGlite is in use.

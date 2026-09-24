@@ -10,6 +10,7 @@
 - **Git remote**: https://github.com/ThitipongSaysood/product-plus (private; moved from org OMNIX-9Plus on 2026-09-24 at the user's request)
 - **Branch**: main
 - **Bootstrapped**: 2026-09-24
+- **Last Agent**: Claude Opus 5.5 (1M context), 2026-09-24 23:10 — keyword editor + cleanup
 
 ## Rules for AI assistants
 
@@ -37,7 +38,7 @@ Skill routing for this repo is a hard rule and lives in the root `AGENTS.md` —
 duplicate it here. Short version: `using-superpowers` when unsure · `anthropic-skills:omnix-design-system` +
 `frontend-design` + `ui-ux-pro-max` before any UI · `web-design-guidelines` before calling UI done ·
 `grill-with-docs` before implementing a plan that touches actors, contracts or money guards ·
-`session-notes` for these files.
+`session-notes` for these files (if that skill is not installed, use `agents-checkpoint`).
 
 ## Project rules
 
@@ -54,6 +55,13 @@ duplicate it here. Short version: `using-superpowers` when unsure · `anthropic-
   2026-09-24: `Tempered Glass` on those three plus Temu returned 150 rows for ~$1.46 and **0 of 150
   were watch products** — phone film on 1688/Temu, tempered-glass tabletops on XHS. Row count is not
   relevance; check titles before trusting a new keyword's round.
+- **A Keyword is typed once; each platform searches its own Platform term** (CONTEXT.md). The editor is text,
+  `keyword | Chinese term | English term`; the Chinese term goes to Douyin · 1688 · XHS, the English to Temu.
+  Missing or wrong-language terms are filled by AI **in one batched call** — never one call per line (one call ≈ 10 s,
+  and the web's /api proxy is the limit: `experimental.proxyTimeout` 180 s in `apps/web/next.config.ts`; keyword AI jobs
+  stop at 150 s so the api's own error reaches the browser). Anything that makes the browser wait on AI must fit that.
+- **Every Keyword costs a search on every watched platform every round** (≈ $1.46 per Keyword at FREE-tier prices,
+  50 results). Show the cost before saving; never raise a group's budget or per-round cap without the user.
 - Trend and MOQ are shown as facts, never folded into a score. Only douyin reports a trend and only
   1688 an MOQ, and of 135 real listings not one carried both — scoring either ranks the platforms
   rather than the products (`domain/brand-brief.ts`, `scoreCandidates`).
