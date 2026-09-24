@@ -3,7 +3,9 @@
 Not deployed yet. Two services from this one repo + one Postgres. Nothing here needs code changes.
 
 ## 1. Postgres
-Add a PostgreSQL service. The api creates schema `scout` and runs migrations at boot (`DB_AUTO_MIGRATE=true`).
+Add a PostgreSQL service (18 to match development). The api creates schema `product_plus` inside the
+database `DATABASE_URL` points at, and runs migrations at boot (`DB_AUTO_MIGRATE=true`). One database
+per business area, one schema per app, so other services can share the server later.
 
 ## 2. Service `api` (NestJS)
 | setting | value |

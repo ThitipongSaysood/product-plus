@@ -1,6 +1,6 @@
-CREATE SCHEMA "scout";
+CREATE SCHEMA "product_plus";
 --> statement-breakpoint
-CREATE TABLE "scout"."actor_evaluations" (
+CREATE TABLE "product_plus"."actor_evaluations" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"evaluation_run_id" uuid,
 	"platform" text NOT NULL,
@@ -31,13 +31,13 @@ CREATE TABLE "scout"."actor_evaluations" (
 	"raw" jsonb
 );
 --> statement-breakpoint
-CREATE TABLE "scout"."app_settings" (
+CREATE TABLE "product_plus"."app_settings" (
 	"key" text PRIMARY KEY NOT NULL,
 	"value" text NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "scout"."category_map" (
+CREATE TABLE "product_plus"."category_map" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"platform" text NOT NULL,
 	"platform_path" text NOT NULL,
@@ -45,7 +45,7 @@ CREATE TABLE "scout"."category_map" (
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "scout"."change_events" (
+CREATE TABLE "product_plus"."change_events" (
 	"id" bigserial PRIMARY KEY NOT NULL,
 	"product_group_id" uuid NOT NULL,
 	"product_id" uuid NOT NULL,
@@ -55,7 +55,7 @@ CREATE TABLE "scout"."change_events" (
 	"detail" jsonb
 );
 --> statement-breakpoint
-CREATE TABLE "scout"."keywords" (
+CREATE TABLE "product_plus"."keywords" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"product_group_id" uuid NOT NULL,
 	"platform" text NOT NULL,
@@ -65,7 +65,7 @@ CREATE TABLE "scout"."keywords" (
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "scout"."media" (
+CREATE TABLE "product_plus"."media" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"source_url" text NOT NULL,
 	"storage_key" text NOT NULL,
@@ -75,7 +75,7 @@ CREATE TABLE "scout"."media" (
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "scout"."product_groups" (
+CREATE TABLE "product_plus"."product_groups" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"slug" text NOT NULL,
 	"name" text NOT NULL,
@@ -85,6 +85,8 @@ CREATE TABLE "scout"."product_groups" (
 	"result_limit" integer DEFAULT 50 NOT NULL,
 	"run_cap_usd" numeric(8, 2) DEFAULT 1 NOT NULL,
 	"schedule" text DEFAULT 'weekly' NOT NULL,
+	"schedule_hour" integer DEFAULT 5 NOT NULL,
+	"schedule_weekday" integer DEFAULT 1 NOT NULL,
 	"source_mode" text,
 	"taxonomy" jsonb DEFAULT '[]'::jsonb NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
@@ -92,7 +94,7 @@ CREATE TABLE "scout"."product_groups" (
 	CONSTRAINT "product_groups_slug_unique" UNIQUE("slug")
 );
 --> statement-breakpoint
-CREATE TABLE "scout"."product_snapshots" (
+CREATE TABLE "product_plus"."product_snapshots" (
 	"id" bigserial PRIMARY KEY NOT NULL,
 	"product_id" uuid NOT NULL,
 	"product_group_id" uuid NOT NULL,
@@ -107,13 +109,15 @@ CREATE TABLE "scout"."product_snapshots" (
 	"raw" jsonb
 );
 --> statement-breakpoint
-CREATE TABLE "scout"."products" (
+CREATE TABLE "product_plus"."products" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"product_group_id" uuid NOT NULL,
 	"platform" text NOT NULL,
 	"external_id" text NOT NULL,
 	"keyword" text,
 	"title" text,
+	"title_th" text,
+	"title_th_at" timestamp with time zone,
 	"product_url" text,
 	"image_media_id" uuid,
 	"image_source_url" text,
@@ -148,7 +152,7 @@ CREATE TABLE "scout"."products" (
 	"raw" jsonb
 );
 --> statement-breakpoint
-CREATE TABLE "scout"."scrape_runs" (
+CREATE TABLE "product_plus"."scrape_runs" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"product_group_id" uuid,
 	"keyword_id" uuid,
@@ -167,28 +171,31 @@ CREATE TABLE "scout"."scrape_runs" (
 	"items_in" integer,
 	"items_out" integer,
 	"cost_usd" numeric(10, 4),
-	"note" text
+	"cost_final" boolean DEFAULT false NOT NULL,
+	"note" text,
+	"report" jsonb
 );
 --> statement-breakpoint
-ALTER TABLE "scout"."change_events" ADD CONSTRAINT "change_events_product_group_id_product_groups_id_fk" FOREIGN KEY ("product_group_id") REFERENCES "scout"."product_groups"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "scout"."change_events" ADD CONSTRAINT "change_events_product_id_products_id_fk" FOREIGN KEY ("product_id") REFERENCES "scout"."products"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "scout"."keywords" ADD CONSTRAINT "keywords_product_group_id_product_groups_id_fk" FOREIGN KEY ("product_group_id") REFERENCES "scout"."product_groups"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "scout"."product_snapshots" ADD CONSTRAINT "product_snapshots_product_id_products_id_fk" FOREIGN KEY ("product_id") REFERENCES "scout"."products"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "scout"."products" ADD CONSTRAINT "products_product_group_id_product_groups_id_fk" FOREIGN KEY ("product_group_id") REFERENCES "scout"."product_groups"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "scout"."products" ADD CONSTRAINT "products_image_media_id_media_id_fk" FOREIGN KEY ("image_media_id") REFERENCES "scout"."media"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "scout"."scrape_runs" ADD CONSTRAINT "scrape_runs_product_group_id_product_groups_id_fk" FOREIGN KEY ("product_group_id") REFERENCES "scout"."product_groups"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "scout"."scrape_runs" ADD CONSTRAINT "scrape_runs_keyword_id_keywords_id_fk" FOREIGN KEY ("keyword_id") REFERENCES "scout"."keywords"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-CREATE INDEX "actor_eval_platform_idx" ON "scout"."actor_evaluations" USING btree ("platform","evaluated_at");--> statement-breakpoint
-CREATE UNIQUE INDEX "category_map_platform_path_uq" ON "scout"."category_map" USING btree ("platform","platform_path");--> statement-breakpoint
-CREATE INDEX "events_group_occurred_idx" ON "scout"."change_events" USING btree ("product_group_id","occurred_at");--> statement-breakpoint
-CREATE UNIQUE INDEX "events_product_kind_run_uq" ON "scout"."change_events" USING btree ("product_id","kind","scrape_run_id");--> statement-breakpoint
-CREATE UNIQUE INDEX "keywords_group_platform_keyword_uq" ON "scout"."keywords" USING btree ("product_group_id","platform","keyword");--> statement-breakpoint
-CREATE UNIQUE INDEX "media_storage_key_uq" ON "scout"."media" USING btree ("storage_key");--> statement-breakpoint
-CREATE INDEX "snapshots_product_taken_idx" ON "scout"."product_snapshots" USING btree ("product_id","taken_at");--> statement-breakpoint
-CREATE UNIQUE INDEX "snapshots_product_run_uq" ON "scout"."product_snapshots" USING btree ("product_id","scrape_run_id");--> statement-breakpoint
-CREATE UNIQUE INDEX "products_group_platform_ext_uq" ON "scout"."products" USING btree ("product_group_id","platform","external_id");--> statement-breakpoint
-CREATE INDEX "products_group_platform_active_idx" ON "scout"."products" USING btree ("product_group_id","platform","is_active");--> statement-breakpoint
-CREATE INDEX "products_group_category_idx" ON "scout"."products" USING btree ("product_group_id","category_key");--> statement-breakpoint
-CREATE INDEX "scrape_runs_group_kind_idx" ON "scout"."scrape_runs" USING btree ("product_group_id","kind","started_at");--> statement-breakpoint
-CREATE INDEX "scrape_runs_status_idx" ON "scout"."scrape_runs" USING btree ("status");--> statement-breakpoint
-CREATE INDEX "scrape_runs_apify_idx" ON "scout"."scrape_runs" USING btree ("apify_run_id");
+ALTER TABLE "product_plus"."change_events" ADD CONSTRAINT "change_events_product_group_id_product_groups_id_fk" FOREIGN KEY ("product_group_id") REFERENCES "product_plus"."product_groups"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "product_plus"."change_events" ADD CONSTRAINT "change_events_product_id_products_id_fk" FOREIGN KEY ("product_id") REFERENCES "product_plus"."products"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "product_plus"."keywords" ADD CONSTRAINT "keywords_product_group_id_product_groups_id_fk" FOREIGN KEY ("product_group_id") REFERENCES "product_plus"."product_groups"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "product_plus"."product_snapshots" ADD CONSTRAINT "product_snapshots_product_id_products_id_fk" FOREIGN KEY ("product_id") REFERENCES "product_plus"."products"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "product_plus"."products" ADD CONSTRAINT "products_product_group_id_product_groups_id_fk" FOREIGN KEY ("product_group_id") REFERENCES "product_plus"."product_groups"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "product_plus"."products" ADD CONSTRAINT "products_image_media_id_media_id_fk" FOREIGN KEY ("image_media_id") REFERENCES "product_plus"."media"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "product_plus"."scrape_runs" ADD CONSTRAINT "scrape_runs_product_group_id_product_groups_id_fk" FOREIGN KEY ("product_group_id") REFERENCES "product_plus"."product_groups"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "product_plus"."scrape_runs" ADD CONSTRAINT "scrape_runs_keyword_id_keywords_id_fk" FOREIGN KEY ("keyword_id") REFERENCES "product_plus"."keywords"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+CREATE INDEX "actor_eval_platform_idx" ON "product_plus"."actor_evaluations" USING btree ("platform","evaluated_at");--> statement-breakpoint
+CREATE UNIQUE INDEX "category_map_platform_path_uq" ON "product_plus"."category_map" USING btree ("platform","platform_path");--> statement-breakpoint
+CREATE INDEX "events_group_occurred_idx" ON "product_plus"."change_events" USING btree ("product_group_id","occurred_at");--> statement-breakpoint
+CREATE UNIQUE INDEX "events_product_kind_run_uq" ON "product_plus"."change_events" USING btree ("product_id","kind","scrape_run_id");--> statement-breakpoint
+CREATE UNIQUE INDEX "keywords_group_platform_keyword_uq" ON "product_plus"."keywords" USING btree ("product_group_id","platform","keyword");--> statement-breakpoint
+CREATE UNIQUE INDEX "media_storage_key_uq" ON "product_plus"."media" USING btree ("storage_key");--> statement-breakpoint
+CREATE INDEX "snapshots_product_taken_idx" ON "product_plus"."product_snapshots" USING btree ("product_id","taken_at");--> statement-breakpoint
+CREATE UNIQUE INDEX "snapshots_product_run_uq" ON "product_plus"."product_snapshots" USING btree ("product_id","scrape_run_id");--> statement-breakpoint
+CREATE UNIQUE INDEX "products_group_platform_ext_uq" ON "product_plus"."products" USING btree ("product_group_id","platform","external_id");--> statement-breakpoint
+CREATE INDEX "products_group_platform_active_idx" ON "product_plus"."products" USING btree ("product_group_id","platform","is_active");--> statement-breakpoint
+CREATE INDEX "products_group_category_idx" ON "product_plus"."products" USING btree ("product_group_id","category_key");--> statement-breakpoint
+CREATE INDEX "scrape_runs_group_kind_idx" ON "product_plus"."scrape_runs" USING btree ("product_group_id","kind","started_at");--> statement-breakpoint
+CREATE INDEX "scrape_runs_status_idx" ON "product_plus"."scrape_runs" USING btree ("status");--> statement-breakpoint
+CREATE INDEX "scrape_runs_apify_idx" ON "product_plus"."scrape_runs" USING btree ("apify_run_id");--> statement-breakpoint
+CREATE UNIQUE INDEX "scrape_runs_one_running_job_uq" ON "product_plus"."scrape_runs" USING btree ("product_group_id","kind") WHERE "product_plus"."scrape_runs"."status" = 'running' AND "product_plus"."scrape_runs"."kind" IN ('pipeline', 'smoke');

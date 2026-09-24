@@ -1,1 +1,0 @@
-CREATE UNIQUE INDEX "scrape_runs_one_running_pipeline_uq" ON "scout"."scrape_runs" USING btree ("product_group_id","kind") WHERE "scout"."scrape_runs"."status" = 'running' AND "scout"."scrape_runs"."kind" = 'pipeline';

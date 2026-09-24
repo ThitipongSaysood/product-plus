@@ -1,12 +1,12 @@
 {
-  "id": "f6b44dfb-163a-49be-960f-b967b108e42b",
+  "id": "135c1340-3abc-4058-bd04-56ba6fc95a20",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "scout.actor_evaluations": {
+    "product_plus.actor_evaluations": {
       "name": "actor_evaluations",
-      "schema": "scout",
+      "schema": "product_plus",
       "columns": {
         "id": {
           "name": "id",
@@ -209,9 +209,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "scout.app_settings": {
+    "product_plus.app_settings": {
       "name": "app_settings",
-      "schema": "scout",
+      "schema": "product_plus",
       "columns": {
         "key": {
           "name": "key",
@@ -241,9 +241,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "scout.category_map": {
+    "product_plus.category_map": {
       "name": "category_map",
-      "schema": "scout",
+      "schema": "product_plus",
       "columns": {
         "id": {
           "name": "id",
@@ -308,9 +308,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "scout.change_events": {
+    "product_plus.change_events": {
       "name": "change_events",
-      "schema": "scout",
+      "schema": "product_plus",
       "columns": {
         "id": {
           "name": "id",
@@ -410,7 +410,7 @@
           "name": "change_events_product_group_id_product_groups_id_fk",
           "tableFrom": "change_events",
           "tableTo": "product_groups",
-          "schemaTo": "scout",
+          "schemaTo": "product_plus",
           "columnsFrom": [
             "product_group_id"
           ],
@@ -424,7 +424,7 @@
           "name": "change_events_product_id_products_id_fk",
           "tableFrom": "change_events",
           "tableTo": "products",
-          "schemaTo": "scout",
+          "schemaTo": "product_plus",
           "columnsFrom": [
             "product_id"
           ],
@@ -441,9 +441,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "scout.keywords": {
+    "product_plus.keywords": {
       "name": "keywords",
-      "schema": "scout",
+      "schema": "product_plus",
       "columns": {
         "id": {
           "name": "id",
@@ -525,7 +525,7 @@
           "name": "keywords_product_group_id_product_groups_id_fk",
           "tableFrom": "keywords",
           "tableTo": "product_groups",
-          "schemaTo": "scout",
+          "schemaTo": "product_plus",
           "columnsFrom": [
             "product_group_id"
           ],
@@ -542,9 +542,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "scout.media": {
+    "product_plus.media": {
       "name": "media",
-      "schema": "scout",
+      "schema": "product_plus",
       "columns": {
         "id": {
           "name": "id",
@@ -615,9 +615,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "scout.product_groups": {
+    "product_plus.product_groups": {
       "name": "product_groups",
-      "schema": "scout",
+      "schema": "product_plus",
       "columns": {
         "id": {
           "name": "id",
@@ -680,6 +680,20 @@
           "notNull": true,
           "default": "'weekly'"
         },
+        "schedule_hour": {
+          "name": "schedule_hour",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 5
+        },
+        "schedule_weekday": {
+          "name": "schedule_weekday",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
         "source_mode": {
           "name": "source_mode",
           "type": "text",
@@ -724,9 +738,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "scout.product_snapshots": {
+    "product_plus.product_snapshots": {
       "name": "product_snapshots",
-      "schema": "scout",
+      "schema": "product_plus",
       "columns": {
         "id": {
           "name": "id",
@@ -851,7 +865,7 @@
           "name": "product_snapshots_product_id_products_id_fk",
           "tableFrom": "product_snapshots",
           "tableTo": "products",
-          "schemaTo": "scout",
+          "schemaTo": "product_plus",
           "columnsFrom": [
             "product_id"
           ],
@@ -868,9 +882,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "scout.products": {
+    "product_plus.products": {
       "name": "products",
-      "schema": "scout",
+      "schema": "product_plus",
       "columns": {
         "id": {
           "name": "id",
@@ -906,6 +920,18 @@
         "title": {
           "name": "title",
           "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "title_th": {
+          "name": "title_th",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "title_th_at": {
+          "name": "title_th_at",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false
         },
@@ -1192,7 +1218,7 @@
           "name": "products_product_group_id_product_groups_id_fk",
           "tableFrom": "products",
           "tableTo": "product_groups",
-          "schemaTo": "scout",
+          "schemaTo": "product_plus",
           "columnsFrom": [
             "product_group_id"
           ],
@@ -1206,7 +1232,7 @@
           "name": "products_image_media_id_media_id_fk",
           "tableFrom": "products",
           "tableTo": "media",
-          "schemaTo": "scout",
+          "schemaTo": "product_plus",
           "columnsFrom": [
             "image_media_id"
           ],
@@ -1223,9 +1249,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "scout.scrape_runs": {
+    "product_plus.scrape_runs": {
       "name": "scrape_runs",
-      "schema": "scout",
+      "schema": "product_plus",
       "columns": {
         "id": {
           "name": "id",
@@ -1338,9 +1364,22 @@
           "primaryKey": false,
           "notNull": false
         },
+        "cost_final": {
+          "name": "cost_final",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
         "note": {
           "name": "note",
           "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "report": {
+          "name": "report",
+          "type": "jsonb",
           "primaryKey": false,
           "notNull": false
         }
@@ -1402,6 +1441,28 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "scrape_runs_one_running_job_uq": {
+          "name": "scrape_runs_one_running_job_uq",
+          "columns": [
+            {
+              "expression": "product_group_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "kind",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"product_plus\".\"scrape_runs\".\"status\" = 'running' AND \"product_plus\".\"scrape_runs\".\"kind\" IN ('pipeline', 'smoke')",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
@@ -1409,7 +1470,7 @@
           "name": "scrape_runs_product_group_id_product_groups_id_fk",
           "tableFrom": "scrape_runs",
           "tableTo": "product_groups",
-          "schemaTo": "scout",
+          "schemaTo": "product_plus",
           "columnsFrom": [
             "product_group_id"
           ],
@@ -1423,7 +1484,7 @@
           "name": "scrape_runs_keyword_id_keywords_id_fk",
           "tableFrom": "scrape_runs",
           "tableTo": "keywords",
-          "schemaTo": "scout",
+          "schemaTo": "product_plus",
           "columnsFrom": [
             "keyword_id"
           ],
@@ -1443,7 +1504,7 @@
   },
   "enums": {},
   "schemas": {
-    "scout": "scout"
+    "product_plus": "product_plus"
   },
   "sequences": {},
   "roles": {},

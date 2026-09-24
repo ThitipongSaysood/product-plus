@@ -1,7 +1,6 @@
 // Standalone actor evaluation (free public Apify API — never starts an actor):
 //   pnpm --filter @pp/api evaluate            (platforms of all groups)
 //   pnpm --filter @pp/api evaluate -- douyin xhs
-// Stop the api first when using PGlite (one process at a time).
 import type { Platform } from "@pp/contracts";
 import { closeDb, getDb } from "../db/client.js";
 import { productGroups } from "../db/schema.js";

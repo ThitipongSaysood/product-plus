@@ -1,0 +1,37 @@
+# Local Postgres for development. It replaces the PGlite file store so that the api, the scripts and a
+# migration can all hold a connection at once — PGlite allows exactly one process, which is why several
+# jobs in this repo used to say "stop the api first".
+#
+# The image tracks the version PGlite already reported (PostgreSQL 18), so nothing in the schema behaves
+# differently after the move.
+#
+# These credentials are deliberately plain: the port is bound to localhost and this database holds only
+# scraped public listings on a developer machine. Production uses a managed instance and its own secret.
+services:
+  db:
+    image: postgres:18-alpine
+    container_name: omnix-marketing-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: omnix
+      POSTGRES_PASSWORD: omnix_local_dev
+      # One database per business area; this app owns the schema "product_plus" inside it, so other
+      # NinePlus services can be added later without a second server.
+      POSTGRES_DB: omnix_marketing
+    ports:
+      # 5433 on the host: 5432 is what a system Postgres would claim, and colliding with one is a
+      # confusing failure. The api connects to whatever DATABASE_URL says, so the port is free to move.
+      - "127.0.0.1:5433:5432"
+    volumes:
+      # Postgres 18+ images store data under a major-version subdirectory and refuse to start if the
+      # mount is at /var/lib/postgresql/data (the pre-18 convention). Mount the parent instead.
+      # https://github.com/docker-library/postgres/pull/1259
+      - omnix_pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U omnix -d omnix_marketing"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  omnix_pgdata:

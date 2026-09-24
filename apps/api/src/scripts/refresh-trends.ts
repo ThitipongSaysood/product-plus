@@ -1,4 +1,4 @@
-// Recompute trend labels of every group (after changing trend rules). Stop the api first when using PGlite.
+// Recompute trend labels of every group (after changing trend rules).
 //   pnpm --filter @pp/api refresh:trends
 import { closeDb, getDb } from "../db/client.js";
 import { productGroups } from "../db/schema.js";

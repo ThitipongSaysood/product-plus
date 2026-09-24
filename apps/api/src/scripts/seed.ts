@@ -2,7 +2,6 @@
 //  1. apple-watch-bands — REAL data: the user-approved Apify batch of 2026-09-24 imported through the
 //     normal ingest path (run ids + costs recorded), then categorize → image cache → trend.
 //  2. demo-mock — clearly-labelled MOCK data, pipeline run for 3 simulated dates so trends/events exist.
-// Stop the api first: PGlite allows one process at a time.
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";

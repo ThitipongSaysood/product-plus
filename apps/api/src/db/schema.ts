@@ -1,4 +1,6 @@
-// Postgres schema "scout" (handoff §8). Every table is declared through pgSchema so queries
+// Postgres schema "product_plus" inside database "omnix_marketing": one database per business area,
+// one schema per app, so other NinePlus services can share the server without colliding.
+// Every table is declared through pgSchema so queries
 // always use fully-qualified names — never rely on search_path.
 import { sql } from "drizzle-orm";
 import {
@@ -17,7 +19,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 
-export const scout = pgSchema("scout");
+export const pp = pgSchema("product_plus");
 
 const ts = (name: string) => timestamp(name, { withTimezone: true, mode: "date" });
 const money = (name: string, precision = 12, scale = 2) => numeric(name, { precision, scale, mode: "number" });
@@ -30,13 +32,13 @@ const bytea = customType<{ data: Buffer; driverData: Buffer | Uint8Array }>({
 
 export type TaxonomyJson = { key: string; en: string; th: string; zh: string; keywords: string[] }[];
 
-export const appSettings = scout.table("app_settings", {
+export const appSettings = pp.table("app_settings", {
   key: text("key").primaryKey(),
   value: text("value").notNull(),
   updatedAt: ts("updated_at").notNull().defaultNow(),
 });
 
-export const productGroups = scout.table("product_groups", {
+export const productGroups = pp.table("product_groups", {
   id: uuid("id").primaryKey().defaultRandom(),
   slug: text("slug").notNull().unique(),
   name: text("name").notNull(),
@@ -59,7 +61,7 @@ export const productGroups = scout.table("product_groups", {
   updatedAt: ts("updated_at").notNull().defaultNow(),
 });
 
-export const keywords = scout.table(
+export const keywords = pp.table(
   "keywords",
   {
     id: uuid("id").primaryKey().defaultRandom(),
@@ -75,7 +77,7 @@ export const keywords = scout.table(
   (t) => [uniqueIndex("keywords_group_platform_keyword_uq").on(t.productGroupId, t.platform, t.keyword)],
 );
 
-export const media = scout.table(
+export const media = pp.table(
   "media",
   {
     id: uuid("id").primaryKey().defaultRandom(),
@@ -89,7 +91,7 @@ export const media = scout.table(
   (t) => [uniqueIndex("media_storage_key_uq").on(t.storageKey)],
 );
 
-export const products = scout.table(
+export const products = pp.table(
   "products",
   {
     id: uuid("id").primaryKey().defaultRandom(),
@@ -145,7 +147,7 @@ export const products = scout.table(
   ],
 );
 
-export const scrapeRuns = scout.table(
+export const scrapeRuns = pp.table(
   "scrape_runs",
   {
     id: uuid("id").primaryKey().defaultRandom(),
@@ -183,7 +185,7 @@ export const scrapeRuns = scout.table(
   ],
 );
 
-export const productSnapshots = scout.table(
+export const productSnapshots = pp.table(
   "product_snapshots",
   {
     id: bigserial("id", { mode: "number" }).primaryKey(),
@@ -207,7 +209,7 @@ export const productSnapshots = scout.table(
   ],
 );
 
-export const changeEvents = scout.table(
+export const changeEvents = pp.table(
   "change_events",
   {
     id: bigserial("id", { mode: "number" }).primaryKey(),
@@ -228,7 +230,7 @@ export const changeEvents = scout.table(
   ],
 );
 
-export const categoryMap = scout.table(
+export const categoryMap = pp.table(
   "category_map",
   {
     id: uuid("id").primaryKey().defaultRandom(),
@@ -240,7 +242,7 @@ export const categoryMap = scout.table(
   (t) => [uniqueIndex("category_map_platform_path_uq").on(t.platform, t.platformPath)],
 );
 
-export const actorEvaluations = scout.table(
+export const actorEvaluations = pp.table(
   "actor_evaluations",
   {
     id: uuid("id").primaryKey().defaultRandom(),

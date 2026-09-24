@@ -10,11 +10,18 @@
 
 ## เริ่มใช้งาน (dev)
 
-ต้องมี Node ≥ 22 และ pnpm 10 — ไม่ต้องติดตั้ง Postgres (dev ใช้ PGlite เก็บที่ `.pglite/`)
+ต้องมี Node ≥ 22, pnpm 10 และ Docker
 
 ```bash
 pnpm install
+cp apps/api/.env.example apps/api/.env   # แล้วใส่ SETTINGS_SECRET (สุ่ม 32 ตัวอักษรขึ้นไป)
+docker compose up -d                     # Postgres 18 ที่ localhost:5433
 ```
+
+ฐานข้อมูล `omnix_marketing` schema `product_plus` — ตารางถูกสร้างเองตอน api บูตครั้งแรก
+
+ถ้าไม่ตั้ง `DATABASE_URL` api จะตกกลับไปใช้ PGlite ที่ `.pglite/` ซึ่งเปิดได้ทีละโปรเซส
+(ใช้ดูของเก่าได้ แต่ไม่ใช่ทางที่ใช้พัฒนาแล้ว)
 
 ```bash
 pnpm seed
@@ -33,7 +40,7 @@ pnpm dev
 | `apple-watch-bands` | **ข้อมูลจริง** จาก Apify วันที่ 2026-09-24 (`apps/api/data/real/`) — seed ไม่เรียก Apify ไม่เสียเงิน |
 | `demo-mock` | **ข้อมูลจำลอง** 3 รอบย้อนหลัง ไว้ดูหน้าตาเทรนด์ มีป้าย "ข้อมูลจำลอง" ทุกหน้า |
 
-PGlite ใช้ได้ทีละโปรเซส — สคริปต์ที่แตะฐานข้อมูล (`seed` `evaluate` `import:dataset` `refresh:trends`) ต้องหยุด api ก่อน
+สคริปต์ที่แตะฐานข้อมูล (`seed` `evaluate` `import:dataset` `refresh:trends`) รันพร้อม api ได้เลย ไม่ต้องหยุดอะไร
 
 ---
 
@@ -87,7 +94,7 @@ Temu: 3 actor แรกโดน Temu บล็อก (anti-bot challenge) — `
 
 ```
 apps/
-  api/   NestJS 12 · Drizzle ORM · Postgres (prod) / PGlite (dev) · schema "scout" — port 4010
+  api/   NestJS 12 · Drizzle ORM · Postgres 18 — database omnix_marketing, schema product_plus — port 4010
          src/domain/     logic ล้วน ทดสอบได้: normalizer ต่อแพลตฟอร์ม · gate · diff · trend · categorize · budget · cost
          src/jobs/       pipeline · ingest · reconcile · media cache · categorize
          src/actors/     ประเมิน actor จาก Apify public API
