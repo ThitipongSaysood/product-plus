@@ -13,9 +13,10 @@ export const CATALOG: Entry[] = [
   { key: "APIFY_WEBHOOK_SECRET", group: "apify", secret: true, envOnly: false },
   { key: "SOURCE_MODE", group: "apify", secret: false, envOnly: false, fallback: async () => ((await getSetting("APIFY_TOKEN")) ? "apify" : "mock") },
   { key: "ANTHROPIC_API_KEY", group: "ai", secret: true, envOnly: false },
-  // "sdk" calls api.anthropic.com with a key; "cli" shells out to a logged-in `claude` on this host
+  // Governs every AI job (translate + categorize). "sdk" calls api.anthropic.com with a key;
+  // "cli" shells out to a logged-in `claude` on this host
   // (no key needed, but each invocation re-sends Claude Code's own system prompt — batch big).
-  { key: "TRANSLATE_BACKEND", group: "ai", secret: false, envOnly: false, fallback: async () => ((await getSetting("ANTHROPIC_API_KEY")) ? "sdk" : "cli") },
+  { key: "AI_BACKEND", group: "ai", secret: false, envOnly: false, fallback: async () => ((await getSetting("ANTHROPIC_API_KEY")) ? "sdk" : "cli") },
   { key: "CLAUDE_CLI_PATH", group: "ai", secret: false, envOnly: false, fallback: async () => "claude" },
   // Hand-entered because a live FX feed is another dependency to run and pay for; the settings row's
   // own updatedAt is what the UI shows, so a forgotten rate is visible rather than silently wrong.

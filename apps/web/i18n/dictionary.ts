@@ -564,6 +564,8 @@ export const dict = {
   "system.testFail": { th: "เชื่อมต่อไม่ได้", en: "Connection failed", zh: "连接失败" },
   "system.group.apify": { th: "Apify", en: "Apify", zh: "Apify" },
   "system.group.ai": { th: "AI", en: "AI", zh: "AI" },
+  "system.desc.AI_BACKEND": { th: "sdk = เรียก api.anthropic.com ต้องมีคีย์ · cli = ใช้คำสั่ง claude ที่ล็อกอินไว้บนเครื่องนี้ ไม่ต้องมีคีย์ · ใช้กับทั้งงานแปลและงานจัดหมวด", en: "sdk = call api.anthropic.com with a key \u00b7 cli = use the logged-in claude command on this host, no key needed \u00b7 governs both translation and categorisation", zh: "sdk = 用密钥调用 api.anthropic.com · cli = 使用本机已登录的 claude 命令，无需密钥 · 同时用于翻译与分类" },
+  "system.desc.CLAUDE_CLI_PATH": { th: "ชื่อคำสั่งหรือพาธเต็มของ claude บนเครื่องนี้ ใช้เมื่อ AI_BACKEND = cli", en: "Command name or absolute path of claude on this host, used when AI_BACKEND = cli", zh: "本机 claude 的命令名或绝对路径，AI_BACKEND = cli 时使用" },
   "system.group.money": { th: "เงินและอัตราแลกเปลี่ยน", en: "Money & FX", zh: "货币与汇率" },
   "system.desc.FX_CNY_THB": { th: "กี่บาทต่อ 1 หยวน ใส่เองและต้องมาอัปเดตเอง ระบบจะโชว์วันที่ตั้งไว้เสมอ", en: "Baht per 1 CNY. Entered by hand and never auto-refreshed — the date you set it is always shown.", zh: "1 元人民币折合多少泰铢。手动填写、不会自动更新，页面始终显示设置日期。" },
   "system.desc.FX_USD_THB": { th: "กี่บาทต่อ 1 ดอลลาร์ ใส่เองและต้องมาอัปเดตเอง", en: "Baht per 1 USD. Entered by hand and never auto-refreshed.", zh: "1 美元折合多少泰铢。手动填写、不会自动更新。" },

@@ -13,8 +13,9 @@ import { NOTE } from "../domain/notes.js";
 import { PLATFORM_LIST } from "../domain/types.js";
 import { chooseManually, evaluateActors } from "../actors/evaluate.js";
 import { runCategorize } from "../jobs/categorize.js";
-import { runTranslate, translateBackend } from "../jobs/translate.js";
-import { claudeCliVersion, skillPresent } from "../jobs/claude-cli.js";
+import { runTranslate } from "../jobs/translate.js";
+import { aiBackend } from "../jobs/llm.js";
+import { claudeCliVersion, skillPresent, SKILLS } from "../jobs/claude-cli.js";
 import { triggerPipeline } from "../jobs/pipeline.js";
 import { reconcile } from "../jobs/reconcile.js";
 import { assertNotRunning, createRun, finishRun, groupBySlug, jobStatus, updateRun } from "../jobs/runs.js";
@@ -71,7 +72,8 @@ export class JobsController {
     await assertNotRunning(g.id, "categorize");
     const runId = await createRun(await getDb(), { productGroupId: g.id, kind: "categorize", status: "running", step: body.mode });
     void runCategorize(g.id, body.mode, (done, total) => updateRun(runId, { progressDone: done, progressTotal: total }))
-      .then((r) => finishRun(runId, r.failed ? "suspect" : "succeeded", r.note, { itemsIn: r.total, itemsOut: r.total }))
+      // Layer 3 spends on Anthropic, so the run carries its cost like every other paid job does.
+      .then((r) => finishRun(runId, r.failed ? "suspect" : "succeeded", r.note, { itemsIn: r.total, itemsOut: r.total, costUsd: r.costUsd ?? undefined }))
       .catch((e) => finishRun(runId, "failed", NOTE.stepFailed("categorize", String(e?.message ?? e).slice(0, 200))));
     return { runId };
   }
@@ -85,8 +87,8 @@ export class JobsController {
   ) {
     const g = await groupBySlug(body.pg);
     // Fail before starting a run: both backends read the skill, cli also needs a working binary.
-    if (!skillPresent()) throw new AppError(500, "errors.translate.noSkill");
-    if ((await translateBackend()) === "cli") {
+    if (!skillPresent(SKILLS.translate)) throw new AppError(500, "errors.translate.noSkill");
+    if ((await aiBackend()) === "cli") {
       const bin = (await getSetting("CLAUDE_CLI_PATH")) ?? "claude";
       await claudeCliVersion(bin).catch(() => {
         throw new AppError(400, "errors.translate.noCli");

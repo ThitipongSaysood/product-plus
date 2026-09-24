@@ -6,7 +6,7 @@
 // The cli backend loads it as a Claude Code skill; the sdk backend sends the same text as its system
 // prompt. Edit the skill to change the wording — no TypeScript change needed.
 //
-// Two backends, chosen by the TRANSLATE_BACKEND setting:
+// Two backends, chosen by the AI_BACKEND setting:
 //   sdk — api.anthropic.com with ANTHROPIC_API_KEY (or an `ant auth login` profile the SDK picks up)
 //   cli — a logged-in `claude` binary on this host; no key, but per-invocation overhead → bigger batches
 import { and, eq, inArray, isNotNull, isNull, ne } from "drizzle-orm";
@@ -14,16 +14,12 @@ import { getDb } from "../db/client.js";
 import { products } from "../db/schema.js";
 import { NOTE } from "../domain/notes.js";
 import { getSetting } from "../settings/settings.js";
-import { CLI_BATCH, CLI_CONCURRENCY, extractJson, runClaudeCli, SKILL } from "./claude-cli.js";
-import { llmTranslate, LLM_BATCH, LLM_MODEL } from "./llm.js";
+import { CLI_BATCH, CLI_CONCURRENCY, extractJson, runClaudeCli, skillRef, SKILLS } from "./claude-cli.js";
+import { aiBackend, llmTranslate, LLM_BATCH, LLM_MODEL } from "./llm.js";
 
 export const TRANSLATE_LIMIT = 500;
 
-export type TranslateBackend = "sdk" | "cli";
 
-export async function translateBackend(): Promise<TranslateBackend> {
-  return (await getSetting("TRANSLATE_BACKEND")) === "cli" ? "cli" : "sdk";
-}
 
 type Item = { id: string; title: string };
 type BatchResult = { got: Map<string, string>; costUsd: number | null };
@@ -36,7 +32,7 @@ export function listPrompt(batch: Item[]): string {
 /** The skill carries the rules and the output shape; the prompt only invokes it and supplies the batch. */
 async function translateViaCli(batch: Item[]): Promise<BatchResult> {
   const bin = (await getSetting("CLAUDE_CLI_PATH")) ?? "claude";
-  const res = await runClaudeCli(bin, LLM_MODEL, `/${SKILL}\n\n${listPrompt(batch)}`);
+  const res = await runClaudeCli(bin, LLM_MODEL, `/${skillRef(SKILLS.translate)}\n\n${listPrompt(batch)}`);
   const parsed = extractJson(res.text) as { results?: { i?: unknown; th?: unknown }[] };
   const got = new Map<string, string>();
   for (const r of parsed.results ?? []) {
@@ -74,7 +70,7 @@ export async function runTranslate(
   redo = false,
 ) {
   const db = await getDb();
-  const backend = await translateBackend();
+  const backend = await aiBackend();
   const apiKey = await getSetting("ANTHROPIC_API_KEY");
   if (backend === "sdk" && !apiKey) return { total: 0, done: 0, costUsd: null, note: NOTE.translateFailed("ANTHROPIC_API_KEY is not set") };
 

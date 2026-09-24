@@ -21,21 +21,26 @@ export const CLI_CONCURRENCY = 3;
 const here = path.dirname(fileURLToPath(import.meta.url));
 /** src/jobs in dev, dist/jobs after a build — both are two levels under apps/api. */
 export const PLUGIN_DIR = path.resolve(here, "../../claude-plugin");
-export const SKILL = "product-plus:translate-listing-titles";
-const SKILL_MD = path.join(PLUGIN_DIR, "skills/translate-listing-titles/SKILL.md");
+/** Skills shipped with this plugin. The name is what a prompt invokes as `/product-plus:<name>`. */
+export const SKILLS = {
+  translate: "translate-listing-titles",
+  categorize: "categorize-listings",
+} as const;
+export type SkillName = (typeof SKILLS)[keyof typeof SKILLS];
 
-export const SKILL_PATH = SKILL_MD;
+export const skillRef = (name: SkillName) => `product-plus:${name}`;
+export const skillPath = (name: SkillName) => path.join(PLUGIN_DIR, `skills/${name}/SKILL.md`);
 
 /** True when the skill shipped with this deploy. It lives OUTSIDE dist/ (tsc does not copy .md), so a
  *  deploy that uploads only dist/ loses it — check before a run instead of failing with a raw ENOENT. */
-export function skillPresent(): boolean {
-  return existsSync(SKILL_MD);
+export function skillPresent(name: SkillName): boolean {
+  return existsSync(skillPath(name));
 }
 
-/** The skill body is the single source of truth for how titles are translated; the sdk backend sends it
- *  as a system prompt so both backends follow the same rules. Frontmatter is stripped. */
-export function skillBody(): string {
-  const raw = readFileSync(SKILL_MD, "utf8");
+/** The skill body is the single source of truth for how a job behaves; the sdk backend sends it as a
+ *  system prompt so both backends follow the same rules. Frontmatter is stripped. */
+export function skillBody(name: SkillName): string {
+  const raw = readFileSync(skillPath(name), "utf8");
   return raw.replace(/^---\n[\s\S]*?\n---\n/, "").trim();
 }
 const CLI_TIMEOUT_MS = 10 * 60_000;
