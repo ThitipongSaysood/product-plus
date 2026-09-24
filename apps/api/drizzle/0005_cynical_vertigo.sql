@@ -1,0 +1,1 @@
+ALTER TABLE "scout"."scrape_runs" ADD COLUMN "report" jsonb;

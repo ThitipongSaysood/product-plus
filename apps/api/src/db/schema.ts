@@ -168,6 +168,9 @@ export const scrapeRuns = scout.table(
     costUsd: numeric("cost_usd", { precision: 10, scale: 4, mode: "number" }),
     costFinal: boolean("cost_final").notNull().default(false), // true once the actual Apify cost replaced the provisional one
     note: text("note"),
+    // Output a run produced that is too structured for `note`. Only the "brand" job writes it today
+    // (its report); null everywhere else.
+    report: jsonb("report"),
   },
   (t) => [
     index("scrape_runs_group_kind_idx").on(t.productGroupId, t.kind, t.startedAt),

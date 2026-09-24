@@ -9,7 +9,7 @@ export type SoldPeriod = "30d" | "lifetime" | "unknown";
 export type TrendLabel = "rising" | "falling" | "flat" | "insufficient_history";
 export type CategorySource = "platform" | "rules" | "llm" | "manual";
 export type RunStatus = "running" | "succeeded" | "failed" | "suspect";
-export type RunKind = "scrape" | "categorize" | "media" | "trend" | "evaluate" | "smoke" | "pipeline" | "translate";
+export type RunKind = "scrape" | "categorize" | "media" | "trend" | "evaluate" | "smoke" | "pipeline" | "translate" | "brand";
 export type EventKind = "new" | "gone" | "price_drop" | "sales_surge" | "rank_up";
 export type SourceMode = "mock" | "apify";
 export type Schedule = "weekly" | "daily" | "manual";
@@ -302,5 +302,24 @@ export type SettingRow = {
   value: string | null; // masked to last 4 when secret
   source: "db" | "env" | "fallback" | "unset";
 };
+
+/** What the brand scout produced. Stored on its own scrape_runs row; ids are always candidates that
+ *  existed in the brief, never ones the model invented. */
+export type BrandReport = {
+  summary: string;
+  picks: { id: string; why: string; pros: string[]; cons: string[]; confidence: "high" | "medium" | "low" }[];
+  avoid: { id: string; reason: string }[];
+  generatedAt: string;
+  model: string;
+  candidateCount: number;
+  /** Listings the brief could not weigh — unmeasured, not rejected. */
+  excluded: { noSoldCount: number; noPrice: number; total: number };
+  /** What this data cannot support, shown to the reader as well as to the model. */
+  limits: string[];
+};
+
+/** Titles are resolved server-side for exactly the ids a report references, so the page never has to
+ *  page through the whole catalogue to name a pick. */
+export type BrandResponse = { report: BrandReport | null; titles: Record<string, string> };
 
 export type UnmappedCategory = { platform: Platform; path: string; count: number };

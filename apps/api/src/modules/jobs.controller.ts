@@ -4,7 +4,7 @@ import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import type { ActorEvaluation, ActorsResponse, Platform, RunKind, TriggerResult } from "@pp/contracts";
 import { getDb } from "../db/client.js";
-import { actorEvaluations, keywords, productGroups } from "../db/schema.js";
+import { actorEvaluations, keywords, productGroups, scrapeRuns } from "../db/schema.js";
 import { AppError } from "../common/errors.js";
 import { ZodPipe } from "../common/http.js";
 import { planRound } from "../domain/budget.js";
@@ -14,6 +14,7 @@ import { PLATFORM_LIST } from "../domain/types.js";
 import { chooseManually, evaluateActors } from "../actors/evaluate.js";
 import { runCategorize } from "../jobs/categorize.js";
 import { runTranslate } from "../jobs/translate.js";
+import { latestBrandReport, runBrandScout } from "../jobs/brand.js";
 import { aiBackend } from "../jobs/llm.js";
 import { claudeCliVersion, skillPresent, SKILLS } from "../jobs/claude-cli.js";
 import { triggerPipeline } from "../jobs/pipeline.js";
@@ -24,7 +25,7 @@ import { apifyStart } from "../sources/apify.js";
 import { getSetting } from "../settings/settings.js";
 
 const platform = z.enum(PLATFORM_LIST as ["douyin", "1688", "temu", "xhs"]);
-const KINDS = ["scrape", "categorize", "media", "trend", "evaluate", "smoke", "pipeline", "translate"] as const;
+const KINDS = ["scrape", "categorize", "media", "trend", "evaluate", "smoke", "pipeline", "translate", "brand"] as const;
 
 const toEval = (r: typeof actorEvaluations.$inferSelect): ActorEvaluation => ({
   id: r.id,
@@ -79,6 +80,43 @@ export class JobsController {
   }
 
   /** Free of Apify charges, but it does spend on the Anthropic API — only titles without a Thai one. */
+  /** Reads listings that are already stored and asks the model which are worth branding. No Apify
+   *  charge; it does spend on Anthropic, and assertNotRunning keeps the button from being held down. */
+  @Post("jobs/brand")
+  @HttpCode(200)
+  async brand(@Body(new ZodPipe(z.object({ pg: z.string().optional() }))) body: { pg?: string }) {
+    const g = await groupBySlug(body.pg);
+    if (!skillPresent(SKILLS.brand)) throw new AppError(500, "errors.translate.noSkill");
+    if ((await aiBackend()) === "cli") {
+      const bin = (await getSetting("CLAUDE_CLI_PATH")) ?? "claude";
+      await claudeCliVersion(bin).catch(() => {
+        throw new AppError(400, "errors.translate.noCli");
+      });
+    } else if (!(await getSetting("ANTHROPIC_API_KEY"))) {
+      throw new AppError(400, "errors.translate.needsKey");
+    }
+    await assertNotRunning(g.id, "brand");
+    const runId = await createRun(await getDb(), { productGroupId: g.id, kind: "brand", status: "running" });
+    void runBrandScout(g.id)
+      .then(async (r) => {
+        if (r.report) await (await getDb()).update(scrapeRuns).set({ report: r.report }).where(eq(scrapeRuns.id, runId));
+        await finishRun(runId, r.report ? "succeeded" : "suspect", r.note, {
+          itemsIn: r.report?.candidateCount,
+          itemsOut: r.report?.picks.length,
+          costUsd: r.costUsd ?? undefined,
+        });
+      })
+      .catch((e) => finishRun(runId, "failed", NOTE.stepFailed("brand", String(e?.message ?? e).slice(0, 200))));
+    return { runId };
+  }
+
+  /** Already shaped as BrandResponse ({ report, titles }) — do not wrap it again. */
+  @Get("brand")
+  async brandReport(@Query("pg") pg?: string) {
+    const g = await groupBySlug(pg);
+    return latestBrandReport(g.id);
+  }
+
   @Post("jobs/translate")
   @HttpCode(200)
   async translate(

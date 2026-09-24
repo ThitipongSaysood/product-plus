@@ -1,0 +1,136 @@
+// Brand scout: which listings are worth ordering under the merchant's own label.
+//
+// The arithmetic lives in domain/brand-brief.ts and the judgement lives in the brand-candidates skill;
+// this file only moves data between them. The report is stored on its own `scrape_runs` row (kind
+// "brand", body in `report`) — that table already carries a jsonb column, a cost, a note and a
+// one-at-a-time guard. It gains one nullable jsonb column for the body rather than a whole table,
+// which would duplicate the status, cost and timing it already tracks.
+import { and, desc, eq, inArray } from "drizzle-orm";
+import type { BrandReport, BrandResponse, Platform, SoldPeriod, TaxonomyEntry, TrendLabel } from "@pp/contracts";
+import { getDb } from "../db/client.js";
+import { productGroups, products, scrapeRuns } from "../db/schema.js";
+import { buildBrief, type BriefInput } from "../domain/brand-brief.js";
+import { supplyTerms } from "../domain/normalize/supply.js";
+import { getSetting } from "../settings/settings.js";
+import { extractJson, runClaudeCli, skillBody, skillRef, SKILLS } from "./claude-cli.js";
+import { aiBackend, LLM_MODEL } from "./llm.js";
+
+/** Enough to see the shape of a catalogue without paying for a prompt nobody reads. */
+const MAX_CANDIDATES = 60;
+
+export async function loadBriefInput(groupId: string): Promise<{ rows: BriefInput[]; taxonomy: TaxonomyEntry[]; name: string }> {
+  const db = await getDb();
+  const [group] = await db.select().from(productGroups).where(eq(productGroups.id, groupId));
+  const rs = await db.select().from(products).where(and(eq(products.productGroupId, groupId), eq(products.isActive, true)));
+  const rows: BriefInput[] = rs.map((p) => {
+    const supply = supplyTerms(p.platform as Platform, p.raw);
+    return {
+      id: p.id,
+      platform: p.platform as Platform,
+      title: p.title,
+      titleTh: p.titleTh,
+      price: p.price,
+      entryPrice: supply?.entryPrice ?? null,
+      currency: p.currency,
+      moq: supply?.moq ?? null,
+      unit: supply?.unit ?? null,
+      soldCount: p.latestSoldCount,
+      soldPeriod: p.latestSoldPeriod as SoldPeriod,
+      soldLowerBound: p.latestSoldLowerBound,
+      trend: p.trendLabel as TrendLabel,
+      categoryKey: p.categoryKey ?? "unclassified",
+      shopName: p.shopName,
+      orderCount: supply?.orderCount ?? null,
+    };
+  });
+  return { rows, taxonomy: group.taxonomy as TaxonomyEntry[], name: group.name };
+}
+
+/** Keeps only ids the brief actually contained — a hallucinated id must never reach the UI as a link. */
+function sanitize(parsed: unknown, validIds: Set<string>): Omit<BrandReport, "generatedAt" | "model" | "candidateCount" | "excluded" | "limits"> {
+  const r = (parsed ?? {}) as { summary?: unknown; picks?: unknown[]; avoid?: unknown[] };
+  const str = (v: unknown, max: number) => (typeof v === "string" ? v.trim().slice(0, max) : "");
+  const list = (v: unknown) => (Array.isArray(v) ? v.map((x) => str(x, 300)).filter(Boolean).slice(0, 8) : []);
+  const picks = (Array.isArray(r.picks) ? r.picks : [])
+    .map((p) => p as Record<string, unknown>)
+    .filter((p) => typeof p.id === "string" && validIds.has(p.id))
+    .slice(0, 8)
+    .map((p) => ({
+      id: p.id as string,
+      why: str(p.why, 800),
+      pros: list(p.pros),
+      cons: list(p.cons),
+      confidence: (["high", "medium", "low"] as const).includes(p.confidence as never) ? (p.confidence as "high" | "medium" | "low") : "low",
+    }));
+  const avoid = (Array.isArray(r.avoid) ? r.avoid : [])
+    .map((p) => p as Record<string, unknown>)
+    .filter((p) => typeof p.id === "string" && validIds.has(p.id))
+    .slice(0, 8)
+    .map((p) => ({ id: p.id as string, reason: str(p.reason, 400) }));
+  return { summary: str(r.summary, 1200), picks, avoid };
+}
+
+export async function runBrandScout(groupId: string): Promise<{ report: BrandReport | null; costUsd: number | null; note: string | null }> {
+  const { rows, taxonomy, name } = await loadBriefInput(groupId);
+  const brief = buildBrief(rows, taxonomy, name, MAX_CANDIDATES);
+  if (!brief.candidates.length) {
+    return { report: null, costUsd: null, note: "brand.noCandidates" };
+  }
+
+  const ask = JSON.stringify(brief);
+  const backend = await aiBackend();
+  let text: string;
+  let costUsd: number | null = null;
+  if (backend === "cli") {
+    const bin = (await getSetting("CLAUDE_CLI_PATH")) ?? "claude";
+    const res = await runClaudeCli(bin, LLM_MODEL, `/${skillRef(SKILLS.brand)}\n\n${ask}`);
+    text = res.text;
+    costUsd = res.costUsd;
+  } else {
+    const apiKey = await getSetting("ANTHROPIC_API_KEY");
+    if (!apiKey) return { report: null, costUsd: null, note: "brand.needsKey" };
+    const { default: Anthropic } = await import("@anthropic-ai/sdk");
+    const client = new Anthropic({ apiKey });
+    const res = await client.messages.create({
+      model: LLM_MODEL,
+      max_tokens: 4096,
+      system: skillBody(SKILLS.brand),
+      messages: [{ role: "user", content: ask }],
+    });
+    text = res.content.map((c) => (c.type === "text" ? c.text : "")).join("");
+  }
+
+  const ids = new Set(brief.candidates.map((c) => c.id));
+  const report: BrandReport = {
+    ...sanitize(extractJson(text), ids),
+    generatedAt: new Date().toISOString(),
+    model: LLM_MODEL,
+    candidateCount: brief.candidates.length,
+    excluded: brief.excluded,
+    limits: brief.limits,
+  };
+  return { report, costUsd, note: null };
+}
+
+/** The newest stored report for a group with the titles of everything it mentions, or an empty result
+ *  before the job has ever run. Titles are looked up by id rather than paged through the catalogue. */
+export async function latestBrandReport(groupId: string): Promise<BrandResponse> {
+  const db = await getDb();
+  const [run] = await db
+    .select({ report: scrapeRuns.report })
+    .from(scrapeRuns)
+    .where(and(eq(scrapeRuns.productGroupId, groupId), eq(scrapeRuns.kind, "brand"), eq(scrapeRuns.status, "succeeded")))
+    .orderBy(desc(scrapeRuns.startedAt))
+    .limit(1);
+  const report = (run?.report as BrandReport | undefined) ?? null;
+  if (!report) return { report: null, titles: {} };
+
+  const ids = [...new Set([...report.picks.map((p) => p.id), ...report.avoid.map((a) => a.id)])];
+  if (!ids.length) return { report, titles: {} };
+  const rs = await db
+    .select({ id: products.id, title: products.title, titleTh: products.titleTh })
+    .from(products)
+    .where(inArray(products.id, ids));
+  const titles = Object.fromEntries(rs.map((p) => [p.id, p.titleTh?.trim() || p.title?.trim() || p.id]));
+  return { report, titles };
+}

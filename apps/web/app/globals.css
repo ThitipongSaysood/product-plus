@@ -397,6 +397,17 @@ select.ox-control { appearance: none; padding-right: var(--omnix-space-8); backg
 .ap-tiers { display: grid; grid-template-columns: auto auto; gap: var(--omnix-space-1) var(--omnix-space-3); justify-content: start; }
 .ap-tiers__row { display: contents; }
 
+/* brand scout */
+.ap-pick { display: flex; flex-direction: column; gap: var(--omnix-space-2); padding: var(--omnix-space-4); border: 1px solid var(--omnix-border); border-radius: var(--omnix-radius-lg); }
+.ap-pick__title { font-weight: 600; overflow-wrap: anywhere; }
+.ap-bullets { margin: 0; padding-left: 1.2em; display: flex; flex-direction: column; gap: var(--omnix-space-1); }
+.ap-bullets li { overflow-wrap: anywhere; }
+.ap-pros-cons { display: grid; gap: var(--omnix-space-3); }
+@media (min-width: 768px) {
+  /* Two columns only where both fit: side by side is how a for/against list is meant to read. */
+  .ap-pros-cons { grid-template-columns: 1fr 1fr; }
+}
+
 /* product detail */
 .ap-detail { display: grid; gap: var(--omnix-space-5); }
 /* Grid items default to min-width:auto, so the widest thing inside becomes a floor for the whole

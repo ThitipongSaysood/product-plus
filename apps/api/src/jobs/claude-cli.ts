@@ -25,6 +25,7 @@ export const PLUGIN_DIR = path.resolve(here, "../../claude-plugin");
 export const SKILLS = {
   translate: "translate-listing-titles",
   categorize: "categorize-listings",
+  brand: "brand-candidates",
 } as const;
 export type SkillName = (typeof SKILLS)[keyof typeof SKILLS];
 

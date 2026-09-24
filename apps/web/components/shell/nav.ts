@@ -11,6 +11,7 @@ export const NAV: NavGroup[] = [
     { href: "/trends", key: "nav.trends", short: "nav.short.trends", icon: "TrendingUp" },
   ] },
   { key: "nav.group.analyse", items: [
+    { href: "/brand", key: "nav.brand", short: "nav.short.brand", icon: "Package" },
     { href: "/actors", key: "nav.actors", short: "nav.short.actors", icon: "Analyse" },
   ] },
   { key: "nav.group.settings", items: [
