@@ -87,9 +87,13 @@ export async function runClaudeCli(bin: string, model: string, prompt: string): 
     "-p",
     "--output-format", "json",
     "--model", model,
-    "--allowed-tools", "", // translation only: no file, shell or web access
+    "--allowed-tools", "", // text in, text out: no file, shell or web access, and no tool to invoke another skill
     "--strict-mcp-config", // ignore whatever MCP servers the host has configured
-    "--plugin-dir", PLUGIN_DIR, // our own skill only — nothing the host user has installed
+    // Adds our plugin; it does NOT replace what the host account already has. Measured on a dev machine
+    // 2026-09-24: the model also listed the operator's personal skills (scrutinize, frontend-design,
+    // figma:*). --bare is the only flag that drops them and it forces ANTHROPIC_API_KEY, which is the one
+    // thing this backend exists to avoid. So: keep the server's `claude` account free of extra skills.
+    "--plugin-dir", PLUGIN_DIR,
   ];
   return await new Promise<CliResult>((resolve, reject) => {
     const child = spawn(bin, args, { cwd: tmpdir(), stdio: ["pipe", "pipe", "pipe"] });
