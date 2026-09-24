@@ -42,22 +42,36 @@ function TrendSection({ t, kind, rows, pg, from }: { t: T; kind: "rising" | "fal
   const pct = (r: TrendRow) => Math.abs(r.changePct ?? 0) * 100;
   const sorted = rows.slice().sort((a, b) => pct(b) - pct(a));
   const max = Math.max(1, ...sorted.map(pct));
-  const top = sorted.slice(0, 10).map((r) => ({ label: shownTitle(t, r).text, delta: Math.round(pct(r) * 10) / 10 }));
+  const top = sorted.slice(0, 10).map((r) => {
+    const delta = Math.round(pct(r) * 10) / 10;
+    // Bar length is a magnitude, so a falling row would read as growth without its sign. The sign
+    // carries the direction in the value itself; the grey bar is a second cue, never the only one.
+    // Formatted here, on the server, where the locale lives — the chart is a client component and a
+    // formatter function cannot cross that boundary.
+    return { label: shownTitle(t, r).text, delta, deltaLabel: `${kind === "rising" ? "+" : "\u2212"}${formatNumber(t.locale, delta, 1)}%` };
+  });
   const title = t(kind === "rising" ? "trends.rising" : "trends.falling");
   return (
     <section className="ox-stack">
       <SectionTitle title={title} sub={t("trends.count", { n: formatNumber(t.locale, rows.length) })} />
       {rows.length === 0 ? <EmptyState title={t("trends.empty")} body={t("trends.emptyBody")} /> : (
         <>
-          <section className="ox-chart">
+          <section className="ox-chart ap-wide-only">
             <div className="ox-chart__head">
               <div>
-                <div className="ox-chart__title">{t("trends.top10", { title })}</div>
+                <div className="ox-chart__title">{t("trends.topN", { n: formatNumber(t.locale, top.length), title })}</div>
                 <div className="ox-chart__sub">{t("trends.top10Sub")}</div>
               </div>
             </div>
             <div className="ox-chart__body">
-              <HBarChart data={top} series={[{ key: "delta", label: t("trends.col.changePct"), colorIndex: 0 }]} emptyText={t("chart.empty")} />
+              <HBarChart
+                data={top}
+                series={[{ key: "delta", label: t("trends.col.changePct"), colorIndex: kind === "rising" ? 0 : 5 }]}
+                emptyText={t("chart.empty")}
+                labelWidth={300}
+                maxLabelChars={34}
+                valueKey="deltaLabel"
+              />
             </div>
           </section>
           <TableScroll label={title}>

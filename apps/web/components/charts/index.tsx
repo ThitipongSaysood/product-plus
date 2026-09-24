@@ -2,7 +2,7 @@
 // Recharts wrappers (design-system §6). Colours come from CSS tokens, read after paint and on theme change.
 import { useEffect, useState } from "react";
 import {
-  Bar, BarChart, CartesianGrid, Line, LineChart as RLineChart, ResponsiveContainer, Tooltip, XAxis, YAxis,
+  Bar, BarChart, CartesianGrid, LabelList, Line, LineChart as RLineChart, ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from "recharts";
 import { formatCompact, formatDate, formatNumber } from "@/i18n";
 import { useLocale } from "@/i18n/client";
@@ -100,35 +100,86 @@ export function LineChart({ data, series, height = 260, emptyText }: {
 }
 
 /** Horizontal bars sorted desc (caller sorts). data rows: { label, [series.key]: number } */
-export function HBarChart({ data, series, height, emptyText, percent }: {
-  data: Record<string, string | number | null>[]; series: Series[]; height?: number; emptyText: string; percent?: boolean;
+/** Cuts on grapheme boundaries. Slicing Thai by code unit splits a base letter from its vowel or tone
+ *  mark and renders a broken glyph — and the previous 9-unit cut turned every "สายนาฬิกา…" label on the
+ *  trends page into the same word, because that name is exactly nine units long. */
+function ellipsize(text: string, max: number): string {
+  const seg = typeof Intl !== "undefined" && "Segmenter" in Intl
+    ? [...new Intl.Segmenter(undefined, { granularity: "grapheme" }).segment(text)].map((x) => x.segment)
+    : [...text];
+  return seg.length <= max ? text : `${seg.slice(0, max).join("")}…`;
+}
+
+/** Widest the category column may be below 768px, where the chart itself is only ~310px. */
+const NARROW_AXIS = 132;
+
+/** Starts false so the first paint is the narrow layout: a too-wide axis on a phone removes the bars
+ *  entirely, while a briefly narrow axis on a desktop is merely less roomy. */
+function useMediaQuery(query: string): boolean {
+  const [match, setMatch] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia(query);
+    setMatch(mq.matches);
+    const on = () => setMatch(mq.matches);
+    mq.addEventListener("change", on);
+    return () => mq.removeEventListener("change", on);
+  }, [query]);
+  return match;
+}
+
+export function HBarChart({ data, series, height, emptyText, percent, labelWidth = 150, maxLabelChars = 26, valueKey }: {
+  data: Record<string, string | number | null>[];
+  series: Series[];
+  height?: number;
+  emptyText: string;
+  percent?: boolean;
+  /** Room for the category names. Long product titles need far more than the 150px default. */
+  labelWidth?: number;
+  maxLabelChars?: number;
+  /** Key of a preformatted string on each row, printed at the end of its bar. Without it the chart
+   *  shows rank but not magnitude. A key rather than a formatter because this component is a client
+   *  component and functions cannot cross the server boundary — the caller formats, where the locale is. */
+  valueKey?: string;
 }) {
   const c = useChartColors();
   const locale = useLocale();
   const tip = useTooltipStyle(c);
-  const h = height ?? Math.max(160, data.length * 32 + 24);
+  // Taller rows than the old 32px: a bar needs to clear its own value label and stay a comfortable
+  // touch target in the list it is read alongside.
+  // The category column has to be wide enough to tell two product names apart — measured on the real
+  // catalogue, 34 characters is where the top eight stop colliding — but the same width on a phone
+  // leaves no room for the bars at all. A media query rather than a ResizeObserver: the observer only
+  // delivers on a paint, so a first render (or a tab that is not painting) keeps the desktop width and
+  // squeezes the bars to nothing. This resolves before paint and never leaves the chart unusable.
+  const wide = useMediaQuery("(min-width: 768px)");
+  const axisW = wide ? labelWidth : Math.min(labelWidth, NARROW_AXIS);
+  const chars = Math.max(8, Math.round((axisW / labelWidth) * maxLabelChars));
+  const h = height ?? Math.max(160, data.length * 40 + 24);
   if (!data.length) {
     return <div className="ox-chart__canvas" style={{ height: 160 }}><div className="ox-chart__empty">{emptyText}</div></div>;
   }
   return (
     <div className="ox-chart__canvas" style={{ height: h }}>
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} layout="vertical" margin={{ top: 0, right: 16, bottom: 0, left: 0 }} barCategoryGap={2}>
+        {/* right margin leaves room for the value printed past the end of the longest bar */}
+        <BarChart data={data} layout="vertical" margin={{ top: 0, right: valueKey ? 72 : 16, bottom: 0, left: 0 }} barCategoryGap={6}>
           <CartesianGrid horizontal={false} vertical={false} />
           <XAxis type="number" hide domain={[0, "auto"]} />
           <YAxis
             type="category"
             dataKey="label"
-            width={150}
+            width={axisW}
             interval={0}
             tick={{ fill: c["chart-axis"], fontSize: 12, width: 1000 }}
-            tickFormatter={(v: string) => (v.length > 10 ? `${v.slice(0, 9)}…` : v)}
+            tickFormatter={(v: string) => ellipsize(v, chars)}
             axisLine={false}
             tickLine={false}
           />
           <Tooltip {...tip} cursor={{ fill: c["chart-grid"] }} formatter={(v) => (percent ? `${formatNumber(locale, Number(v) * 100, 1)}%` : formatNumber(locale, typeof v === "number" ? v : null))} />
           {series.map((s) => (
-            <Bar key={s.key} dataKey={s.key} name={s.label} fill={seriesColor(c, s.colorIndex)} radius={[0, 4, 4, 0]} isAnimationActive={false} />
+            <Bar key={s.key} dataKey={s.key} name={s.label} fill={seriesColor(c, s.colorIndex)} radius={[0, 4, 4, 0]} isAnimationActive={false}>
+              {valueKey ? <LabelList dataKey={valueKey} position="right" fill={c["chart-axis"]} fontSize={12} /> : null}
+            </Bar>
           ))}
         </BarChart>
       </ResponsiveContainer>

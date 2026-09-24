@@ -533,6 +533,10 @@ select.ox-control { appearance: none; padding-right: var(--omnix-space-8); backg
   .ap-brandname { display: none; }
   /* secondary table columns: six columns cannot be read on a phone even inside a scroller */
   .ap-col-wide { display: none; }
+  /* A horizontal bar chart of long product names does not fit a phone: the category column and the
+     value labels leave the bars a third of the width, and the names truncate until two of them read
+     the same. The table below carries the same ranking with full names and its own bar column. */
+  .ap-wide-only { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
