@@ -10,3 +10,6 @@ coverage
 
 # AI agent private notes
 /.agents/private/
+
+# personal scratch notes — .agents/ is where project notes belong
+text.text
