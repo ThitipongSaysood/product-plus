@@ -9,6 +9,7 @@ import { PLATFORM_LIST } from "@/lib/platform";
 import { platformName } from "../bits";
 import { PlusIcon, TrashIcon } from "../icons";
 import { Alert, Button, Card, Checkbox, ComboBox, EmptyState, Field, SectionTitle, Select, TableScroll, TextArea, TextInput, Toggle } from "../ui";
+import { GroupFields, useGroupEdit } from "./group-edit";
 import { parseTaxonomy, taxonomyToText } from "./taxonomy";
 
 type Msg = { tone: "success" | "danger" | "warning"; text: string } | null;
@@ -36,60 +37,24 @@ function Status({ msg }: { msg: Msg }) {
 }
 
 // ---------- group ----------
+/** The same editor the pencil in the groups list opens — see settings/group-edit.tsx. */
 export function GroupForm({ group }: { group: Group }) {
   const t = useT();
   const s = useSaver();
-  const [budget, setBudget] = useState(String(group.monthlyBudgetUsd));
-  const [limit, setLimit] = useState(String(group.resultLimit));
-  const [schedule, setSchedule] = useState<Schedule>(group.schedule);
-  const [runCap, setRunCap] = useState(String(group.runCapUsd ?? 1));
-  const runCapN = Number(runCap);
-  const runCapBad = !Number.isFinite(runCapN) || runCapN < 0.1;
-  const [platforms, setPlatforms] = useState<Platform[]>(group.platforms);
-  const noPlatform = platforms.length === 0;
-  const limitN = Number(limit);
-  const limitBad = !Number.isInteger(limitN) || limitN < 1 || limitN > 50;
-  const budgetN = Number(budget);
-  const budgetBad = budget.trim() === "" || !Number.isFinite(budgetN) || budgetN < 0;
-  const capOverBudget = !runCapBad && !budgetBad && budgetN > 0 && runCapN > budgetN;
-
+  const e = useGroupEdit(group);
   return (
     <Card>
       <SectionTitle title={t("group.settingsTitle")} sub={group.name} />
       <form
         className="ox-stack"
-        onSubmit={(e) => {
-          e.preventDefault();
-          if (limitBad || budgetBad || runCapBad || capOverBudget || noPlatform) return;
-          void s.run(() => send<Group>("PATCH", `/api/groups/${encodeURIComponent(group.slug)}`, { monthlyBudgetUsd: budgetN, runCapUsd: runCapN, resultLimit: limitN, schedule, platforms: PLATFORM_LIST.filter((p) => platforms.includes(p)) }), t("common.saved"));
+        onSubmit={(ev) => {
+          ev.preventDefault();
+          if (e.blocked) return;
+          void s.run(() => send<Group>("PATCH", `/api/groups/${encodeURIComponent(group.slug)}`, e.body()), t("common.saved"));
         }}
       >
-        <div className="ap-form-row ap-form-row--level">
-          <Field label={t("group.budget")} htmlFor="g-budget" help={t("group.budgetHelp")} error={budgetBad ? t("group.budgetInvalid") : undefined}>
-            <TextInput id="g-budget" type="number" min={0} step="0.5" inputMode="decimal" value={budget} onChange={(e) => setBudget(e.target.value)} aria-invalid={budgetBad} />
-          </Field>
-          <Field label={t("group.runCap")} htmlFor="g-runcap" help={t("group.runCapHelp")} error={runCapBad ? t("group.runCapInvalid") : capOverBudget ? t("group.runCapOverBudget") : undefined}>
-            <TextInput id="g-runcap" type="number" min={0.1} step={0.05} inputMode="decimal" value={runCap} onChange={(e) => setRunCap(e.target.value)} aria-invalid={runCapBad || capOverBudget} />
-          </Field>
-          <Field label={t("group.limit")} htmlFor="g-limit" help={t("group.limitHelp")} error={limitBad ? t("group.limitInvalid") : undefined}>
-            <TextInput id="g-limit" type="number" min={1} max={50} step={1} inputMode="numeric" value={limit} onChange={(e) => setLimit(e.target.value)} aria-invalid={limitBad} />
-          </Field>
-          <Field label={t("group.schedule")} htmlFor="g-schedule" help={t("group.scheduleHelp")}>
-            <Select id="g-schedule" value={schedule} onChange={(e) => setSchedule(e.target.value as Schedule)}>
-              {(["weekly", "daily", "manual"] as const).map((v) => <option key={v} value={v}>{t(`schedule.${v}`)}</option>)}
-            </Select>
-          </Field>
-        </div>
-        <fieldset className="ox-field" style={{ border: 0, padding: 0, margin: 0 }}>
-          <legend className="ox-label">{t("group.platforms")}</legend>
-          <div className="ox-row" style={{ gap: 16 }}>
-            {PLATFORM_LIST.map((p) => (
-              <Checkbox key={p} checked={platforms.includes(p)} label={platformName(t, p)} onChange={(v) => setPlatforms((cur) => (v ? [...cur, p] : cur.filter((x) => x !== p)))} />
-            ))}
-          </div>
-          {noPlatform ? <div className="ox-error" role="alert">{t("group.platformsRequired")}</div> : <div className="ox-help">{t("group.platformsHelp")}</div>}
-        </fieldset>
-        <div><Button type="submit" variant="primary" disabled={s.busy || limitBad || budgetBad || runCapBad || capOverBudget || noPlatform}>{t("group.save")}</Button></div>
+        <GroupFields e={e} id="g" />
+        <div><Button type="submit" variant="primary" disabled={s.busy || e.blocked}>{t("group.save")}</Button></div>
         <Status msg={s.msg} />
       </form>
     </Card>

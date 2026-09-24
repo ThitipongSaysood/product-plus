@@ -10,6 +10,7 @@ import { PLATFORM_LIST } from "@/lib/platform";
 import { platformName } from "../bits";
 import { EditIcon, PlusIcon, TrashIcon } from "../icons";
 import { Alert, Button, Card, Checkbox, EmptyState, Field, Modal, SectionTitle, Select, TableScroll, TextInput } from "../ui";
+import { GroupFields, useGroupEdit } from "./group-edit";
 
 // 0 = Sunday, matching Date#getUTCDay and the api column.
 const WEEKDAYS = [0, 1, 2, 3, 4, 5, 6] as const;
@@ -188,12 +189,43 @@ export function NewGroupForm({ groups }: { groups: Group[] }) {
   );
 }
 
+/** Everything about a group that can change, in the same editor the keywords page uses. */
+function EditGroupModal({ group, saver, onClose }: { group: Group; saver: ReturnType<typeof useSaver>; onClose: () => void }) {
+  const t = useT();
+  const e = useGroupEdit(group);
+  return (
+    <Modal
+      title={t("groups.editTitle")}
+      closeLabel={t("common.cancel")}
+      onClose={onClose}
+      wide
+      foot={
+        <>
+          <Button onClick={onClose}>{t("common.cancel")}</Button>
+          <Button
+            variant="primary"
+            disabled={saver.busy || e.blocked}
+            onClick={async () => {
+              const slug = group.slug;
+              onClose();
+              await saver.run(() => send<Group>("PATCH", `/api/groups/${encodeURIComponent(slug)}`, e.body()), t("common.saved"));
+            }}
+          >
+            {t("groups.editSave")}
+          </Button>
+        </>
+      }
+    >
+      <GroupFields e={e} id={`ed-${group.slug}`} />
+    </Modal>
+  );
+}
+
 export function GroupsTable({ groups, pg }: { groups: Group[]; pg: string }) {
   const t = useT();
   const s = useSaver();
   const router = useRouter();
-  const [renaming, setRenaming] = useState<Group | null>(null);
-  const [newName, setNewName] = useState("");
+  const [editing, setEditing] = useState<Group | null>(null);
   const [deleting, setDeleting] = useState<Group | null>(null);
   const [typed, setTyped] = useState("");
   const last = groups.length <= 1;
@@ -227,18 +259,14 @@ export function GroupsTable({ groups, pg }: { groups: Group[]; pg: string }) {
                   <td>
                     <div className="ox-row">
                       <Link className="ox-btn ox-btn--ghost ox-btn--sm" href={`/overview?pg=${encodeURIComponent(g.slug)}`}>{t("groups.open")}</Link>
-                      {/* Budget, cap, platforms, result count and schedule are edited by GroupForm at the
-                          top of the keywords page. Linking there beats copying that form into a modal,
-                          which would leave two places to keep in step. */}
-                      <Link className="ox-btn ox-btn--ghost ox-btn--sm" href={`/settings/keywords?pg=${encodeURIComponent(g.slug)}`} aria-label={t("groups.settingsFor", { name: g.name })}>{t("groups.settings")}</Link>
                       <Button
                         size="sm"
                         variant="ghost"
                         iconOnly
-                        aria-label={t("groups.rename", { name: g.name })}
+                        aria-label={t("groups.edit", { name: g.name })}
                         icon={<EditIcon size={16} />}
                         disabled={s.busy}
-                        onClick={() => { setRenaming(g); setNewName(g.name); s.setMsg(null); }}
+                        onClick={() => { setEditing(g); s.setMsg(null); }}
                       />
                       <Button
                         size="sm"
@@ -259,37 +287,9 @@ export function GroupsTable({ groups, pg }: { groups: Group[]; pg: string }) {
       )}
       {s.msg ? <Alert tone={s.msg.tone}>{s.msg.text}</Alert> : null}
 
-      {renaming ? (
-        <Modal
-          title={t("groups.renameTitle")}
-          closeLabel={t("common.cancel")}
-          onClose={() => setRenaming(null)}
-          foot={
-            <>
-              <Button onClick={() => setRenaming(null)}>{t("common.cancel")}</Button>
-              <Button
-                variant="primary"
-                disabled={s.busy || newName.trim() === ""}
-                onClick={async () => {
-                  const slug = renaming.slug;
-                  setRenaming(null);
-                  await s.run(() => send<Group>("PATCH", `/api/groups/${encodeURIComponent(slug)}`, { name: newName.trim() }), t("common.saved"));
-                }}
-              >
-                {t("groups.renameSave")}
-              </Button>
-            </>
-          }
-        >
-          <p className="ox-xs ox-muted">
-            {t("groups.renameOnly")}{" "}
-            <Link href={`/settings/keywords?pg=${encodeURIComponent(renaming.slug)}`}>{t("groups.toSettings")}</Link>
-          </p>
-          <Field label={t("groups.name")} htmlFor="rn-name" required help={t("groups.renameHelp", { slug: renaming.slug })}>
-            <TextInput id="rn-name" name="group-rename" autoComplete="off" value={newName} maxLength={80} autoFocus onChange={(e) => setNewName(e.target.value)} />
-          </Field>
-        </Modal>
-      ) : null}
+      {/* Keyed on the slug so opening a different group remounts the editor with that group's values
+          instead of keeping the previous one's in state. */}
+      {editing ? <EditGroupModal key={editing.slug} group={editing} saver={s} onClose={() => setEditing(null)} /> : null}
 
       {deleting ? (
         <Modal
