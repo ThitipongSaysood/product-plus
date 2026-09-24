@@ -65,10 +65,17 @@ export function GroupForm({ group }: { group: Group }) {
 export function KeywordsEditor({ pg, keywords, platforms }: { pg: string; keywords: Keyword[]; platforms: Platform[] }) {
   const t = useT();
   const s = useSaver();
-  const [platform, setPlatform] = useState<Platform>(platforms[0] ?? "douyin");
-  const [keyword, setKeyword] = useState("");
+  // One box, one keyword per line: the same term normally has to go on several platforms, and adding
+  // it one platform at a time is four submits for what is one decision.
+  const [text, setText] = useState("");
+  const [picked, setPicked] = useState<Platform[]>(platforms);
   const [region, setRegion] = useState("");
   const rows = keywords.filter((k) => platforms.includes(k.platform)).sort((a, b) => PLATFORM_LIST.indexOf(a.platform) - PLATFORM_LIST.indexOf(b.platform));
+  // Deduplicated here as well as on the server, so a list pasted with repeats does not send the same
+  // row twice and count one of them as "already there".
+  const terms = [...new Set(text.split(/[\n,]/).map((x) => x.trim()).filter(Boolean))];
+  const chosen = PLATFORM_LIST.filter((p) => platforms.includes(p) && picked.includes(p));
+  const pending = terms.length * chosen.length;
 
   return (
     <Card>
@@ -121,29 +128,71 @@ export function KeywordsEditor({ pg, keywords, platforms }: { pg: string; keywor
         </TableScroll>
       )}
       <form
-        className="ap-form-row ap-form-row--level"
+        className="ox-stack"
         onSubmit={async (e) => {
           e.preventDefault();
-          if (!keyword.trim()) return;
-          const ok = await s.run(
-            () => send<Keyword>("POST", `/api/groups/${encodeURIComponent(pg)}/keywords`, { platform, keyword: keyword.trim(), region: region.trim() || null, enabled: true }),
-            t("keywords.added"),
-          );
-          if (ok) { setKeyword(""); setRegion(""); }
+          if (!pending) return;
+          let added = 0;
+          let skipped = 0;
+          const ok = await s.run(async () => {
+            for (const keyword of terms) {
+              for (const platform of chosen) {
+                const r = await send<Keyword>("POST", `/api/groups/${encodeURIComponent(pg)}/keywords`, {
+                  platform,
+                  keyword,
+                  // Only Temu reads a region; storing one against the others would be a value that
+                  // nothing acts on and that reads as though it did something.
+                  region: platform === "temu" ? region.trim() || null : null,
+                  enabled: true,
+                });
+                if (!r.error) added++;
+                else if (r.error === "errors.keyword.duplicate") skipped++;
+                else return { error: r.error };
+              }
+            }
+            return { data: true };
+          }, t("keywords.added"));
+          if (ok) {
+            setText("");
+            s.setMsg({
+              tone: skipped ? "warning" : "success",
+              text: skipped
+                ? t("keywords.addedNSkipped", { added: formatNumber(t.locale, added), skipped: formatNumber(t.locale, skipped) })
+                : t("keywords.addedN", { added: formatNumber(t.locale, added) }),
+            });
+          }
         }}
       >
-        <Field label={t("facts.platform")} htmlFor="kw-platform">
-          <Select id="kw-platform" value={platform} onChange={(e) => setPlatform(e.target.value as Platform)}>
-            {platforms.map((p) => <option key={p} value={p}>{platformName(t, p)}</option>)}
-          </Select>
+        <Field label={t("keywords.keywordsMulti")} htmlFor="kw-keyword" required help={t("keywords.multiHelp")}>
+          <TextArea id="kw-keyword" rows={3} value={text} onChange={(e) => setText(e.target.value)} placeholder={"苹果手表钢化膜\n苹果手表保护膜"} lang="zh-CN" />
         </Field>
-        <Field label={t("keywords.keyword")} htmlFor="kw-keyword" required>
-          <TextInput id="kw-keyword" value={keyword} onChange={(e) => setKeyword(e.target.value)} placeholder="苹果手表表带" lang="zh-CN" required />
-        </Field>
-        <Field label={t("keywords.region")} htmlFor="kw-region" help={t("keywords.regionHelp")}>
-          <TextInput id="kw-region" value={region} onChange={(e) => setRegion(e.target.value)} placeholder="us" />
-        </Field>
-        <Button type="submit" icon={<PlusIcon size={16} />} disabled={s.busy || !keyword.trim()}>{t("keywords.add")}</Button>
+        <fieldset className="ox-field" style={{ border: 0, padding: 0, margin: 0 }}>
+          <legend className="ox-label">{t("group.platforms")}</legend>
+          <div className="ox-row" style={{ gap: 16 }}>
+            {platforms.map((p) => (
+              <Checkbox key={p} checked={picked.includes(p)} label={platformName(t, p)} onChange={(v) => setPicked((cur) => (v ? [...cur, p] : cur.filter((x) => x !== p)))} />
+            ))}
+          </div>
+          {chosen.length === 0 ? <div className="ox-error" role="alert">{t("group.platformsRequired")}</div> : null}
+        </fieldset>
+        <div className="ap-form-row ap-form-row--level">
+          <Field label={t("keywords.region")} htmlFor="kw-region" help={t("keywords.regionTemuOnly")}>
+            <TextInput id="kw-region" value={region} onChange={(e) => setRegion(e.target.value)} placeholder="us" disabled={!chosen.includes("temu")} />
+          </Field>
+        </div>
+        {/* Said before the click, not after: keywords multiply the bill for every round from here on. */}
+        {pending ? (
+          <div className="ox-xs ox-muted">
+            {t("keywords.willAdd", { n: formatNumber(t.locale, pending), k: formatNumber(t.locale, terms.length), p: formatNumber(t.locale, chosen.length) })}
+            {" — "}
+            {t("keywords.costNote")}
+          </div>
+        ) : null}
+        <div>
+          <Button type="submit" icon={<PlusIcon size={16} />} disabled={s.busy || !pending}>
+            {pending > 1 ? t("keywords.addN", { n: formatNumber(t.locale, pending) }) : t("keywords.add")}
+          </Button>
+        </div>
       </form>
       <Status msg={s.msg} />
     </Card>
