@@ -33,6 +33,13 @@ Next.js + NestJS (pnpm monorepo) · PostgreSQL 18
 
 ## Blockers
 
+- **Postgres volume was wiped 2026-09-24 ~19:44** (container + volume `product-plus_omnix_pgdata` recreated empty,
+  `apps/api/.env` gone — not by an AI session as far as the notes show). Everything created in Postgres after the
+  afternoon move is lost: group `tempered-glass-screen-protector`, brand reports, System settings. No backup found.
+  **User chose (20:40) to stay on PGlite for now** — api runs without `.env` → `.pglite` (apple-watch-bands + demo-mock).
+  Actor evaluation re-run on PGlite (free) so trial estimates work. Going back to Postgres = new `.env` from
+  `.env.example` + new `SETTINGS_SECRET` + `pnpm seed`; ask the user first.
+
 - **กลุ่ม `tempered-glass-screen-protector` มีข้อมูลขยะ 150 รายการ** — `Tempered Glass` เป็นคำอังกฤษ
   1688/Temu ให้ฟิล์มมือถือ · XHS ให้กระจกปูโต๊ะร้านอาหาร · Douyin ให้ 0 แถว
   **0 จาก 150 เป็นสินค้านาฬิกา** เสียไปแล้ว ≈$2.05 (ดึง $1.46 + วิเคราะห์ $0.59)
