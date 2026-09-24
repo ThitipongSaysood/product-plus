@@ -1,4 +1,4 @@
-import type { Group, Keyword, TaxonomyEntry, UnmappedCategory } from "@pp/contracts";
+import type { Group, Keyword, RoundEstimate, TaxonomyEntry, UnmappedCategory } from "@pp/contracts";
 import { ApiErrorAlert } from "@/components/bits";
 import { GroupForm, KeywordsEditor, TaxonomyEditor, UnmappedQueue } from "@/components/settings/KeywordsSettings";
 import { getT } from "@/i18n/server";
@@ -13,10 +13,11 @@ export default async function KeywordsSettingsPage(props: PageProps<"/settings/k
   const groups = await api<Group[]>("/groups");
   const pg = getPg(sp) || groups.data?.[0]?.slug || "";
   const slug = encodeURIComponent(pg);
-  const [keywords, taxonomy, unmapped] = await Promise.all([
+  const [keywords, taxonomy, unmapped, estimate] = await Promise.all([
     api<Keyword[]>(`/groups/${slug}/keywords`),
     api<TaxonomyEntry[]>(`/groups/${slug}/taxonomy`),
     api<UnmappedCategory[]>(`/category-map/unmapped${qs({ pg })}`),
+    api<RoundEstimate>(`/groups/${slug}/round-estimate`),
   ]);
   const group = groups.data?.find((g) => g.slug === pg);
   const err = groups.error ?? keywords.error ?? taxonomy.error ?? unmapped.error ?? (group ? null : "errors.group.notFound");
@@ -31,7 +32,7 @@ export default async function KeywordsSettingsPage(props: PageProps<"/settings/k
       </div>
       {err ? <ApiErrorAlert t={t} error={err} /> : null}
       {group ? <GroupForm key={`g-${group.slug}-${group.platforms.join()}`} group={group} /> : null}
-      {keywords.data ? <KeywordsEditor key={`k-${pg}-${groupPlatforms(group).join()}`} pg={pg} keywords={keywords.data} platforms={groupPlatforms(group)} /> : null}
+      {keywords.data ? <KeywordsEditor key={`k-${pg}-${groupPlatforms(group).join()}`} pg={pg} keywords={keywords.data} platforms={groupPlatforms(group)} estimate={estimate.data ?? null} /> : null}
       {taxonomy.data ? <TaxonomyEditor key={`t-${pg}-${taxonomy.data.length}`} pg={pg} taxonomy={taxonomy.data} /> : null}
       {unmapped.data ? <UnmappedQueue key={`u-${pg}`} items={unmapped.data} taxonomy={taxonomy.data ?? []} platforms={groupPlatforms(group)} /> : null}
     </>

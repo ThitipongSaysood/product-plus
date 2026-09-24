@@ -569,6 +569,7 @@ select.ox-control { appearance: none; padding-right: var(--omnix-space-8); backg
 .ap-kwsug__chips { display: flex; flex-wrap: wrap; gap: var(--omnix-space-2); }
 .ap-kwsug__chip { height: auto; min-height: 28px; padding-block: var(--omnix-space-1); white-space: normal; text-align: left; }
 .ap-kwsug__hint { color: var(--omnix-fg-muted); font-size: var(--omnix-text-xs); }
+.ap-kwsug__line { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
 .ap-kwsug__chip.is-active .ap-kwsug__hint { color: inherit; }
 @media (max-width: 767px) { .ap-kwsug__chip { min-height: 44px; } }
 .ap-kwmore > summary { cursor: pointer; color: var(--omnix-accent); font-size: var(--omnix-text-xs); padding-block: var(--omnix-space-1); }

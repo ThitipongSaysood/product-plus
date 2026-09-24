@@ -2,18 +2,19 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Put, Query } from "@nestjs/common";
 import { and, eq, inArray, isNotNull, notExists, sql } from "drizzle-orm";
 import { z } from "zod";
-import type { KeywordListResponse, KeywordSuggestionsResponse, Platform, TaxonomyEntry } from "@pp/contracts";
+import type { KeywordListResponse, RoundEstimate, KeywordSuggestionsResponse, Platform, TaxonomyEntry } from "@pp/contracts";
 import { getDb } from "../db/client.js";
 import { keywords, media, productGroups, products, scrapeRuns } from "../db/schema.js";
 import { AppError, notFound } from "../common/errors.js";
 import { ZodPipe } from "../common/http.js";
 import { UNCLASSIFIED } from "../domain/categorize.js";
 import { capsValid, isUniqueViolation, slugify } from "../domain/guards.js";
-import { planKeywordList } from "../domain/keywords.js";
+import { cleanLineTerms, planKeywordList, roundCostPerKeyword } from "../domain/keywords.js";
 import { PLATFORM_LIST } from "../domain/types.js";
 import { claudeCliVersion, skillPresent, SKILLS } from "../jobs/claude-cli.js";
 import { aiBackend } from "../jobs/llm.js";
-import { suggestKeywords, translateKeyword } from "../jobs/suggest.js";
+import { suggestKeywords, translateKeywords } from "../jobs/suggest.js";
+import { chosenActor, groupMode } from "../jobs/scrape.js";
 import { getSetting } from "../settings/settings.js";
 import { applyCategoryMap } from "../jobs/categorize.js";
 import { groupBySlug } from "../jobs/runs.js";
@@ -213,22 +214,25 @@ export class GroupsController {
     const needZh = platforms.some((p) => p !== "temu");
     const needEn = platforms.includes("temu");
     const seen = new Set<string>();
-    const items = body.items.filter((i) => !seen.has(i.keyword) && seen.add(i.keyword));
+    // A term in the wrong language counts as missing (cleanLineTerms) so AI replaces it instead of it being saved.
+    const items = body.items.filter((i) => !seen.has(i.keyword) && seen.add(i.keyword)).map(cleanLineTerms);
     const missing = items.filter((i) => (needZh && !i.zh) || (needEn && !i.en));
     const translated: string[] = [];
     let costUsd: number | null = null;
     if (missing.length) {
       await assertAiReady(SKILLS.translateKeyword);
-      for (const i of missing) {
-        try {
-          const r = await translateKeyword(i.keyword, platforms);
-          i.zh ??= platforms.filter((p) => p !== "temu").map((p) => r.terms.get(p)).find(Boolean) ?? null;
-          i.en ??= r.terms.get("temu") ?? null;
+      try {
+        const r = await translateKeywords(missing.map((i) => i.keyword));
+        costUsd = r.costUsd;
+        for (const i of missing) {
+          const got = r.terms.get(i.keyword);
+          if (!got) continue; // left empty: the plan reports it as skipped instead of failing the whole save
+          i.zh ??= got.zh;
+          i.en ??= got.en;
           translated.push(i.keyword);
-          if (r.costUsd != null) costUsd = (costUsd ?? 0) + r.costUsd;
-        } catch {
-          // leave the terms empty: the plan reports them as skipped instead of failing the whole save
         }
+      } catch {
+        // AI down: save what the merchant typed; lines without a term are reported as skipped
       }
     }
     const db = await getDb();
@@ -249,6 +253,19 @@ export class GroupsController {
     return { keywords: rows.map(toKeyword), translated, skipped: plan.skipped, costUsd };
   }
 
+  /** Free: what one Keyword costs per Round with this group's platforms and result limit, next to the cap. */
+  @Get("groups/:slug/round-estimate")
+  async roundEstimate(@Param("slug") slug: string): Promise<RoundEstimate> {
+    const g = await groupBySlug(slug);
+    const platforms = g.platforms as Platform[];
+    const actors: Partial<Record<Platform, { startFee: number; pricePerResult: number }>> = {};
+    for (const p of platforms) {
+      const a = await chosenActor(p);
+      if (a) actors[p] = { startFee: a.startFee, pricePerResult: a.pricePerResult };
+    }
+    return { perKeywordUsd: roundCostPerKeyword(actors, platforms, Math.min(g.resultLimit, 50)), runCapUsd: g.runCapUsd, mode: await groupMode(g) };
+  }
+
   /** AI keyword suggestion — spends a little on Anthropic (or the local cli). Nothing is saved. */
   @Post("groups/:slug/keyword-suggestions")
   @HttpCode(200)
@@ -256,9 +273,9 @@ export class GroupsController {
     const g = await groupBySlug(slug);
     await assertAiReady(SKILLS.suggest);
     const db = await getDb();
-    const existing = await db.select({ platform: keywords.platform, keyword: keywords.keyword }).from(keywords).where(eq(keywords.productGroupId, g.id));
+    const rows = await db.select({ keyword: keywords.keyword, concept: keywords.concept }).from(keywords).where(eq(keywords.productGroupId, g.id));
     try {
-      return await suggestKeywords(body.productName, g.platforms as Platform[], existing);
+      return await suggestKeywords(body.productName, [...new Set(rows.map((r) => r.concept ?? r.keyword))]);
     } catch {
       throw new AppError(502, "errors.suggest.failed");
     }

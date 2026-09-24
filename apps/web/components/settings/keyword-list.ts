@@ -41,9 +41,28 @@ export function parseKeywordList(text: string): { items: KeywordListItem[]; erro
   return { items, errors };
 }
 
-/** Lines the api will send to AI because a term this group needs is empty. */
+// Mirrors cleanLineTerms in apps/api/src/domain/keywords.ts — change both together. A term in the wrong
+// language is treated as empty there, so AI replaces it on save.
+const CJK = /[㐀-鿿豈-﫿]/;
+export const zhOk = (s: string | null) => !!s && CJK.test(s);
+export const enOk = (s: string | null) => !!s && /[A-Za-z]/.test(s) && !CJK.test(s);
+
+/** Lines the api will send to AI: a term this group needs is empty or in the wrong language. */
 export function needsTranslation(items: KeywordListItem[], platforms: Platform[]): number {
   const needZh = platforms.some((p) => p !== "temu");
   const needEn = platforms.includes("temu");
-  return items.filter((i) => (needZh && !i.zh) || (needEn && !i.en)).length;
+  return items.filter((i) => (needZh && !zhOk(i.zh)) || (needEn && !enOk(i.en))).length;
+}
+
+/** Wrong-language terms, by line — shown under the box so the merchant knows AI will replace them. */
+export function wrongLanguage(text: string): { line: number; field: "zh" | "en" }[] {
+  const out: { line: number; field: "zh" | "en" }[] = [];
+  text.split("\n").forEach((raw, i) => {
+    const line = raw.trim();
+    if (!line || line.startsWith("#")) return;
+    const [, zh = "", en = ""] = line.split("|").map((c) => c.trim());
+    if (zh && !zhOk(zh)) out.push({ line: i + 1, field: "zh" });
+    if (en && !enOk(en)) out.push({ line: i + 1, field: "en" });
+  });
+  return out;
 }

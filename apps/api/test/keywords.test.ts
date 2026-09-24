@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Platform } from "@pp/contracts";
-import { cleanSuggestions, cleanTerms, languageMismatch, planKeywordList } from "../src/domain/keywords.js";
+import { cleanLineTerms, cleanSuggestionLines, cleanTranslations, languageMismatch, planKeywordList, roundCostPerKeyword } from "../src/domain/keywords.js";
 
 describe("languageMismatch", () => {
   it("Chinese platforms need at least one CJK character", () => {
@@ -18,55 +18,54 @@ describe("languageMismatch", () => {
   });
 });
 
-describe("cleanSuggestions", () => {
-  it("keeps only the platform's language, the group's platforms, and new keywords", () => {
-    const out = cleanSuggestions(
-      [
-        { platform: "1688", keyword: "苹果手表钢化膜", glossTh: "ฟิล์ม" },
-        { platform: "1688", keyword: "apple watch film", glossTh: "x" }, // wrong language
-        { platform: "temu", keyword: "苹果手表钢化膜", glossTh: "x" }, // wrong language
-        { platform: "temu", keyword: "Apple Watch  Screen Protector", glossTh: "ฟิล์ม" },
-        { platform: "temu", keyword: "apple watch screen protector", glossTh: "dup" }, // dup after normalizing
-        { platform: "xhs", keyword: "苹果手表保护膜", glossTh: "มีแล้ว" }, // already saved
-        { platform: "douyin", keyword: "苹果手表膜", glossTh: "x" }, // platform not in group
-        { platform: "1688", keyword: "", glossTh: "x" },
-        null,
-      ],
-      ["1688", "temu", "xhs"],
-      [{ platform: "xhs", keyword: "苹果手表保护膜" }],
-    );
-    expect(out).toEqual([
-      { platform: "1688", keyword: "苹果手表钢化膜", glossTh: "ฟิล์ม" },
-      { platform: "temu", keyword: "Apple Watch Screen Protector", glossTh: "ฟิล์ม" },
-    ]);
-  });
-  it("caps each platform at 6", () => {
-    const raw = Array.from({ length: 9 }, (_, i) => ({ platform: "1688", keyword: `苹果手表膜${i}`, glossTh: "" }));
-    expect(cleanSuggestions(raw, ["1688"], [])).toHaveLength(6);
+describe("cleanLineTerms", () => {
+  it("a term in the wrong language is dropped so AI refills it (the apple-watch group had `watch` on 1688, `复古手表` on Temu)", () => {
+    expect(cleanLineTerms({ keyword: "watch", zh: "watch", en: "watch" })).toEqual({ keyword: "watch", zh: null, en: "watch" });
+    expect(cleanLineTerms({ keyword: "复古手表", zh: "复古手表", en: "复古手表" })).toEqual({ keyword: "复古手表", zh: "复古手表", en: null });
+    expect(cleanLineTerms({ keyword: "k", zh: " iwatch钢化膜 ", en: " apple watch band " })).toEqual({ keyword: "k", zh: "iwatch钢化膜", en: "apple watch band" });
   });
 });
 
-describe("cleanTerms", () => {
-  it("one term per platform in its language; Chinese platforms share a term when one is missing or wrong", () => {
-    const { terms, missing } = cleanTerms(
+describe("cleanTranslations (one AI call for every line)", () => {
+  it("maps each requested keyword to its terms, dropping wrong-language and unrequested ones", () => {
+    const got = cleanTranslations(
       [
-        { platform: "douyin", term: " 苹果手表表带 " },
-        { platform: "1688", term: "apple watch band" }, // wrong language → falls back to the Chinese term
-        { platform: "temu", term: "apple watch band" },
-        { platform: "temu", term: "second answer ignored" },
+        { keyword: "สายหนัง", zh: "苹果手表皮表带", en: "apple watch leather band" },
+        { keyword: "สายโลหะ", zh: "metal band", en: "apple watch metal band" }, // zh in the wrong language
+        { keyword: "not asked", zh: "手表", en: "watch" },
+        null,
       ],
-      ["douyin", "1688", "xhs", "temu"],
+      ["สายหนัง", "สายโลหะ", "สายไนลอน"],
     );
-    expect(Object.fromEntries(terms)).toEqual({ douyin: "苹果手表表带", "1688": "苹果手表表带", xhs: "苹果手表表带", temu: "apple watch band" });
-    expect(missing).toEqual([]);
+    expect(Object.fromEntries(got)).toEqual({
+      สายหนัง: { zh: "苹果手表皮表带", en: "apple watch leather band" },
+      สายโลหะ: { zh: null, en: "apple watch metal band" },
+    });
   });
-  it("accepts `keyword` as the field name", () => {
-    expect(cleanTerms([{ platform: "temu", keyword: "apple watch band" }], ["temu"]).terms.get("temu")).toBe("apple watch band");
+});
+
+describe("cleanSuggestionLines", () => {
+  it("whole lines (keyword + both terms), valid languages, new labels only, at most 8", () => {
+    const out = cleanSuggestionLines(
+      [
+        { keyword: "ฟิล์มกระจก Apple Watch", zh: "苹果手表钢化膜", en: "apple watch tempered glass", glossTh: "ฟิล์มกระจกนิรภัย" },
+        { keyword: "สายนาฬิกา Apple Watch", zh: "苹果手表表带", en: "apple watch band", glossTh: "มีแล้ว" }, // already a Keyword
+        { keyword: "bad", zh: "tempered glass", en: "钢化膜", glossTh: "" }, // both wrong language
+        { keyword: "", zh: "手表膜", en: "watch film", glossTh: "" },
+      ],
+      ["สายนาฬิกา Apple Watch"],
+    );
+    expect(out).toEqual([{ keyword: "ฟิล์มกระจก Apple Watch", zh: "苹果手表钢化膜", en: "apple watch tempered glass", glossTh: "ฟิล์มกระจกนิรภัย" }]);
+    const many = Array.from({ length: 12 }, (_, i) => ({ keyword: `k${i}`, zh: `手表膜${i}`, en: `watch film ${i}`, glossTh: "" }));
+    expect(cleanSuggestionLines(many, [])).toHaveLength(8);
   });
-  it("reports a platform it cannot fill instead of guessing", () => {
-    const { terms, missing } = cleanTerms([{ platform: "temu", term: "苹果手表表带" }, null], ["temu", "douyin"]);
-    expect(terms.size).toBe(0);
-    expect(missing).toEqual(["temu", "douyin"]);
+});
+
+describe("roundCostPerKeyword", () => {
+  it("sums each watched platform's chosen actor at the group's result limit; unknown price → null", () => {
+    const actors = { douyin: { startFee: 0.005, pricePerResult: 0.008 }, temu: { startFee: 0, pricePerResult: 0.01 } };
+    expect(roundCostPerKeyword(actors, ["douyin", "temu"], 50)).toBeCloseTo(0.005 + 0.4 + 0.5, 6);
+    expect(roundCostPerKeyword(actors, ["douyin", "xhs"], 50)).toBeNull();
   });
 });
 
@@ -78,7 +77,7 @@ describe("planKeywordList", () => {
       row("a", "douyin", "苹果手表表带", "สายนาฬิกา Apple Watch"),
       row("b", "temu", "apple watch band", "สายนาฬิกา Apple Watch"),
       row("c", "1688", "苹果手表表带", "สายนาฬิกา Apple Watch"),
-      row("x", "douyin", "模块"), // legacy row, not in the list → deleted
+      row("x", "douyin", "模块"),
     ];
     const plan = planKeywordList(existing, [{ keyword: "สายนาฬิกา Apple Watch", zh: "苹果手表表带", en: "apple watch strap" }], P);
     expect(plan.updates).toEqual([{ id: "b", keyword: "apple watch strap", concept: "สายนาฬิกา Apple Watch" }]);
@@ -90,13 +89,18 @@ describe("planKeywordList", () => {
     const plan = planKeywordList([row("l", "douyin", "硅胶表带")], [{ keyword: "硅胶表带", zh: "硅胶表带", en: null }], ["douyin"]);
     expect(plan).toMatchObject({ updates: [{ id: "l", keyword: "硅胶表带", concept: "硅胶表带" }], inserts: [], deletes: [] });
   });
-  it("reports missing terms and duplicate terms instead of writing them", () => {
-    const plan = planKeywordList([], [{ keyword: "A", zh: "手表带", en: null }, { keyword: "B", zh: "手表带", en: "watch band" }], ["douyin", "temu"]);
+  it("reports missing terms and duplicate terms (case-insensitive) instead of writing them", () => {
+    const plan = planKeywordList(
+      [],
+      [{ keyword: "A", zh: "手表带", en: null }, { keyword: "B", zh: "手表带", en: "Watch Band" }, { keyword: "C", zh: "表带", en: "watch band" }],
+      ["douyin", "temu"],
+    );
     expect(plan.skipped).toEqual([
       { keyword: "A", platform: "temu", reason: "keywords.skip.noTerm" },
       { keyword: "B", platform: "douyin", reason: "keywords.skip.duplicate" },
+      { keyword: "C", platform: "temu", reason: "keywords.skip.duplicate" },
     ]);
-    expect(plan.inserts.map((i) => `${i.platform}:${i.keyword}`)).toEqual(["douyin:手表带", "temu:watch band"]);
+    expect(plan.inserts.map((i) => `${i.platform}:${i.keyword}`)).toEqual(["douyin:手表带", "temu:Watch Band", "douyin:表带"]);
   });
   it("leaves rows of unwatched platforms for Keywords that stay", () => {
     const plan = planKeywordList([row("t", "temu", "apple watch band", "K")], [{ keyword: "K", zh: "苹果手表表带", en: null }], ["douyin"]);

@@ -1,17 +1,15 @@
 "use client";
-// Keyword suggestion by AI (CONTEXT.md). The merchant types a product name; tapping a proposed word adds
-// it as a line to the keyword list above. Nothing is saved here — the list is saved as a whole.
+// Keyword suggestion by AI (CONTEXT.md). The merchant types a product name; each suggestion is a whole
+// line (keyword | Chinese term | English term) and tapping it adds that line to the keyword list above. Nothing is saved here — the list is saved as a whole.
 import { useState } from "react";
-import type { KeywordSuggestionsResponse, Platform } from "@pp/contracts";
+import type { KeywordSuggestion, KeywordSuggestionsResponse } from "@pp/contracts";
 import { formatMoney } from "@/i18n";
 import { useT } from "@/i18n/client";
 import { send } from "@/lib/client-api";
-import { PLATFORM_LIST } from "@/lib/platform";
-import { BrandMark, platformName } from "../bits";
 import { AnalyseIcon } from "../icons";
 import { Alert, Button, Chip, Field, TextInput } from "../ui";
 
-export function KeywordSuggest({ pg, platforms, onPick }: { pg: string; platforms: Platform[]; onPick: (word: string, platform: Platform) => void }) {
+export function KeywordSuggest({ pg, onPick }: { pg: string; onPick: (s: KeywordSuggestion) => void }) {
   const t = useT();
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
@@ -28,8 +26,6 @@ export function KeywordSuggest({ pg, platforms, onPick }: { pg: string; platform
     setRes(r.data);
     setAdded(new Set());
   }
-
-  const by = (p: Platform) => (res?.suggestions ?? []).filter((s) => s.platform === p);
 
   return (
     <div className="ox-stack ap-kwsug">
@@ -60,30 +56,25 @@ export function KeywordSuggest({ pg, platforms, onPick }: { pg: string; platform
       {res && res.suggestions.length ? (
         <div className="ox-stack">
           <div className="ox-help">{res.costUsd != null ? t("kwsug.aiCost", { cost: formatMoney(t.locale, res.costUsd, "USD") }) : t("kwsug.aiSub")}</div>
-          {PLATFORM_LIST.filter((p) => platforms.includes(p) && by(p).length).map((p) => (
-            <div key={p} className="ap-kwsug__group" role="group" aria-label={`${t("kwsug.aiTitle")} — ${platformName(t, p)}`}>
-              <BrandMark t={t} platform={p} />
-              <div className="ap-kwsug__chips">
-                {by(p).map((s) => {
-                  const k = `${p}|${s.keyword}`;
-                  return (
-                    <Chip
-                      key={k}
-                      className="ap-kwsug__chip"
-                      active={added.has(k)}
-                      onClick={() => {
-                        onPick(s.keyword, p);
-                        setAdded((cur) => new Set(cur).add(k));
-                      }}
-                    >
-                      <span lang={p === "temu" ? "en" : "zh-CN"} translate="no">{s.keyword}</span>
-                      {s.glossTh ? <span className="ap-kwsug__hint" lang="th">{s.glossTh}</span> : null}
-                    </Chip>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
+          <div className="ap-kwsug__chips" role="group" aria-label={t("kwsug.aiTitle")}>
+            {res.suggestions.map((s) => (
+              <Chip
+                key={s.keyword}
+                className="ap-kwsug__chip"
+                active={added.has(s.keyword)}
+                onClick={() => {
+                  onPick(s);
+                  setAdded((cur) => new Set(cur).add(s.keyword));
+                }}
+              >
+                <span className="ap-kwsug__line">
+                  <span>{s.keyword}</span>
+                  <span className="ap-kwsug__hint" translate="no">{[s.zh, s.en].filter(Boolean).join(" · ")}</span>
+                  {s.glossTh ? <span className="ap-kwsug__hint">{s.glossTh}</span> : null}
+                </span>
+              </Chip>
+            ))}
+          </div>
         </div>
       ) : null}
     </div>

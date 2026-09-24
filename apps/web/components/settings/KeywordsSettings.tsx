@@ -1,8 +1,8 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import type { Group, Keyword, KeywordListResponse, Platform, Schedule, TaxonomyEntry, UnmappedCategory } from "@pp/contracts";
-import { formatNumber } from "@/i18n";
+import type { Group, Keyword, KeywordListResponse, KeywordSuggestion, Platform, RoundEstimate, Schedule, TaxonomyEntry, UnmappedCategory } from "@pp/contracts";
+import { formatMoney, formatNumber } from "@/i18n";
 import { useT } from "@/i18n/client";
 import { send } from "@/lib/client-api";
 import { PLATFORM_LIST } from "@/lib/platform";
@@ -10,7 +10,7 @@ import { platformName } from "../bits";
 
 import { Alert, Button, Card, ComboBox, EmptyState, Field, SectionTitle, TableScroll, TextArea } from "../ui";
 import { GroupFields, useGroupEdit } from "./group-edit";
-import { keywordsToText, needsTranslation, parseKeywordList } from "./keyword-list";
+import { keywordsToText, needsTranslation, parseKeywordList, wrongLanguage } from "./keyword-list";
 import { KeywordSuggest } from "./keyword-suggest";
 import { parseTaxonomy, taxonomyToText } from "./taxonomy";
 
@@ -66,7 +66,7 @@ export function GroupForm({ group }: { group: Group }) {
 // ---------- keywords ----------
 // CONTEXT.md: a Keyword is typed once; each watched platform searches its own Platform term. Edited as
 // text like the taxonomy below — one line per Keyword, saving replaces the whole list.
-export function KeywordsEditor({ pg, keywords, platforms }: { pg: string; keywords: Keyword[]; platforms: Platform[] }) {
+export function KeywordsEditor({ pg, keywords, platforms, estimate }: { pg: string; keywords: Keyword[]; platforms: Platform[]; estimate: RoundEstimate | null }) {
   const t = useT();
   const router = useRouter();
   const [text, setText] = useState(() => keywordsToText(keywords, platforms));
@@ -74,13 +74,18 @@ export function KeywordsEditor({ pg, keywords, platforms }: { pg: string; keywor
   const [msg, setMsg] = useState<Msg>(null);
   const parsed = parseKeywordList(text);
   const toTranslate = needsTranslation(parsed.items, platforms);
+  const wrong = wrongLanguage(text);
+  // Said before saving, not after the round is skipped: every Keyword is searched on every platform.
+  const roundUsd = estimate?.perKeywordUsd != null ? estimate.perKeywordUsd * parsed.items.length : null;
+  const overCap = estimate?.mode === "apify" && roundUsd != null && roundUsd > estimate.runCapUsd;
 
-  /** A suggestion chip adds a line; the other language's term is left for AI to fill on save. */
-  const addLine = (word: string, platform: Platform) =>
-    setText((cur) => {
-      const line = platform === "temu" ? `${word} |  | ${word}` : `${word} | ${word} |`;
-      return parseKeywordList(cur).items.some((i) => i.keyword === word) ? cur : `${cur.trimEnd()}${cur.trim() ? "\n" : ""}${line}`;
-    });
+  /** A suggestion is a whole line; tapping it again does nothing once the keyword is in the list. */
+  const addLine = (s: KeywordSuggestion) =>
+    setText((cur) =>
+      parseKeywordList(cur).items.some((i) => i.keyword === s.keyword)
+        ? cur
+        : `${cur.trimEnd()}${cur.trim() ? "\n" : ""}${[s.keyword, s.zh ?? "", s.en ?? ""].join(" | ")}`,
+    );
 
   return (
     <Card>
@@ -131,11 +136,28 @@ export function KeywordsEditor({ pg, keywords, platforms }: { pg: string; keywor
             {toTranslate ? ` · ${t("keywords.listWillTranslate", { n: formatNumber(t.locale, toTranslate) })}` : ""}
           </span>
         </div>
+        {wrong.length ? (
+          <div className="ox-help">
+            {t("keywords.listWrongLang", {
+              lines: wrong.map((w) => `${w.line} (${t(w.field === "zh" ? "keywords.listFieldZh" : "keywords.listFieldEn")})`).join(", "),
+            })}
+          </div>
+        ) : null}
+        {roundUsd != null && estimate?.mode === "apify" ? (
+          <Alert tone={overCap ? "warning" : "info"}>
+            {t("keywords.listCost", {
+              n: formatNumber(t.locale, parsed.items.length),
+              cost: formatMoney(t.locale, roundUsd, "USD"),
+              cap: formatMoney(t.locale, estimate.runCapUsd, "USD"),
+            })}
+            {overCap ? ` ${t("keywords.listOverCap")}` : ""}
+          </Alert>
+        ) : null}
         <div aria-live="polite">{msg ? <Alert tone={msg.tone}>{msg.text}</Alert> : null}</div>
       </form>
       <details className="ap-kwmore">
         <summary>{t("kwsug.title")}</summary>
-        <KeywordSuggest pg={pg} platforms={platforms} onPick={addLine} />
+        <KeywordSuggest pg={pg} onPick={addLine} />
       </details>
     </Card>
   );

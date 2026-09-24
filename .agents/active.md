@@ -33,6 +33,9 @@ Next.js + NestJS (pnpm monorepo) · PostgreSQL 18
 
 ## Blockers
 
+- 22:40 keyword save error fixed (one AI call per save, proxyTimeout 180 s). **apple-watch-bands has 12 Keywords ≈ $17.52/round
+  vs cap $1.00; apple-watch has 14 wrong-language legacy rows ≈ $20.44/round** — waiting for the user to trim.
+
 - **Keyword form reverted to the 17:11 version + AI suggestion panel** (session 2026-09-24-2105). Keyword trial,
   language guard and frequent-term chips were removed at the user's request.
 - 16 junk keywords deleted 21:20 (user OK). `apple-watch-bands` now: 苹果手表表带 (douyin/1688/xhs) + apple watch band (temu, us)

@@ -84,7 +84,7 @@ export function extractJson(text: string): unknown {
 }
 
 /** Run one prompt through the CLI. The prompt goes on stdin so nothing user-supplied reaches argv. */
-export async function runClaudeCli(bin: string, model: string, prompt: string): Promise<CliResult> {
+export async function runClaudeCli(bin: string, model: string, prompt: string, timeoutMs = CLI_TIMEOUT_MS): Promise<CliResult> {
   if (!validCliPath(bin)) throw new Error("claude cli: invalid binary path");
   const args = [
     "-p",
@@ -111,8 +111,8 @@ export async function runClaudeCli(bin: string, model: string, prompt: string): 
     };
     const timer = setTimeout(() => {
       child.kill("SIGKILL");
-      done(() => reject(new Error(`claude cli: timed out after ${CLI_TIMEOUT_MS / 1000}s`)));
-    }, CLI_TIMEOUT_MS);
+      done(() => reject(new Error(`claude cli: timed out after ${timeoutMs / 1000}s`)));
+    }, timeoutMs);
 
     child.stdout.on("data", (d: Buffer) => {
       out += d.toString();

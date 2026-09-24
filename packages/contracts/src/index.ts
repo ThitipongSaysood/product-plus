@@ -358,7 +358,7 @@ export type BrandResponse = { report: BrandReport | null; items: Record<string, 
 export type UnmappedCategory = { platform: Platform; path: string; count: number };
 
 // ---------- keyword suggestions (CONTEXT.md "Keyword suggestion") ----------
-export type KeywordSuggestion = { platform: Platform; keyword: string; glossTh: string };
+export type KeywordSuggestion = { keyword: string; zh: string | null; en: string | null; glossTh: string }; // one whole line of the keyword list
 // POST /groups/:slug/keyword-suggestions {productName}
 export type KeywordSuggestionsResponse = { suggestions: KeywordSuggestion[]; costUsd: number | null };
 // PUT /groups/:slug/keyword-list — the whole list, one Keyword per line: keyword | zh term | en term.
@@ -370,3 +370,5 @@ export type KeywordListResponse = {
   skipped: { keyword: string; platform: Platform; reason: string }[]; // reason = dict key
   costUsd: number | null;
 };
+// GET /groups/:slug/round-estimate — what one Keyword costs per Round (all watched platforms, chosen actors)
+export type RoundEstimate = { perKeywordUsd: number | null; runCapUsd: number; mode: SourceMode };

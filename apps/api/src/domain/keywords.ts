@@ -1,5 +1,5 @@
 // Keyword suggestion by AI (CONTEXT.md: Keyword suggestion). Pure — unit-tested in test/keywords.test.ts.
-import type { KeywordSuggestion, Platform } from "@pp/contracts";
+import type { KeywordListItem, KeywordSuggestion, Platform } from "@pp/contracts";
 
 const CJK = /[㐀-鿿豈-﫿]/;
 const LATIN = /[A-Za-z]/;
@@ -13,55 +13,65 @@ export function languageMismatch(platform: Platform, keyword: string): boolean {
   return !LATIN.test(keyword) || CJK.test(keyword);
 }
 
-export const SUGGEST_PER_PLATFORM = 6;
-const norm = (s: string) => s.trim().replace(/\s+/g, " ").toLowerCase();
+const normTerm = (s: string) => s.trim().replace(/\s+/g, " ").slice(0, 100);
+const zhOk = (s: string) => !languageMismatch("douyin", s);
+const enOk = (s: string) => !languageMismatch("temu", s);
+/** A term in the platform's language, trimmed, or null. */
+const term = (v: unknown, ok: (s: string) => boolean): string | null => {
+  const s = typeof v === "string" ? normTerm(v) : "";
+  return s && ok(s) ? s : null;
+};
 
-/** The model is asked for the right language and to skip saved keywords; this makes sure of both. */
-export function cleanSuggestions(raw: unknown[], platforms: Platform[], existing: { platform: string; keyword: string }[]): KeywordSuggestion[] {
-  const have = new Set(existing.map((e) => `${e.platform}|${norm(e.keyword)}`));
-  const per = new Map<Platform, number>();
-  const out: KeywordSuggestion[] = [];
+/** One saved line: a term in the wrong language is dropped so AI refills it on save — measured
+ *  2026-09-24: `watch` saved on 1688 and `复古手表` on Temu searched the wrong thing every round. */
+export function cleanLineTerms(item: KeywordListItem): KeywordListItem {
+  return { keyword: item.keyword, zh: term(item.zh, zhOk), en: term(item.en, enOk) };
+}
+
+/** The AI's batched answer ({keyword, zh, en} per line) → terms per requested keyword, validated. */
+export function cleanTranslations(raw: unknown[], asked: string[]): Map<string, { zh: string | null; en: string | null }> {
+  const out = new Map<string, { zh: string | null; en: string | null }>();
   for (const r of raw) {
-    const x = r as { platform?: unknown; keyword?: unknown; glossTh?: unknown } | null;
-    const platform = x?.platform as Platform;
-    const keyword = typeof x?.keyword === "string" ? x.keyword.trim().replace(/\s+/g, " ").slice(0, 100) : "";
-    if (!platforms.includes(platform) || !keyword || languageMismatch(platform, keyword)) continue;
-    const k = `${platform}|${norm(keyword)}`;
-    if (have.has(k) || (per.get(platform) ?? 0) >= SUGGEST_PER_PLATFORM) continue;
-    have.add(k);
-    per.set(platform, (per.get(platform) ?? 0) + 1);
-    out.push({ platform, keyword, glossTh: typeof x?.glossTh === "string" ? x.glossTh.trim().slice(0, 120) : "" });
+    const x = r as { keyword?: unknown; zh?: unknown; en?: unknown } | null;
+    const k = typeof x?.keyword === "string" ? x.keyword.trim() : "";
+    if (!asked.includes(k) || out.has(k)) continue;
+    out.set(k, { zh: term(x?.zh, zhOk), en: term(x?.en, enOk) });
   }
   return out;
 }
 
-const CJK_PLATFORM_LIST: readonly Platform[] = CJK_PLATFORMS;
-const normTerm = (s: string) => s.trim().replace(/\s+/g, " ").slice(0, 100);
+export const SUGGEST_MAX = 8;
 
-/** One Platform term per watched platform from the AI's answer. A wrong-language or missing term is
- *  filled from another platform of the same language when one exists (the three Chinese platforms
- *  normally share a term), otherwise that platform is left out and reported as skipped. */
-export function cleanTerms(raw: unknown[], platforms: Platform[]): { terms: Map<Platform, string>; missing: Platform[] } {
-  const got = new Map<Platform, string>();
+/** AI Keyword suggestions are whole lines — a Thai keyword with its Chinese and English term — so one
+ *  tap adds one Keyword; per-platform chips made each word its own Keyword and multiplied the round. */
+export function cleanSuggestionLines(raw: unknown[], existingLabels: string[]): KeywordSuggestion[] {
+  const have = new Set(existingLabels.map((l) => l.trim().toLowerCase()));
+  const out: KeywordSuggestion[] = [];
   for (const r of raw) {
-    const x = r as { platform?: unknown; term?: unknown; keyword?: unknown } | null;
-    const platform = x?.platform as Platform;
-    const text = x?.term ?? x?.keyword; // the model sometimes names the field after the skill's input
-    const term = typeof text === "string" ? normTerm(text) : "";
-    if (platforms.includes(platform) && term && !languageMismatch(platform, term) && !got.has(platform)) got.set(platform, term);
+    const x = r as { keyword?: unknown; zh?: unknown; en?: unknown; glossTh?: unknown } | null;
+    const keyword = typeof x?.keyword === "string" ? normTerm(x.keyword) : "";
+    const zh = term(x?.zh, zhOk);
+    const en = term(x?.en, enOk);
+    if (!keyword || (!zh && !en) || have.has(keyword.toLowerCase()) || out.length >= SUGGEST_MAX) continue;
+    have.add(keyword.toLowerCase());
+    out.push({ keyword, zh, en, glossTh: typeof x?.glossTh === "string" ? x.glossTh.trim().slice(0, 120) : "" });
   }
-  const cjk = CJK_PLATFORM_LIST.map((p) => got.get(p)).find(Boolean);
-  const missing: Platform[] = [];
+  return out;
+}
+
+/** What one Keyword costs per Round: every watched platform's chosen actor at the group's result limit.
+ *  null when a platform has no priced actor — an estimate that silently leaves one out would read low. */
+export function roundCostPerKeyword(actors: Partial<Record<Platform, { startFee: number; pricePerResult: number }>>, platforms: Platform[], limit: number): number | null {
+  let sum = 0;
   for (const p of platforms) {
-    if (got.has(p)) continue;
-    if (CJK_PLATFORM_LIST.includes(p) && cjk) got.set(p, cjk);
-    else missing.push(p);
+    const a = actors[p];
+    if (!a) return null;
+    sum += a.startFee + limit * a.pricePerResult;
   }
-  return { terms: got, missing };
+  return Math.round(sum * 10000) / 10000;
 }
 
 // ---------- Keyword list (the textarea editor: one line = one Keyword) ----------
-export type KeywordListItem = { keyword: string; zh: string | null; en: string | null };
 type ExistingRow = { id: string; platform: Platform; keyword: string; concept: string | null };
 export type KeywordListPlan = {
   inserts: { platform: Platform; keyword: string; concept: string }[];
@@ -89,11 +99,11 @@ export function planKeywordList(existing: ExistingRow[], items: KeywordListItem[
         plan.skipped.push({ keyword: item.keyword, platform: p, reason: "keywords.skip.noTerm" });
         continue;
       }
-      if (taken.has(`${p}|${term}`)) {
+      if (taken.has(`${p}|${term.toLowerCase()}`)) {
         plan.skipped.push({ keyword: item.keyword, platform: p, reason: "keywords.skip.duplicate" });
         continue;
       }
-      taken.add(`${p}|${term}`);
+      taken.add(`${p}|${term.toLowerCase()}`);
       const row = existing.find((r) => r.platform === p && labelOf(r) === item.keyword && !kept.has(r.id));
       if (row) {
         kept.add(row.id);

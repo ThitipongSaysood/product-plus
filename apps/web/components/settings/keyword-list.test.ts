@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Keyword } from "@pp/contracts";
-import { keywordsToText, needsTranslation, parseKeywordList } from "./keyword-list";
+import { keywordsToText, needsTranslation, parseKeywordList, wrongLanguage } from "./keyword-list";
 
 const kw = (platform: Keyword["platform"], keyword: string, concept: string | null = null): Keyword => ({ id: platform + keyword, platform, keyword, concept, region: null, enabled: true });
 
@@ -19,5 +19,10 @@ describe("keyword list text", () => {
     expect(errors).toEqual([{ line: 5, reason: "duplicate" }, { line: 6, reason: "columns" }]);
     expect(needsTranslation(items, ["douyin", "temu"])).toBe(2);
     expect(needsTranslation(items, ["douyin"])).toBe(1);
+  });
+  it("a wrong-language term counts as needing AI and is pointed out by line", () => {
+    const text = "watch | watch | watch\n复古手表 | 复古手表 | 复古手表\nok | 手表带 | watch band";
+    expect(needsTranslation(parseKeywordList(text).items, ["douyin", "temu"])).toBe(2);
+    expect(wrongLanguage(text)).toEqual([{ line: 1, field: "zh" }, { line: 2, field: "en" }]);
   });
 });
