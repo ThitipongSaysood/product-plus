@@ -9,7 +9,7 @@ import { and, desc, eq, inArray } from "drizzle-orm";
 import type { BrandItem, BrandReport, BrandResponse, Locale, Platform, SoldPeriod, TaxonomyEntry, TrendLabel } from "@pp/contracts";
 import { getDb } from "../db/client.js";
 import { productGroups, products, scrapeRuns } from "../db/schema.js";
-import { buildBrief, type BriefInput } from "../domain/brand-brief.js";
+import { buildBrief, type BriefInput, scoreCandidates } from "../domain/brand-brief.js";
 import { supplyTerms } from "../domain/normalize/supply.js";
 import { getSetting } from "../settings/settings.js";
 import { extractJson, runClaudeCli, skillBody, skillRef, SKILLS } from "./claude-cli.js";
@@ -106,14 +106,20 @@ export async function runBrandScout(groupId: string, lang: Locale = "th"): Promi
   }
 
   const ids = new Set(brief.candidates.map((c) => c.id));
+  const body = sanitize(extractJson(text), ids);
+  // Scored from the same brief the model read, but never sent to it: the skill's job is the judgement
+  // a number cannot make, and a model handed a score tends to restate it as prose instead.
+  const all = scoreCandidates(brief);
+  const shown = new Set([...body.picks.map((p) => p.id), ...body.avoid.map((a) => a.id)]);
   const report: BrandReport = {
-    ...sanitize(extractJson(text), ids),
+    ...body,
     generatedAt: new Date().toISOString(),
     model: BRAND_MODEL,
     lang,
     candidateCount: brief.candidates.length,
     excluded: brief.excluded,
     limits: brief.limits,
+    scores: Object.fromEntries(Object.entries(all).filter(([id]) => shown.has(id))),
   };
   return { report, costUsd, note: null };
 }
@@ -160,6 +166,7 @@ export async function latestBrandReport(groupId: string): Promise<BrandResponse>
           moq: supply?.moq ?? null,
           unit: supply?.unit ?? null,
           categoryKey: p.categoryKey ?? "unclassified",
+          trend: p.trendLabel as TrendLabel,
         },
       ];
     }),

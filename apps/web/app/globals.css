@@ -407,6 +407,16 @@ select.ox-control { appearance: none; padding-right: var(--omnix-space-8); backg
 .ap-pick__facts { display: flex; flex-wrap: wrap; align-items: center; gap: var(--omnix-space-2); }
 .ap-pick__price { font-weight: 600; }
 .ap-pick__why { color: var(--omnix-fg-muted); overflow-wrap: anywhere; }
+.ap-pick__mark { display: flex; align-items: center; gap: var(--omnix-space-3); flex-shrink: 0; }
+.ap-pick__score { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.15; }
+.ap-pick__score-value { font-size: var(--omnix-text-lg); font-weight: 600; }
+.ap-pick__score-label { font-size: var(--omnix-text-xs); color: var(--omnix-fg-muted); }
+/* label | bar | number — the number is the value, the bar is only the comparison at a glance. */
+.ap-score { display: grid; max-width: 34rem; grid-template-columns: minmax(0, max-content) minmax(0, 1fr) max-content; align-items: center; gap: var(--omnix-space-1) var(--omnix-space-2); font-size: var(--omnix-text-xs); color: var(--omnix-fg-muted); }
+.ap-score__label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ap-score__track { min-width: 40px; height: 8px; border: 1px solid var(--omnix-border); border-radius: 4px; background: var(--omnix-surface); overflow: hidden; }
+.ap-score__fill { display: block; height: 100%; border-radius: 3px; background: var(--c, var(--omnix-chart-1)); }
+.ap-score__value { font-weight: 600; color: var(--omnix-fg); }
 .ap-judge { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: var(--omnix-space-1); font-size: var(--omnix-text-xs); }
 .ap-judge li { display: grid; grid-template-columns: 14px minmax(0, 1fr); gap: var(--omnix-space-2); align-items: start; overflow-wrap: anywhere; }
 .ap-judge--pro li { color: var(--omnix-success-fg); }

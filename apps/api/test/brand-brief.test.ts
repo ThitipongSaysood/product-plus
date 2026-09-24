@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildBrief, type BriefInput } from "../src/domain/brand-brief.js";
+import { buildBrief, type BriefInput, scoreCandidates } from "../src/domain/brand-brief.js";
 import type { TaxonomyEntry } from "@pp/contracts";
 
 const TAX: TaxonomyEntry[] = [
@@ -153,5 +153,84 @@ describe("buildBrief — computed signals the model should not have to guess", (
     expect(b.candidates).toEqual([]);
     expect(b.buckets).toEqual([]);
     expect(b.excluded.total).toBe(0);
+  });
+});
+
+describe("scoreCandidates — only what every candidate has", () => {
+  it("demand is a percentile inside the bucket, not across platforms", () => {
+    // 1688's raw figures dwarf douyin's by a factor of ~150. Top of each bucket must still score 100,
+    // or the score would rank the platforms rather than the products.
+    const rows = [
+      row({ id: "a", soldCount: 783_670 }),
+      row({ id: "b", soldCount: 400 }),
+      row({ id: "c", platform: "douyin", soldPeriod: "30d", soldCount: 5_371 }),
+      row({ id: "d", platform: "douyin", soldPeriod: "30d", soldCount: 20 }),
+    ];
+    const s = scoreCandidates(buildBrief(rows, TAX, "g"));
+    expect(s.a.demand).toBe(100);
+    expect(s.c.demand).toBe(100);
+    expect(s.b.demand).toBeLessThan(s.a.demand);
+    expect(s.d.demand).toBeLessThan(s.c.demand);
+  });
+
+  it("cost puts the category median at 50 and rewards going under it", () => {
+    // Medians here: metal 20, from the three metal rows below.
+    const rows = [
+      row({ id: "cheap", price: 10 }),
+      row({ id: "mid", price: 20 }),
+      row({ id: "dear", price: 40 }),
+    ];
+    const s = scoreCandidates(buildBrief(rows, TAX, "g"));
+    expect(s.mid.cost).toBe(50);
+    expect(s.cheap.cost).toBe(75);
+    expect(s.dear.cost).toBe(0);
+  });
+
+  it("uses the price a buyer can actually pay, not the cheapest rung", () => {
+    const rows = [row({ id: "ladder", price: 10, entryPrice: 30 }), row({ id: "plain", price: 10 })];
+    const s = scoreCandidates(buildBrief(rows, TAX, "g"));
+    expect(s.ladder.cost).toBeLessThan(s.plain.cost);
+  });
+
+  it("compares against its own category's median, not the catalogue's", () => {
+    // ¥30 is dear among metal (median 10) and cheap among silicone (median 100).
+    const rows = [
+      row({ id: "m1", price: 10 }),
+      row({ id: "m2", price: 30 }),
+      row({ id: "s1", price: 100, categoryKey: "material_silicone" }),
+      row({ id: "s2", price: 30, categoryKey: "material_silicone" }),
+    ];
+    const s = scoreCandidates(buildBrief(rows, TAX, "g"));
+    expect(s.m2.cost).toBeLessThan(50);
+    expect(s.s2.cost).toBeGreaterThan(50);
+  });
+
+  it("weights the two equally and stays inside 0–100", () => {
+    const rows = [row({ id: "a", price: 1 }), row({ id: "b", price: 1000 })];
+    const s = scoreCandidates(buildBrief(rows, TAX, "g"));
+    for (const v of Object.values(s)) {
+      expect(v.total).toBe(Math.round((v.demand + v.cost) / 2));
+      for (const n of [v.demand, v.cost, v.total]) expect(n).toBeGreaterThanOrEqual(0);
+      for (const n of [v.demand, v.cost, v.total]) expect(n).toBeLessThanOrEqual(100);
+    }
+  });
+
+  it("a trend or an MOQ never moves the score — they are facts, not dimensions", () => {
+    // Not one listing of the real 135 has both, so scoring either would score half a shortlist on
+    // something the other half cannot have.
+    const base = [row({ id: "x", platform: "douyin", soldPeriod: "30d" }), row({ id: "y", platform: "douyin", soldPeriod: "30d", soldCount: 50 })];
+    const plain = scoreCandidates(buildBrief(base, TAX, "g"));
+    const withExtras = scoreCandidates(
+      buildBrief([{ ...base[0], trend: "rising", moq: 500 }, base[1]], TAX, "g"),
+    );
+    expect(withExtras.x).toEqual(plain.x);
+  });
+
+  it("scores on both measures or not at all", () => {
+    // No price means no cost measure; a total that quietly meant demand alone would be the same lie
+    // as averaging in a missing trend.
+    const s = scoreCandidates(buildBrief([row({ id: "a" }), row({ id: "b", price: null })], TAX, "g"));
+    expect(s.a).toBeDefined();
+    expect(s.b).toBeUndefined();
   });
 });

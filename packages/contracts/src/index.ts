@@ -319,6 +319,12 @@ export type BrandReport = {
   excluded: { noSoldCount: number; noPrice: number; total: number };
   /** What this data cannot support, shown to the reader as well as to the model. */
   limits: string[];
+  /** Two measured 0–100 positions per candidate id — demand inside its own platform+period bucket, and
+   *  buy price against its category's median. Frozen with the report because the prose was written
+   *  against this snapshot; recomputing at read time would drift away from what the words describe.
+   *  Optional: reports generated before scoring existed have none, and those picks render without a
+   *  meter rather than with a zero. */
+  scores?: Record<string, { demand: number; cost: number; total: number }>;
 };
 
 /** Everything the page needs to show a pick as a product rather than an id: picture, name, link and the
@@ -341,6 +347,9 @@ export type BrandItem = {
   moq: number | null;
   unit: string | null;
   categoryKey: string;
+  /** Shown as a fact beside the score, never folded into it — only douyin reports one, so a scored
+   *  trend would rank the platforms rather than the products. */
+  trend: TrendLabel;
 };
 
 export type BrandResponse = { report: BrandReport | null; items: Record<string, BrandItem> };

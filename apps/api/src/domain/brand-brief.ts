@@ -81,6 +81,46 @@ export type Brief = {
   limits: string[];
 };
 
+/** Two measured positions per candidate, each 0–100 and each higher-is-better.
+ *
+ *  There are deliberately only two. Of the things a buyer weighs, a minimum order is published by 1688
+ *  alone and a trend by douyin alone — measured on the real group, not one listing of 135 carries both.
+ *  Folding either into a total would score half a shortlist on a dimension the other half cannot have,
+ *  and a missing input averaged in as "neutral" is exactly how "we know nothing" turns into "it does
+ *  fine". Both stay on the card as facts instead, where their absence is visible.
+ *
+ *  What is left is the pair the brand-candidates skill already names as the combination worth finding:
+ *  strong demand inside its own bucket, bought below the middle of its category. */
+export type CandidateScore = {
+  /** Where soldCount falls inside this candidate's own (platform, period) bucket. Top of the bucket
+   *  is 100. Valid only against candidates from that same bucket — which is why it is shown, not summed
+   *  across platforms. */
+  demand: number;
+  /** Position against the category's median buy price. 50 sits exactly on the median, 100 is free,
+   *  0 is double the median or worse. */
+  cost: number;
+  /** The mean of the two, weighted equally. Nobody has ordered anything yet, so there is no outcome to
+   *  fit a weighting against; any other split would be a judgement wearing the clothes of arithmetic. */
+  total: number;
+};
+
+const clamp100 = (n: number) => Math.max(0, Math.min(100, n));
+
+/** Scored on both measures or not at all: a "total" that silently means one of them would be the same
+ *  lie as averaging in a missing trend. A candidate absent from the result renders without a meter. */
+export function scoreCandidates(brief: Brief): Record<string, CandidateScore> {
+  const medianOf = new Map(brief.categories.map((c) => [c.key, c.medianBuyPrice]));
+  const out: Record<string, CandidateScore> = {};
+  for (const c of brief.candidates) {
+    const med = medianOf.get(c.categoryKey) ?? null;
+    if (c.buyPrice === null || med === null || med <= 0 || c.bucketSize <= 0) continue;
+    const demand = clamp100(Math.round(((c.bucketSize - c.soldRankInBucket + 1) / c.bucketSize) * 100));
+    const cost = clamp100(Math.round(100 - (c.buyPrice / med) * 50));
+    out[c.id] = { demand, cost, total: Math.round((demand + cost) / 2) };
+  }
+  return out;
+}
+
 const median = (xs: number[]): number | null => {
   if (!xs.length) return null;
   const s = [...xs].sort((a, b) => a - b);
