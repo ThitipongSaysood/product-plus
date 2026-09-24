@@ -95,6 +95,20 @@ export const normalize1688: Normalizer = (row, index, keyword) => {
   };
 };
 
+/** crw sends price in CENTS next to a display string ("$1.48") — prefer the explicit USD field, then the
+ *  display string; a bare `price` is only trusted when no `price_str` exists (apivault sends dollars). */
+function temuMoney(row: unknown, usdKey: string, strKey: string, plainKey: string): number | null {
+  const usd = num(pick(row, usdKey));
+  if (usd !== null) return usd;
+  const text = str(pick(row, strKey));
+  if (text) {
+    const m = text.replace(/,/g, "").match(/\d+(?:\.\d+)?/);
+    return m ? Number(m[0]) : null;
+  }
+  if (get(row, strKey) !== undefined) return null; // crw: "" means no original price
+  return num(pick(row, plainKey));
+}
+
 export const normalizeTemu: Normalizer = (row, index, keyword) => {
   const externalId = str(pick(row, "productId", "goodsId", "goods_id", "id"));
   if (!externalId) return null;
@@ -117,12 +131,13 @@ export const normalizeTemu: Normalizer = (row, index, keyword) => {
     ...base("temu", row, index, keyword),
     externalId,
     title: str(pick(row, "title", "goodsName")),
-    productUrl: url(pick(row, "productUrl", "url", "link_url")),
+    // crw link_url carries tracking params → canonical goods page
+    productUrl: pick(row, "goods_id") != null ? `https://www.temu.com/goods.html?goods_id=${externalId}` : url(pick(row, "productUrl", "url", "link_url")),
     imageUrl: images[0] ?? null,
     imageUrls: images,
-    price: num(pick(row, "priceUsd", "price")),
+    price: temuMoney(row, "priceUsd", "price_str", "price"),
     currency: "USD",
-    originalPrice: num(pick(row, "originalPriceUsd", "originalPrice")),
+    originalPrice: temuMoney(row, "originalPriceUsd", "market_price_str", "originalPrice"),
     soldCount: sold,
     soldPeriod: sold !== null ? "lifetime" : "unknown",
     soldIsLowerBound: sold !== null && lowerBound,
@@ -130,7 +145,7 @@ export const normalizeTemu: Normalizer = (row, index, keyword) => {
     salesTrend: null,
     platformCategoryPath: path.length ? path : null,
     shopName: str(pick(row, "shopName", "mallName")),
-    shopUrl: url(pick(row, "shopUrl")),
+    shopUrl: url(pick(row, "shopUrl", "mall_link")),
     platformSignals:
       isTrending === null && demandScore === null
         ? null

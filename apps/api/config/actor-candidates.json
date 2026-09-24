@@ -3,92 +3,376 @@
   "_fetchedAt": "2026-09-23",
   "_note": "events: start = one-time start fee · per_result = charged per row · addon = off by default, excluded from cost. overrides = facts stated in the handoff that a README keyword scan would get wrong. Prices are NOT taken from here — the evaluator always reads live pricing.",
   "searches": {
-    "douyin": ["douyin product", "douyin shop", "抖音 商品"],
-    "1688": ["1688"],
-    "temu": ["temu"],
-    "xhs": ["xiaohongshu product", "rednote product", "xiaohongshu shop"]
+    "douyin": [
+      "douyin product",
+      "douyin shop",
+      "抖音 商品"
+    ],
+    "1688": [
+      "1688"
+    ],
+    "temu": [
+      "temu"
+    ],
+    "xhs": [
+      "xiaohongshu product",
+      "rednote product",
+      "xiaohongshu shop"
+    ]
   },
   "platforms": {
     "douyin": [
       {
         "actorId": "zen-studio/douyin-product-search-scraper",
-        "events": { "apify-actor-start": "start", "apify-default-dataset-item": "per_result", "product-result": "per_result", "product-detail": "addon" },
-        "inputTemplate": { "keywords": ["{{keyword}}"], "maxResults": "{{limit}}", "includeDetails": false },
-        "smoke": { "runId": "GfItV4KUYkkVKe3RC", "date": "2026-09-24", "itemsIn": 5, "itemsOut": 5, "costUsd": 0.045 }
+        "events": {
+          "apify-actor-start": "start",
+          "apify-default-dataset-item": "per_result",
+          "product-result": "per_result",
+          "product-detail": "addon"
+        },
+        "inputTemplate": {
+          "keywords": [
+            "{{keyword}}"
+          ],
+          "maxResults": "{{limit}}",
+          "includeDetails": false
+        },
+        "smoke": {
+          "runId": "GfItV4KUYkkVKe3RC",
+          "date": "2026-09-24",
+          "itemsIn": 5,
+          "itemsOut": 5,
+          "costUsd": 0.045
+        }
       },
       {
         "actorId": "socialdatax/socialdatax-douyin-data-api",
-        "events": { "apify-actor-start": "start", "apify-default-dataset-item": "per_result" },
-        "overrides": { "hasSold30d": false, "hasTrend": false },
+        "events": {
+          "apify-actor-start": "start",
+          "apify-default-dataset-item": "per_result"
+        },
+        "overrides": {
+          "hasSold30d": false,
+          "hasTrend": false
+        },
         "_why": "handoff §6.3: README (Chinese) does not state 30-day sold or trend — unconfirmed until a smoke test"
       },
       {
         "actorId": "sian.agency/douyin-shop-scraper",
-        "events": { "apify-actor-start": "start", "search-item-result": "per_result", "item-detail-result": "addon", "item-comments-result": "addon" },
-        "overrides": { "hasSold30d": false, "hasTrend": false },
+        "events": {
+          "apify-actor-start": "start",
+          "search-item-result": "per_result",
+          "item-detail-result": "addon",
+          "item-comments-result": "addon"
+        },
+        "overrides": {
+          "hasSold30d": false,
+          "hasTrend": false
+        },
         "_why": "handoff §6.3: salesCount is lifetime"
       }
     ],
     "1688": [
       {
         "actorId": "zen-studio/1688-wholesale-scraper",
-        "events": { "apify-actor-start": "start", "apify-default-dataset-item": "per_result", "item-scraped": "per_result", "supplier-intelligence": "addon" },
-        "overrides": { "hasSold30d": false, "hasTrend": false },
+        "events": {
+          "apify-actor-start": "start",
+          "apify-default-dataset-item": "per_result",
+          "item-scraped": "per_result",
+          "supplier-intelligence": "addon"
+        },
+        "overrides": {
+          "hasSold30d": false,
+          "hasTrend": false
+        },
         "_why": "handoff §6.4 + real smoke rows: recentSoldCount == saledCount, window never stated",
-        "inputTemplate": { "keywords": ["{{keyword}}"], "maxResults": "{{limit}}", "sortBy": "bestSelling", "includeSkuDetails": false, "includeDescriptionHtml": false, "includeSupplierIntelligence": false },
-        "smoke": { "runId": "wg1MZWrKPfiBDvZNl", "date": "2026-09-24", "itemsIn": 5, "itemsOut": 5, "costUsd": 0.03 }
+        "inputTemplate": {
+          "keywords": [
+            "{{keyword}}"
+          ],
+          "maxResults": "{{limit}}",
+          "sortBy": "bestSelling",
+          "includeSkuDetails": false,
+          "includeDescriptionHtml": false,
+          "includeSupplierIntelligence": false
+        },
+        "smoke": {
+          "runId": "wg1MZWrKPfiBDvZNl",
+          "date": "2026-09-24",
+          "itemsIn": 5,
+          "itemsOut": 5,
+          "costUsd": 0.03
+        }
       },
-      { "actorId": "datacach/1688-search-scraper", "events": { "apify-actor-start": "start", "apify-default-dataset-item": "per_result" }, "overrides": { "hasCategory": false }, "_why": "handoff §6.4: no category" },
-      { "actorId": "devcake/1688-com-products-scraper", "events": { "apify-actor-start": "start", "apify-default-dataset-item": "per_result" }, "overrides": { "hasCategory": false, "hasSold30d": false }, "_why": "handoff §6.4: no category; GMV-30d is a sort, not a field" },
-      { "actorId": "webdata_labs/1688-scraper", "events": { "product-scraped": "per_result" } },
-      { "actorId": "dami_studio/1688-wholesale-scraper", "events": { "apify-actor-start": "start", "product": "per_result" }, "overrides": { "hasSold": false, "hasSold30d": false }, "_why": "handoff §6.4: README has no sold count" },
-      { "actorId": "piotrv1001/1688-listings-scraper", "events": { "apify-actor-start": "start", "product-listing": "per_result", "item-detail": "addon" } },
-      { "actorId": "sian.agency/alibaba-1688-wholesale-scraper", "events": { "apify-actor-start": "start", "search-item-result": "per_result", "item-detail-result": "addon" } },
-      { "actorId": "prodiger/1688-scraper", "events": { "apify-actor-start": "start", "product": "per_result" } }
+      {
+        "actorId": "datacach/1688-search-scraper",
+        "events": {
+          "apify-actor-start": "start",
+          "apify-default-dataset-item": "per_result"
+        },
+        "overrides": {
+          "hasCategory": false
+        },
+        "_why": "handoff §6.4: no category"
+      },
+      {
+        "actorId": "devcake/1688-com-products-scraper",
+        "events": {
+          "apify-actor-start": "start",
+          "apify-default-dataset-item": "per_result"
+        },
+        "overrides": {
+          "hasCategory": false,
+          "hasSold30d": false
+        },
+        "_why": "handoff §6.4: no category; GMV-30d is a sort, not a field"
+      },
+      {
+        "actorId": "webdata_labs/1688-scraper",
+        "events": {
+          "product-scraped": "per_result"
+        }
+      },
+      {
+        "actorId": "dami_studio/1688-wholesale-scraper",
+        "events": {
+          "apify-actor-start": "start",
+          "product": "per_result"
+        },
+        "overrides": {
+          "hasSold": false,
+          "hasSold30d": false
+        },
+        "_why": "handoff §6.4: README has no sold count"
+      },
+      {
+        "actorId": "piotrv1001/1688-listings-scraper",
+        "events": {
+          "apify-actor-start": "start",
+          "product-listing": "per_result",
+          "item-detail": "addon"
+        }
+      },
+      {
+        "actorId": "sian.agency/alibaba-1688-wholesale-scraper",
+        "events": {
+          "apify-actor-start": "start",
+          "search-item-result": "per_result",
+          "item-detail-result": "addon"
+        }
+      },
+      {
+        "actorId": "prodiger/1688-scraper",
+        "events": {
+          "apify-actor-start": "start",
+          "product": "per_result"
+        }
+      }
     ],
     "temu": [
       {
         "actorId": "apivault_labs/temu-product-scraper",
-        "events": { "apify-actor-start": "start", "apify-default-dataset-item": "per_result" },
-        "overrides": { "hasSold30d": false },
+        "events": {
+          "apify-actor-start": "start",
+          "apify-default-dataset-item": "per_result"
+        },
+        "overrides": {
+          "hasSold30d": false
+        },
         "_why": "handoff §6.5: sold count is a lifetime lower-bound bucket",
-        "inputTemplate": { "searchKeywords": ["{{keyword}}"], "region": "{{region}}", "maxProductsPerKeyword": "{{limit}}", "sortBy": "top_sales", "extractCategory": true, "extractSoldCount": true, "writeSummary": false },
-        "smoke": { "runId": "EQMKeVLw1qqSVBfmj", "date": "2026-09-24", "itemsIn": 0, "itemsOut": 0, "costUsd": null, "_detail": "RUN_SUMMARY sourceIssues [product_extraction_access_denied]" }
+        "inputTemplate": {
+          "searchKeywords": [
+            "{{keyword}}"
+          ],
+          "region": "{{region}}",
+          "maxProductsPerKeyword": "{{limit}}",
+          "sortBy": "top_sales",
+          "extractCategory": true,
+          "extractSoldCount": true,
+          "writeSummary": false
+        },
+        "smoke": {
+          "runId": "EQMKeVLw1qqSVBfmj",
+          "date": "2026-09-24",
+          "itemsIn": 0,
+          "itemsOut": 0,
+          "costUsd": null,
+          "_detail": "RUN_SUMMARY sourceIssues [product_extraction_access_denied]"
+        }
       },
       {
         "actorId": "pear_fight/temu-scraper",
-        "events": { "apify-actor-start": "start", "apify-default-dataset-item": "per_result" },
-        "smoke": { "runId": "WOJpGJcC6dhCfUbdb", "date": "2026-09-24", "itemsIn": 0, "itemsOut": 0, "costUsd": null, "_detail": "0/1 pages in 57s" }
+        "events": {
+          "apify-actor-start": "start",
+          "apify-default-dataset-item": "per_result"
+        },
+        "smoke": {
+          "runId": "WOJpGJcC6dhCfUbdb",
+          "date": "2026-09-24",
+          "itemsIn": 0,
+          "itemsOut": 0,
+          "costUsd": null,
+          "_detail": "0/1 pages in 57s"
+        }
       },
       {
         "actorId": "amit123/temu-products-scraper",
-        "events": { "apify-default-dataset-item": "per_result" },
-        "overrides": { "hasCategory": false },
+        "events": {
+          "apify-default-dataset-item": "per_result"
+        },
+        "overrides": {
+          "hasCategory": false
+        },
         "_why": "handoff §6.5: no category",
-        "smoke": { "runId": "zICUNl2xm3zahi0mv", "date": "2026-09-24", "itemsIn": 0, "itemsOut": 0, "costUsd": null, "_detail": "0 items (maxResults minimum is 20)" }
+        "smoke": {
+          "runId": "zICUNl2xm3zahi0mv",
+          "date": "2026-09-24",
+          "itemsIn": 0,
+          "itemsOut": 0,
+          "costUsd": null,
+          "_detail": "0 items (maxResults minimum is 20)"
+        }
       },
-      { "actorId": "crw/temu-products-scraper", "events": { "apify-default-dataset-item": "per_result" } },
-      { "actorId": "gio21/temu-scraper", "events": { "product-scraped": "per_result" }, "overrides": { "hasSold": false, "hasSold30d": false }, "_why": "handoff §6.5: no sold count" }
+      {
+        "actorId": "crw/temu-products-scraper",
+        "events": {
+          "apify-default-dataset-item": "per_result"
+        },
+        "overrides": {
+          "hasSold": true,
+          "hasSold30d": false,
+          "hasCategory": false,
+          "hasImage": true,
+          "hasLink": true,
+          "hasTrend": false
+        },
+        "_why": "verified 2026-09-24 smoke: sales_num '100K+' lifetime lower bound; opt_id is a numeric category id with no name → categorized by our rules",
+        "inputTemplate": {
+          "keyword": "{{keyword}}",
+          "region": "US",
+          "sort": "top_sales",
+          "max_items": "{{limit}}"
+        },
+        "smoke": {
+          "runId": "8AqTxqcOQ5C40f37k",
+          "date": "2026-09-24",
+          "itemsIn": 5,
+          "itemsOut": 5,
+          "costUsd": 0.05,
+          "_detail": "5/5 Apple Watch bands, sorted by top sales; max_items minimum is 10 (cost cap stopped it at 5)"
+        }
+      },
+      {
+        "actorId": "gio21/temu-scraper",
+        "events": {
+          "product-scraped": "per_result"
+        },
+        "overrides": {
+          "hasSold": false,
+          "hasSold30d": false
+        },
+        "_why": "handoff §6.5: no sold count"
+      },
+      {
+        "actorId": "scrapeunblocker/temu-search-scraper",
+        "events": {
+          "apify-actor-start": "start",
+          "apify-default-dataset-item": "per_result"
+        },
+        "overrides": {
+          "hasSold": false,
+          "hasSold30d": false,
+          "hasCategory": false,
+          "hasImage": false,
+          "hasTrend": false
+        },
+        "_why": "verified 2026-09-24 smoke: returns only product URLs (field `url`), no price/sold/image",
+        "smoke": {
+          "runId": "KbSzFGBgYo54ENM5e",
+          "date": "2026-09-24",
+          "itemsIn": 5,
+          "itemsOut": 5,
+          "costUsd": 0.01,
+          "_detail": "search not blocked, but url-only rows"
+        }
+      },
+      {
+        "actorId": "scrapesage/temu-scraper",
+        "events": {
+          "product": "per_result"
+        },
+        "overrides": {
+          "hasSold": false,
+          "hasSold30d": false,
+          "hasCategory": false,
+          "hasTrend": false
+        },
+        "_why": "verified 2026-09-24 smoke: soldCount null on all rows and 0/5 results were Apple Watch bands (Samsung bands, men's watches)",
+        "smoke": {
+          "runId": "xfl5WuemkMRVLcuQT",
+          "date": "2026-09-24",
+          "itemsIn": 5,
+          "itemsOut": 5,
+          "costUsd": 0.01,
+          "_detail": "irrelevant results, no sold count; min run cap $0.02"
+        }
+      }
     ],
     "xhs": [
       {
         "actorId": "zen-studio/rednote-product-search-scraper",
-        "events": { "apify-actor-start": "start", "apify-default-dataset-item": "per_result", "product-result": "per_result", "product-detail-result": "addon" },
-        "overrides": { "hasCategory": false, "hasSold30d": false, "hasTrend": false },
+        "events": {
+          "apify-actor-start": "start",
+          "apify-default-dataset-item": "per_result",
+          "product-result": "per_result",
+          "product-detail-result": "addon"
+        },
+        "overrides": {
+          "hasCategory": false,
+          "hasSold30d": false,
+          "hasTrend": false
+        },
         "_why": "handoff §6.6 + real smoke rows: units_sold is lifetime, no category",
-        "inputTemplate": { "keywords": ["{{keyword}}"], "maxResults": "{{limit}}", "includeProductDetails": false },
-        "smoke": { "runId": "5hYl39mFSmqrlFEcu", "date": "2026-09-24", "itemsIn": 5, "itemsOut": 5, "costUsd": 0.075 }
+        "inputTemplate": {
+          "keywords": [
+            "{{keyword}}"
+          ],
+          "maxResults": "{{limit}}",
+          "includeProductDetails": false
+        },
+        "smoke": {
+          "runId": "5hYl39mFSmqrlFEcu",
+          "date": "2026-09-24",
+          "itemsIn": 5,
+          "itemsOut": 5,
+          "costUsd": 0.075
+        }
       },
-      { "actorId": "socialdatax/socialdatax-xhs-data-api", "events": { "apify-actor-start": "start", "apify-default-dataset-item": "per_result" } },
+      {
+        "actorId": "socialdatax/socialdatax-xhs-data-api",
+        "events": {
+          "apify-actor-start": "start",
+          "apify-default-dataset-item": "per_result"
+        }
+      },
       {
         "actorId": "zhorex/rednote-shop-scraper",
-        "events": { "apify-actor-start": "start", "product-scraped": "per_result", "vendor-scraped": "addon" },
-        "overrides": { "needsCookie": true },
+        "events": {
+          "apify-actor-start": "start",
+          "product-scraped": "per_result",
+          "vendor-scraped": "addon"
+        },
+        "overrides": {
+          "needsCookie": true
+        },
         "_why": "handoff §6.6: product_search needs the user's login cookie (SPEC §3 #5: no cookie)"
       },
       {
         "actorId": "memo23/rednote-product-scraper",
-        "events": { "apify-actor-start": "start", "result": "per_result" },
+        "events": {
+          "apify-actor-start": "start",
+          "result": "per_result"
+        },
         "excluded": "actors.excluded.noKeywordSearch",
         "_why": "handoff §6.6: seeds from goodsId, no keyword search"
       }

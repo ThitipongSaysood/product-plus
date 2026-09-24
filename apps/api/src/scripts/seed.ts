@@ -17,13 +17,17 @@ import { importDataset, postProcess } from "./import-dataset.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const REAL_DIR = path.resolve(here, "../../data/real/2026-09-24");
-const PLATFORMS: Platform[] = ["douyin", "1688", "xhs"]; // Temu dropped by the user (all actors blocked 2026-09-24)
-const KEYWORD = "苹果手表表带"; // SPEC §3 #4 (Temu's "apple watch band"/us can be re-added from Settings)
+// Temu came back 2026-09-24 via crw/temu-products-scraper (the first 3 Temu actors were blocked); demo keeps 3.
+const REAL_PLATFORMS: Platform[] = ["douyin", "1688", "temu", "xhs"];
+const DEMO_PLATFORMS: Platform[] = ["douyin", "1688", "xhs"];
+const KEYWORD = "苹果手表表带"; // SPEC §3 #4
+const KEYWORD_FOR: Partial<Record<Platform, { keyword: string; region: string }>> = { temu: { keyword: "apple watch band", region: "us" } };
 
 const REAL_RUNS = [
   { platform: "douyin", runId: "17eeLITRhaMyS3gcE", actor: "zen-studio/douyin-product-search-scraper", cost: 0.245 },
   { platform: "1688", runId: "RZ1IY5i0w1MsIHFxw", actor: "zen-studio/1688-wholesale-scraper", cost: 0.255 },
   { platform: "xhs", runId: "OsvNwT8UErfn7dE44", actor: "zen-studio/rednote-product-search-scraper", cost: 0.3 },
+  { platform: "temu", runId: "8AqTxqcOQ5C40f37k", actor: "crw/temu-products-scraper", cost: 0.05 }, // 5-row smoke
 ] as const;
 
 // platform category paths that obviously map to our taxonomy (layer 1)
@@ -33,7 +37,7 @@ const CATEGORY_MAP = [
   { platform: "temu", platformPath: "Cell Phones & Accessories > Smart Watch Cases", categoryKey: "accessory_case" },
 ];
 
-async function upsertGroup(slug: string, name: string, sourceMode: "apify" | "mock", schedule: "weekly" | "manual") {
+async function upsertGroup(slug: string, name: string, sourceMode: "apify" | "mock", schedule: "weekly" | "manual", PLATFORMS: Platform[]) {
   const db = await getDb();
   await db
     .insert(productGroups)
@@ -42,7 +46,7 @@ async function upsertGroup(slug: string, name: string, sourceMode: "apify" | "mo
   const g = await groupBySlug(slug);
   await db
     .insert(keywords)
-    .values(PLATFORMS.map((platform) => ({ productGroupId: g.id, platform, keyword: KEYWORD, region: null })))
+    .values(PLATFORMS.map((platform) => ({ productGroupId: g.id, platform, keyword: KEYWORD_FOR[platform]?.keyword ?? KEYWORD, region: KEYWORD_FOR[platform]?.region ?? null })))
     .onConflictDoNothing();
   return g;
 }
@@ -62,7 +66,7 @@ async function main() {
   await db.insert(categoryMap).values(CATEGORY_MAP).onConflictDoNothing();
 
   // 1. real group
-  await upsertGroup("apple-watch-bands", "Apple Watch bands", "apify", "weekly");
+  await upsertGroup("apple-watch-bands", "Apple Watch bands", "apify", "weekly", REAL_PLATFORMS);
   const files = REAL_RUNS.map((r) => path.join(REAL_DIR, `${r.platform}.json`));
   if (await waitFor(files, Number(process.env.SEED_WAIT_MS ?? 15 * 60_000))) {
     for (const r of REAL_RUNS) {
@@ -80,7 +84,7 @@ async function main() {
   } else console.warn("[seed] real datasets not found — the real group stays empty");
 
   // 2. mock demo group: 3 simulated weekly rounds
-  const demo = await upsertGroup("demo-mock", "Demo · mock data", "mock", "manual");
+  const demo = await upsertGroup("demo-mock", "Demo · mock data", "mock", "manual", DEMO_PLATFORMS);
   const already = await db.select({ id: scrapeRuns.id }).from(scrapeRuns).where(eq(scrapeRuns.productGroupId, demo.id)).limit(1);
   if (already.length) console.log("[seed] demo-mock already has runs — skipped");
   else {

@@ -28,3 +28,17 @@ Conclusions
 | **total** | | **130** | **≈ $0.80** | grand total today incl. smoke ≈ $0.95 |
 
 Data: `apps/api/data/real/2026-09-24/`. Temu not run (dropped).
+
+## Temu retry (user approved, cap $0.02 then $0.12) — 2026-09-24 morning
+
+| actor | run id | items | est. cost | result |
+|---|---|---|---|---|
+| apivault_labs/temu-product-scraper | UckniAngJxmY7QaAC | 0 | ~$0.0001 | ❌ still `product_extraction_access_denied` |
+| pear_fight/temu-scraper | (MCP call timed out, no run id) | ? | ≤ $0.0039 (cap) | unknown — check Apify console |
+| **crw/temu-products-scraper** | 8AqTxqcOQ5C40f37k | **5** | $0.05 | ✅ 5/5 Apple Watch bands, top sales, `sales_num` "100K+" (lifetime lower bound), price in cents, image, link, `opt_id` |
+| scrapeunblocker/temu-search-scraper | KbSzFGBgYo54ENM5e | 5 | ~$0.01 | ⚠️ URL-only rows — no price/sold/image |
+| scrapesage/temu-scraper | xfl5WuemkMRVLcuQT | 5 | ~$0.01 | ❌ 0/5 relevant (Samsung bands, men's watches), no sold count |
+| **total** | | | **≈ $0.075** | within caps |
+
+Why Temu failed before: Temu serves an anti-bot JS challenge (verified with a plain request: 2.9 KB challenge page, no products). Each actor has its own bypass; crw's works today. Temu re-enabled in `apple-watch-bands` with keyword `apple watch band` (us); crw chosen by the evaluator (only smoke-verified Temu actor).
+Cost note: crw is $0.01/result → 50 results = $0.50/round, so a full 4-platform round ≈ $1.46 > the $1.00 per-round cap.

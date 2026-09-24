@@ -138,3 +138,27 @@ describe("REAL 50-result batch (data/real/2026-09-24)", () => {
     });
   });
 });
+
+describe("REAL temu rows (crw/temu-products-scraper, 2026-09-24)", () => {
+  it("reads all 5: cents → dollars, lifetime lower bound, canonical link, no fake original price", () => {
+    const { items, itemsIn } = normalizeRows("temu", fx("real/temu-crw.json").items, "apple watch band");
+    expect(itemsIn).toBe(5);
+    expect(items).toHaveLength(5);
+    const [p, q] = items;
+    expect(p).toMatchObject({
+      externalId: "601099515978809",
+      price: 1.48,
+      originalPrice: 1.9,
+      currency: "USD",
+      soldCount: 100000,
+      soldPeriod: "lifetime",
+      soldIsLowerBound: true,
+      soldText: "100K+",
+      productUrl: "https://www.temu.com/goods.html?goods_id=601099515978809",
+      shopUrl: "https://www.temu.com/mall.html?mall_id=251644344172",
+      rank: 1,
+    });
+    expect(p.imageUrl).toMatch(/^https:\/\/img\.kwcdn\.com\//);
+    expect(q.originalPrice).toBeNull(); // market_price_str "" = no original price, not $0
+  });
+});

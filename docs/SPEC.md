@@ -4,7 +4,7 @@
 > This file records **what we build** and the **decisions taken where the handoff said "ask the user"** (user was away overnight, 2026-09-24).
 
 ## 1. Goal
-Watch "Apple Watch band" products on Chinese marketplaces — **active: Douyin 抖音商城 · 1688 · Xiaohongshu shop**. Temu dropped for now (user, 2026-09-24: all 3 Temu actors blocked in the smoke test); code keeps Temu support and it can be re-enabled per group in Settings. Answer:
+Watch "Apple Watch band" products on Chinese marketplaces — **Douyin 抖音商城 · 1688 · Temu · Xiaohongshu shop**. Temu was dropped overnight (first 3 actors blocked by Temu's anti-bot) and re-enabled the next morning via `crw/temu-products-scraper` (see SMOKE-TEST-2026-09-24.md). Answer:
 which category, how well it sells, rising or falling. **E-commerce data only** (user instruction) — no XHS notes, no Douyin hot-search, no social buzz layer.
 
 Per product: auto category · 30-day sold (Douyin) else latest sold with its `period` · image + link · trend.
@@ -29,7 +29,7 @@ Ports (dev): api **4010**, web **3020** (never 3010). Web rewrites `/api/*` → 
 | 1 | where | local dev now; deploy target Railway (np-nineplus) — **not deployed yet** |
 | 2 | Apify account | whatever `APIFY_TOKEN` is set in Settings/env; none set → mock mode |
 | 3 | Apify plan | detected from `GET /v2/users/me` when token exists; else price at **FREE** tier (most expensive, safe) |
-| 4 | keywords | `苹果手表表带` (douyin/1688/xhs) — 1 per platform · Temu keyword removed with Temu |
+| 4 | keywords | `苹果手表表带` (douyin/1688/xhs) · `apple watch band` region us (temu) — 1 per platform |
 | 5 | XHS cookie | **no** → zhorex actor marked `needsCookie` and not chosen |
 | 6 | frequency | **weekly** (Mon 05:00 Asia/Bangkok) via in-process scheduler + `GET /api/cron/weekly` |
 | 7 | UI languages | th (default) · zh · en |

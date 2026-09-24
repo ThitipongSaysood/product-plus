@@ -7,7 +7,7 @@ export const UNCLASSIFIED_LABEL = { th: "ยังไม่จัดหมวด
 
 /** Handoff §9 proposal + additions from the real smoke rows of 2026-09-24 (beaded/jewelry bands, films). */
 export const DEFAULT_TAXONOMY: TaxonomyEntry[] = [
-  { key: "material_silicone", en: "Silicone / sport band", th: "สายซิลิโคน", zh: "硅胶/运动表带", keywords: ["硅胶", "运动表带", "silicone", "sport band"] },
+  { key: "material_silicone", en: "Silicone / sport band", th: "สายซิลิโคน", zh: "硅胶/运动表带", keywords: ["硅胶", "运动表带", "silicone", "sport band", "sports band", "sport strap"] },
   { key: "material_leather", en: "Leather", th: "สายหนัง", zh: "真皮表带", keywords: ["真皮", "皮革", "皮表带", "leather"] },
   {
     key: "material_metal",
