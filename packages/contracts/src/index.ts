@@ -12,6 +12,8 @@ export type RunStatus = "running" | "succeeded" | "failed" | "suspect";
 export type RunKind = "scrape" | "categorize" | "media" | "trend" | "evaluate" | "smoke" | "pipeline" | "translate" | "brand";
 export type EventKind = "new" | "gone" | "price_drop" | "sales_surge" | "rank_up";
 export type SourceMode = "mock" | "apify";
+/** The three languages the interface ships in; AI prose is written in whichever one the reader is using. */
+export type Locale = "th" | "en" | "zh";
 export type Schedule = "weekly" | "daily" | "manual";
 export type Currency = "CNY" | "USD";
 
@@ -311,6 +313,8 @@ export type BrandReport = {
   avoid: { id: string; reason: string }[];
   generatedAt: string;
   model: string;
+  /** Which language the prose is in. A report is not re-translated when the ui language changes. */
+  lang: Locale;
   candidateCount: number;
   /** Listings the brief could not weigh — unmeasured, not rejected. */
   excluded: { noSoldCount: number; noPrice: number; total: number };
@@ -318,8 +322,28 @@ export type BrandReport = {
   limits: string[];
 };
 
-/** Titles are resolved server-side for exactly the ids a report references, so the page never has to
- *  page through the whole catalogue to name a pick. */
-export type BrandResponse = { report: BrandReport | null; titles: Record<string, string> };
+/** Everything the page needs to show a pick as a product rather than an id: picture, name, link and the
+ *  figures themselves. Resolved server-side for exactly the ids a report references, so the page never
+ *  pages through the whole catalogue — and so the numbers on screen come from the database, not from
+ *  the model's prose. */
+export type BrandItem = {
+  id: string;
+  title: string;
+  titleLang: "th" | "zh";
+  platform: Platform;
+  imageId: string | null;
+  imageSourceUrl: string | null;
+  imageLost: boolean;
+  productUrl: string | null;
+  /** What one unit costs at the minimum order, when a ladder says so; else the listed price. */
+  buyPrice: number | null;
+  currency: Currency | null;
+  sold: SoldInfo;
+  moq: number | null;
+  unit: string | null;
+  categoryKey: string;
+};
+
+export type BrandResponse = { report: BrandReport | null; items: Record<string, BrandItem> };
 
 export type UnmappedCategory = { platform: Platform; path: string; count: number };

@@ -28,6 +28,9 @@ const ALLOW_GRID: Record<string, string> = {
   ".ap-lane__row": "44px thumb | title | number row — fixed thumb column, title is minmax(0,1fr)",
   ".ap-bottomnav": "mobile bottom bar: 5 equal slots (§4.2)",
   ".ap-bottomnav__sheet": "More sheet is 2 columns of nav links (§4.2)",
+  ".ap-pick": "brand pick: 96px thumb | minmax(0,1fr) body — same fixed-thumb pattern as .ap-lane__row",
+  ".ap-judge li": "14px icon | minmax(0,1fr) text — an icon column, not a layout",
+  ".ap-avoid__row": "48px thumb | minmax(0,1fr) text",
   ".ap-tiers": "price ladder: two content-sized columns (\"1–9 เส้น\" + ¥13.50) — ~160px total, safe at 320px",
 };
 const ALLOW_WIDTH: Record<string, string> = {};

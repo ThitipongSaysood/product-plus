@@ -143,7 +143,7 @@ describe("buildBrief — computed signals the model should not have to guess", (
       ...Array.from({ length: 30 }, (_, i) => row({ id: `cn${i}`, platform: "1688", soldCount: 100_000 + i })),
       ...Array.from({ length: 5 }, (_, i) => row({ id: `dy${i}`, platform: "douyin", soldPeriod: "30d", soldCount: 10 + i })),
     ];
-    const b = buildBrief(many, TAX, "g", 10);
+    const b = buildBrief(many, TAX, "g", "th", 10);
     expect(b.candidates.some((c) => c.platform === "douyin")).toBe(true);
     expect(b.candidates.filter((c) => c.platform === "1688").length).toBeLessThanOrEqual(5);
   });

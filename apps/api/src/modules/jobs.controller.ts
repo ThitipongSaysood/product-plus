@@ -84,7 +84,10 @@ export class JobsController {
    *  charge; it does spend on Anthropic, and assertNotRunning keeps the button from being held down. */
   @Post("jobs/brand")
   @HttpCode(200)
-  async brand(@Body(new ZodPipe(z.object({ pg: z.string().optional() }))) body: { pg?: string }) {
+  async brand(
+    @Body(new ZodPipe(z.object({ pg: z.string().optional(), lang: z.enum(["th", "en", "zh"]).optional() })))
+    body: { pg?: string; lang?: "th" | "en" | "zh" },
+  ) {
     const g = await groupBySlug(body.pg);
     if (!skillPresent(SKILLS.brand)) throw new AppError(500, "errors.translate.noSkill");
     if ((await aiBackend()) === "cli") {
@@ -97,7 +100,7 @@ export class JobsController {
     }
     await assertNotRunning(g.id, "brand");
     const runId = await createRun(await getDb(), { productGroupId: g.id, kind: "brand", status: "running" });
-    void runBrandScout(g.id)
+    void runBrandScout(g.id, body.lang ?? "th")
       .then(async (r) => {
         if (r.report) await (await getDb()).update(scrapeRuns).set({ report: r.report }).where(eq(scrapeRuns.id, runId));
         await finishRun(runId, r.report ? "succeeded" : "suspect", r.note, {

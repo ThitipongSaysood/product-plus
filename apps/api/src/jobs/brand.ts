@@ -6,14 +6,14 @@
 // one-at-a-time guard. It gains one nullable jsonb column for the body rather than a whole table,
 // which would duplicate the status, cost and timing it already tracks.
 import { and, desc, eq, inArray } from "drizzle-orm";
-import type { BrandReport, BrandResponse, Platform, SoldPeriod, TaxonomyEntry, TrendLabel } from "@pp/contracts";
+import type { BrandItem, BrandReport, BrandResponse, Locale, Platform, SoldPeriod, TaxonomyEntry, TrendLabel } from "@pp/contracts";
 import { getDb } from "../db/client.js";
 import { productGroups, products, scrapeRuns } from "../db/schema.js";
 import { buildBrief, type BriefInput } from "../domain/brand-brief.js";
 import { supplyTerms } from "../domain/normalize/supply.js";
 import { getSetting } from "../settings/settings.js";
 import { extractJson, runClaudeCli, skillBody, skillRef, SKILLS } from "./claude-cli.js";
-import { aiBackend, LLM_MODEL } from "./llm.js";
+import { aiBackend, BRAND_MODEL } from "./llm.js";
 
 /** Enough to see the shape of a catalogue without paying for a prompt nobody reads. */
 const MAX_CANDIDATES = 60;
@@ -47,7 +47,7 @@ export async function loadBriefInput(groupId: string): Promise<{ rows: BriefInpu
 }
 
 /** Keeps only ids the brief actually contained — a hallucinated id must never reach the UI as a link. */
-function sanitize(parsed: unknown, validIds: Set<string>): Omit<BrandReport, "generatedAt" | "model" | "candidateCount" | "excluded" | "limits"> {
+function sanitize(parsed: unknown, validIds: Set<string>): Pick<BrandReport, "summary" | "picks" | "avoid"> {
   const r = (parsed ?? {}) as { summary?: unknown; picks?: unknown[]; avoid?: unknown[] };
   const str = (v: unknown, max: number) => (typeof v === "string" ? v.trim().slice(0, max) : "");
   const list = (v: unknown) => (Array.isArray(v) ? v.map((x) => str(x, 300)).filter(Boolean).slice(0, 8) : []);
@@ -70,9 +70,9 @@ function sanitize(parsed: unknown, validIds: Set<string>): Omit<BrandReport, "ge
   return { summary: str(r.summary, 1200), picks, avoid };
 }
 
-export async function runBrandScout(groupId: string): Promise<{ report: BrandReport | null; costUsd: number | null; note: string | null }> {
+export async function runBrandScout(groupId: string, lang: Locale = "th"): Promise<{ report: BrandReport | null; costUsd: number | null; note: string | null }> {
   const { rows, taxonomy, name } = await loadBriefInput(groupId);
-  const brief = buildBrief(rows, taxonomy, name, MAX_CANDIDATES);
+  const brief = buildBrief(rows, taxonomy, name, lang, MAX_CANDIDATES);
   if (!brief.candidates.length) {
     return { report: null, costUsd: null, note: "brand.noCandidates" };
   }
@@ -83,7 +83,7 @@ export async function runBrandScout(groupId: string): Promise<{ report: BrandRep
   let costUsd: number | null = null;
   if (backend === "cli") {
     const bin = (await getSetting("CLAUDE_CLI_PATH")) ?? "claude";
-    const res = await runClaudeCli(bin, LLM_MODEL, `/${skillRef(SKILLS.brand)}\n\n${ask}`);
+    const res = await runClaudeCli(bin, BRAND_MODEL, `/${skillRef(SKILLS.brand)}\n\n${ask}`);
     text = res.text;
     costUsd = res.costUsd;
   } else {
@@ -92,7 +92,7 @@ export async function runBrandScout(groupId: string): Promise<{ report: BrandRep
     const { default: Anthropic } = await import("@anthropic-ai/sdk");
     const client = new Anthropic({ apiKey });
     const res = await client.messages.create({
-      model: LLM_MODEL,
+      model: BRAND_MODEL,
       max_tokens: 4096,
       system: skillBody(SKILLS.brand),
       messages: [{ role: "user", content: ask }],
@@ -104,7 +104,8 @@ export async function runBrandScout(groupId: string): Promise<{ report: BrandRep
   const report: BrandReport = {
     ...sanitize(extractJson(text), ids),
     generatedAt: new Date().toISOString(),
-    model: LLM_MODEL,
+    model: BRAND_MODEL,
+    lang,
     candidateCount: brief.candidates.length,
     excluded: brief.excluded,
     limits: brief.limits,
@@ -112,8 +113,8 @@ export async function runBrandScout(groupId: string): Promise<{ report: BrandRep
   return { report, costUsd, note: null };
 }
 
-/** The newest stored report for a group with the titles of everything it mentions, or an empty result
- *  before the job has ever run. Titles are looked up by id rather than paged through the catalogue. */
+/** The newest stored report for a group with the product facts for everything it mentions, or an empty result
+ *  before the job has ever run. Looked up by id rather than paged through the catalogue. */
 export async function latestBrandReport(groupId: string): Promise<BrandResponse> {
   const db = await getDb();
   const [run] = await db
@@ -123,14 +124,40 @@ export async function latestBrandReport(groupId: string): Promise<BrandResponse>
     .orderBy(desc(scrapeRuns.startedAt))
     .limit(1);
   const report = (run?.report as BrandReport | undefined) ?? null;
-  if (!report) return { report: null, titles: {} };
+  if (!report) return { report: null, items: {} };
 
   const ids = [...new Set([...report.picks.map((p) => p.id), ...report.avoid.map((a) => a.id)])];
-  if (!ids.length) return { report, titles: {} };
-  const rs = await db
-    .select({ id: products.id, title: products.title, titleTh: products.titleTh })
-    .from(products)
-    .where(inArray(products.id, ids));
-  const titles = Object.fromEntries(rs.map((p) => [p.id, p.titleTh?.trim() || p.title?.trim() || p.id]));
-  return { report, titles };
+  if (!ids.length) return { report, items: {} };
+  const rs = await db.select().from(products).where(inArray(products.id, ids));
+  const items = Object.fromEntries(
+    rs.map((p): [string, BrandItem] => {
+      const supply = supplyTerms(p.platform as Platform, p.raw);
+      const th = p.titleTh?.trim();
+      return [
+        p.id,
+        {
+          id: p.id,
+          title: th || p.title?.trim() || p.id,
+          titleLang: th ? "th" : "zh",
+          platform: p.platform as Platform,
+          imageId: p.imageMediaId,
+          imageSourceUrl: p.imageSourceUrl,
+          imageLost: p.imageLost,
+          productUrl: p.productUrl,
+          buyPrice: supply?.entryPrice ?? p.price,
+          currency: p.currency as BrandItem["currency"],
+          sold: {
+            count: p.latestSoldCount,
+            period: p.latestSoldPeriod as SoldPeriod,
+            lowerBound: p.latestSoldLowerBound,
+            text: p.latestSoldText,
+          },
+          moq: supply?.moq ?? null,
+          unit: supply?.unit ?? null,
+          categoryKey: p.categoryKey ?? "unclassified",
+        },
+      ];
+    }),
+  );
+  return { report, items };
 }

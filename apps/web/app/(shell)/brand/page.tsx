@@ -1,13 +1,16 @@
 import Link from "next/link";
-import type { BrandResponse } from "@pp/contracts";
-import { ApiErrorAlert } from "@/components/bits";
+import type { BrandItem, BrandResponse } from "@pp/contracts";
+import { ApiErrorAlert, BrandMark, ProductImage, SoldBadge } from "@/components/bits";
 import { JobButton } from "@/components/JobButton";
-import { AnalyseIcon } from "@/components/icons";
+import { AnalyseIcon, CheckIcon, LinkExternalIcon, XIcon } from "@/components/icons";
+import { categoryLabel } from "@/components/ProductCardView";
 import { Alert, Badge, Card, EmptyState, SectionTitle } from "@/components/ui";
-import { formatDateTime, formatNumber } from "@/i18n";
+import { formatDateTime, formatMoney, formatNumber } from "@/i18n";
 import { getT } from "@/i18n/server";
 import { api, qs } from "@/lib/api";
+import { loadGroup } from "@/lib/group";
 import { getPg } from "@/lib/params";
+import { qtyLabel } from "@/lib/supply";
 
 const TONE = { high: "success", medium: "info", low: "warning" } as const;
 
@@ -15,9 +18,10 @@ export default async function BrandPage(props: PageProps<"/brand">) {
   const sp = await props.searchParams;
   const pg = getPg(sp);
   const t = await getT();
-  const [res, job] = await Promise.all([
+  const [res, job, g] = await Promise.all([
     api<BrandResponse>(`/brand${qs({ pg })}`),
     api<Parameters<typeof JobButton>[0]["initial"]>(`/jobs/status?kind=brand${pg ? `&pg=${encodeURIComponent(pg)}` : ""}`),
+    loadGroup(pg),
   ]);
 
   const head = (
@@ -27,7 +31,8 @@ export default async function BrandPage(props: PageProps<"/brand">) {
         <p className="ox-muted">{t("brand.sub")}</p>
       </div>
       <div className="ox-page-head__actions">
-        <JobButton kind="brand" pg={pg} path="/api/jobs/brand" body={{ pg }} label={t("brand.run")} icon={<AnalyseIcon size={16} />} initial={job.data ?? null} />
+        {/* The report is written in whichever language the reader is using, so the request carries it. */}
+        <JobButton kind="brand" pg={pg} path="/api/jobs/brand" body={{ pg, lang: t.locale }} label={t("brand.run")} icon={<AnalyseIcon size={16} />} initial={job.data ?? null} />
       </div>
     </div>
   );
@@ -35,7 +40,18 @@ export default async function BrandPage(props: PageProps<"/brand">) {
   const r = res.data.report;
   if (!r) return <>{head}<EmptyState title={t("brand.empty")} body={t("brand.emptyBody")} /></>;
 
-  const productLink = (id: string) => `/products/${id}${qs({ pg, from: "/brand" })}`;
+  const link = (id: string) => `/products/${encodeURIComponent(id)}${qs({ pg, from: "/brand" })}`;
+  const taxonomy = g.group?.taxonomy ?? [];
+
+  /** The numbers come from the database and sit beside the prose, so the model never has to restate them. */
+  const facts = (it: BrandItem) => (
+    <div className="ap-pick__facts">
+      <span className="ap-pick__price ox-num">{it.buyPrice == null ? "—" : formatMoney(t.locale, it.buyPrice, it.currency ?? "CNY")}</span>
+      <SoldBadge t={t} sold={it.sold} />
+      {it.moq != null ? <span className="ox-badge">{t("brand.moqChip", { v: qtyLabel(t, it.moq, it.unit) })}</span> : null}
+      <span className="ox-badge">{categoryLabel(t, it.categoryKey, taxonomy)}</span>
+    </div>
+  );
 
   return (
     <>
@@ -46,12 +62,80 @@ export default async function BrandPage(props: PageProps<"/brand">) {
         <div className="ox-xs ox-muted" style={{ marginTop: "var(--omnix-space-3)" }}>
           {t("brand.generatedAt", { at: formatDateTime(t.locale, r.generatedAt), n: formatNumber(t.locale, r.candidateCount), model: r.model })}
         </div>
+        {r.lang !== t.locale ? <div className="ox-xs ox-muted">{t("brand.otherLang", { lang: t(`lang.${r.lang}`) })}</div> : null}
       </Card>
 
-      {/* Shown to the reader, not just to the model: a shortlist without its caveats invites more
-          confidence than the numbers behind it can carry. */}
+      <Card>
+        <SectionTitle title={t("brand.picks")} />
+        {r.picks.length ? (
+          <div className="ox-stack">
+            {r.picks.map((p) => {
+              const it = res.data.items[p.id];
+              return (
+                <article key={p.id} className="ap-pick">
+                  <Link href={link(p.id)} className="ap-pick__thumb" aria-label={it?.title ?? p.id}>
+                    {it ? <ProductImage t={t} product={it} alt={it.title} /> : null}
+                  </Link>
+                  <div className="ap-pick__body">
+                    <div className="ap-pick__head">
+                      <Link href={link(p.id)} className="ap-pick__title line-clamp-2">{it?.title ?? p.id}</Link>
+                      <Badge tone={TONE[p.confidence]}>{t(`brand.confidence.${p.confidence}`)}</Badge>
+                    </div>
+                    {it ? (
+                      <div className="ox-row">
+                        <BrandMark t={t} platform={it.platform} />
+                        {facts(it)}
+                      </div>
+                    ) : null}
+                    <p className="ap-pick__why">{p.why}</p>
+                    <div className="ap-pros-cons">
+                      <ul className="ap-judge ap-judge--pro">
+                        {p.pros.map((x) => <li key={x}><CheckIcon size={14} />{x}</li>)}
+                      </ul>
+                      <ul className="ap-judge ap-judge--con">
+                        {p.cons.map((x) => <li key={x}><XIcon size={14} />{x}</li>)}
+                      </ul>
+                    </div>
+                    {it?.productUrl ? (
+                      <a className="ox-xs" href={it.productUrl} target="_blank" rel="noopener noreferrer">
+                        <LinkExternalIcon size={14} />{t("product.open", { platform: t(`platform.${it.platform}`) })}
+                      </a>
+                    ) : null}
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="ox-muted ox-xs">{t("brand.noCandidates")}</div>
+        )}
+      </Card>
+
+      {r.avoid.length ? (
+        <Card>
+          <SectionTitle title={t("brand.avoid")} />
+          <div className="ap-avoid">
+            {r.avoid.map((a) => {
+              const it = res.data.items[a.id];
+              return (
+                <div key={a.id} className="ap-avoid__row">
+                  <Link href={link(a.id)} className="ap-avoid__thumb" aria-label={it?.title ?? a.id}>
+                    {it ? <ProductImage t={t} product={it} alt={it.title} /> : null}
+                  </Link>
+                  <div style={{ minWidth: 0 }}>
+                    <Link href={link(a.id)} className="line-clamp-2">{it?.title ?? a.id}</Link>
+                    <div className="ox-xs ox-muted">{a.reason}</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+      ) : null}
+
+      {/* Kept last and quiet: the caveats must be reachable, but they are not what the page is for. */}
       <Alert tone="info" title={t("brand.limits")}>
-        <ul className="ap-bullets">{r.limits.map((l) => <li key={l}>{l}</li>)}</ul>
+        <ul className="ap-bullets ox-xs">{r.limits.map((l) => <li key={l}>{l}</li>)}</ul>
         {r.excluded.total ? (
           <div className="ox-xs" style={{ marginTop: "var(--omnix-space-2)" }}>
             {t("brand.excluded", {
@@ -62,50 +146,6 @@ export default async function BrandPage(props: PageProps<"/brand">) {
           </div>
         ) : null}
       </Alert>
-
-      <Card>
-        <SectionTitle title={t("brand.picks")} />
-        {r.picks.length ? (
-          <div className="ox-stack">
-            {r.picks.map((p) => (
-              <section key={p.id} className="ap-pick">
-                <div className="ox-row">
-                  <Link href={productLink(p.id)} className="ap-pick__title">{res.data.titles[p.id] ?? p.id}</Link>
-                  <Badge tone={TONE[p.confidence]}>{`${t("brand.confidence")}: ${t(`brand.confidence.${p.confidence}`)}`}</Badge>
-                </div>
-                <p className="ox-prose">{p.why}</p>
-                <div className="ap-pros-cons">
-                  <div>
-                    <div className="ox-label-caps">{t("brand.pros")}</div>
-                    <ul className="ap-bullets">{p.pros.map((x) => <li key={x}>{x}</li>)}</ul>
-                  </div>
-                  <div>
-                    <div className="ox-label-caps">{t("brand.cons")}</div>
-                    <ul className="ap-bullets">{p.cons.map((x) => <li key={x}>{x}</li>)}</ul>
-                  </div>
-                </div>
-              </section>
-            ))}
-          </div>
-        ) : (
-          <div className="ox-muted ox-xs">{t("brand.noCandidates")}</div>
-        )}
-      </Card>
-
-      {r.avoid.length ? (
-        <Card>
-          <SectionTitle title={t("brand.avoid")} />
-          <ul className="ap-bullets">
-            {r.avoid.map((a) => (
-              <li key={a.id}>
-                <Link href={productLink(a.id)}>{res.data.titles[a.id] ?? a.id}</Link>
-                {" — "}
-                {a.reason}
-              </li>
-            ))}
-          </ul>
-        </Card>
-      ) : null}
     </>
   );
 }

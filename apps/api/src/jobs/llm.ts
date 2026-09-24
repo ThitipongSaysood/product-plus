@@ -15,6 +15,15 @@ import { getSetting } from "../settings/settings.js";
 import { CLI_BATCH, extractJson, runClaudeCli, skillBody, skillRef, SKILLS } from "./claude-cli.js";
 
 export const LLM_MODEL = "claude-haiku-4-5";
+
+/**
+ * The brand scout gets a stronger model than the other two jobs. Translation and categorisation are
+ * high-volume and mechanical — a vocabulary table or a fixed list of keys does most of the work, and
+ * Haiku is the right trade there. The brand brief is one call per run and asks for judgement plus prose
+ * the merchant actually reads; on Haiku the Thai came back understandable but clumsy ("ฟอร์มเมชคลาสสิก",
+ * "ต้องยืนยันจำนวนต่ำ"). One call means the extra cost is small in absolute terms.
+ */
+export const BRAND_MODEL = "claude-sonnet-5";
 export const LLM_BATCH = 25;
 
 export type AiBackend = "sdk" | "cli";

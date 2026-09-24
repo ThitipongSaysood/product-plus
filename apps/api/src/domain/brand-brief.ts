@@ -10,7 +10,7 @@
 // only inside one (platform, period) bucket, every candidate states its period, and anything unknown
 // is said out loud rather than omitted — an absent field reads as "neutral" to a model, which is how
 // "no data" turns into "trending well".
-import type { Platform, SoldPeriod, TaxonomyEntry, TrendLabel } from "@pp/contracts";
+import type { Locale, Platform, SoldPeriod, TaxonomyEntry, TrendLabel } from "@pp/contracts";
 import { brandMarks } from "./brand.js";
 import { UNCLASSIFIED } from "./categorize.js";
 
@@ -71,6 +71,8 @@ export type Bucket = {
 
 export type Brief = {
   groupName: string;
+  /** The language the reader has the app in — the model answers in this one. */
+  lang: Locale;
   candidates: Candidate[];
   buckets: Bucket[];
   categories: { key: string; label: string; count: number; medianBuyPrice: number | null; currency: string }[];
@@ -91,7 +93,7 @@ const buyPriceOf = (p: BriefInput) => p.entryPrice ?? p.price;
 
 export const bucketKey = (platform: Platform, period: SoldPeriod) => `${platform}|${period}`;
 
-export function buildBrief(rows: BriefInput[], taxonomy: TaxonomyEntry[], groupName: string, limit = 60): Brief {
+export function buildBrief(rows: BriefInput[], taxonomy: TaxonomyEntry[], groupName: string, lang: Locale = "th", limit = 60): Brief {
   // A listing with no sold figure gives the model nothing to weigh; a listing with no price cannot be
   // costed. Both are dropped, and the count is reported so the omission is visible rather than silent.
   const noSold = rows.filter((r) => r.soldCount === null).length;
@@ -184,6 +186,7 @@ export function buildBrief(rows: BriefInput[], taxonomy: TaxonomyEntry[], groupN
 
   return {
     groupName,
+    lang,
     candidates,
     buckets,
     categories,
