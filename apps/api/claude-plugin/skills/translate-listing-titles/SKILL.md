@@ -27,6 +27,9 @@ Chinese listing titles are keyword soup, not sentences. Translating token by tok
 
 1. **Lead with what the product is** — สายนาฬิกา, เคส, ฟิล์มกันรอย, สายถัก, สายโลหะ.
    Never open with "เหมาะสำหรับ".
+   The finished title must contain **no Chinese characters at all** — if a word has no Thai
+   equivalent, describe it in Thai rather than leaving the original (a 2026-09-24 run left
+   扎染 untranslated in one title out of 135).
 2. **Then the material or style**, then the models it fits.
 3. **Keep brand and model names exactly as written**: Apple Watch, iWatch, Ultra, SE, S9, 42mm, Huawei GT4.
 4. **Drop seller filler**: 包邮 (ส่งฟรี), 厂家直销 / 工厂直发 (ขายตรงจากโรงงาน), 高级感, 新款, 爆款.
@@ -42,7 +45,9 @@ Chinese listing titles are keyword soup, not sentences. Translating token by tok
 | 硅胶 | ซิลิโคน |
 | 真皮 / 皮革 | หนังแท้ / หนัง |
 | 不锈钢 / 金属 | สแตนเลส / โลหะ |
-| 尼龙 / 编织 | ไนลอน / สายถัก |
+| 尼龙 / 编织 | ไนลอน / ถัก (ห้ามเป็น "สัก") |
+| 扎染 | มัดย้อม |
+| 蜡绳 | เชือกเทียน |
 | 磁吸 | แม่เหล็ก |
 | 蝴蝶扣 | ตัวล็อกผีเสื้อ |
 | 保护壳 / 保护套 | เคส |

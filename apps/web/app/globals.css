@@ -399,6 +399,10 @@ select.ox-control { appearance: none; padding-right: var(--omnix-space-8); backg
 
 /* product detail */
 .ap-detail { display: grid; gap: var(--omnix-space-5); }
+/* Grid items default to min-width:auto, so the widest thing inside becomes a floor for the whole
+   column. The thumbnail strip is 5 thumbs + gaps = 352px, which pushed the page sideways on anything
+   under ~384px even though the strip is already scrollable. Measured at 320px: 368px → 305px. */
+.ap-detail > * { min-width: 0; }
 @media (min-width: 1024px) {
   /* Stretching the image pane to match the table only produced a tall grey box around a
      width-limited photo. The pane keeps its own size and sticks instead, so the picture stays
@@ -438,7 +442,8 @@ select.ox-control { appearance: none; padding-right: var(--omnix-space-8); backg
 .ap-lightbox .ap-media-count { right: 50%; transform: translateX(50%); bottom: var(--omnix-space-4); }
 .ap-lightbox__close { position: absolute; top: var(--omnix-space-4); right: var(--omnix-space-4); display: grid; place-items: center; width: 44px; height: 44px; border-radius: var(--omnix-radius-full); border: 1px solid var(--omnix-border); background: var(--omnix-surface); color: var(--omnix-fg); cursor: pointer; }
 .ap-lightbox__close:hover { background: var(--omnix-surface-2); }
-.ap-gallery { display: flex; gap: var(--omnix-space-2); overflow-x: auto; }
+/* min-width:0 lets the existing overflow-x engage, so the strip scrolls inside itself. */
+.ap-gallery { display: flex; gap: var(--omnix-space-2); overflow-x: auto; min-width: 0; }
 .ap-gallery__thumb { width: 64px; height: 64px; flex: 0 0 auto; padding: 0; border-radius: var(--omnix-radius-md); border: 1px solid var(--omnix-border); background: var(--omnix-surface-2); overflow: hidden; cursor: pointer; }
 .ap-gallery__thumb.is-active { border-color: var(--omnix-accent); box-shadow: inset 0 0 0 1px var(--omnix-accent); }
 .ap-gallery__thumb img { width: 100%; height: 100%; object-fit: contain; }  /* both dims set → contain letterboxes, no crop */

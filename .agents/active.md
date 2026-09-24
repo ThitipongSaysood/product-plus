@@ -1,6 +1,6 @@
 # Active Task
 
-_Last updated: 2026-09-24 09:52_
+_Last updated: 2026-09-24 12:25_
 
 ## Project type (auto-detected)
 
@@ -8,27 +8,32 @@ Next.js + NestJS (pnpm monorepo)
 
 ## Current goal
 
-ผู้ใช้กำลังดู UI บนเครื่อง dev ก่อนตัดสินใจเรื่อง deploy + Apify token
+ทำให้หน้ารายละเอียดสินค้าบอก "ต้นทุนจริงของการสั่งซื้อ" ให้ครบ ก่อนตัดสินใจ deploy + ใส่ APIFY_TOKEN
 
 ## What just happened
 
-เพิ่มสร้าง/เปลี่ยนชื่อ/ลบกลุ่มสินค้า · แก้ช่องกรอกที่สูงต่ำไม่ตรงกันทุกฟอร์ม · เพิ่มการแปลชื่อสินค้าจีนเป็นไทย (Haiku 4.5, กดปุ่มเอง)
-ก่อนหน้านั้น: รันแอปขึ้นแล้ว — api 4010 + web 3020 ตอบปกติ ข้อมูลจริง 135 สินค้า ใช้ไป $0.85/$10
-ไล่ดูครบทุกหน้า: overview / products / categories / trends / actors / settings / product detail
-รายละเอียด + สิ่งที่เจอ: .agents/sessions/2026-09-24-0917-run-ui-review.md
+**เจอบั๊กราคาที่สำคัญ:** `normalize1688` ใช้ `price.min` ซึ่งเป็นรุ่นถูกสุดของบันไดราคา ไม่ใช่ราคาที่ซื้อได้จริง
+— **16 จาก 30 แถวที่มีบันได แสดงราคาที่ซื้อไม่ได้** (โชว์ ¥17 แต่สั่ง 1 เส้นจ่าย ¥22) แก้ที่การแสดงผล
+ไม่แตะ `products.price` เพราะ trend.ts เทียบ snapshot หา price_drop
 
-แทรกงานสั้น ๆ คั่น (ไม่กระทบ UI review): ติดตั้ง 5 skills ระดับเครื่อง + เขียนกฏบังคับ skill
-ลง root `AGENTS.md` แล้ว → .agents/sessions/2026-09-24-0952-force-project-skills.md
+เพิ่ม: เงื่อนไขการซื้อ 1688 (ขั้นต่ำ · บันไดราคา · ยอดสั่งขั้นต่ำ · จำนวนออเดอร์ · วิดีโอ) อ่านจาก
+`products.raw` ตรง ๆ ไม่ต้อง migration · ราคาเป็นบาท (เรตตั้งเอง) · ธงแบรนด์ (ติด 1/135) ·
+ป้าย "ดึงใหม่ไม่ได้" เมื่อตั้ง apify แต่ไม่มีโทเคน · แปลชื่อใหม่ 135 รายการด้วย skill ($0.3479)
+
+commit `5c2029d` บนสาขา **`feat/buying-terms-and-detail-page`** (ยังไม่ merge เข้า main ยังไม่ push)
+รายละเอียด: `.agents/sessions/2026-09-24-0917-run-ui-review.md`
 
 ## Blockers
 
-- **รูปแคชไม่ครบ** — 42/48 ที่ตรวจเป็น pending (ยัง retry ได้) → feed "ความเคลื่อนไหว" เป็นกรอบเปล่า, Temu/XHS เสี่ยง URL หมดอายุ ต้องหยุด dev แล้วรัน postProcess ซ้ำ (ฟรี)
-- **/actors ว่าง** — ยังไม่เคยรัน `pnpm --filter @pp/api evaluate` บน DB นี้ (ฟรี ไม่เรียก actor) + UI ขึ้นแบนเนอร์แดงผิดบริบทเมื่อยังไม่มีผลประเมิน
+- **`APIFY_TOKEN` ยังไม่ตั้ง** → ดึงข้อมูลจริงรอบใหม่ไม่ได้ · ปุ่มสโมกเทสต์ปิด (ข้อมูลที่มีคือรอบ 24 ก.ย. เช้า)
+- **`FX_CNY_THB` = 4.85 เป็นค่าตัวอย่างที่ผมใส่ไว้** ผู้ใช้ต้องแก้เป็นเรตจริง (ตั้งค่า › ระบบ)
+- **`grill-with-docs` ใช้ไม่ได้** — SKILL.md ชี้ไปสกิลย่อย `grilling` + `domain-modeling` ที่ไม่ได้ติดตั้ง
+  กติกาใน `.agents/AGENTS.md` ที่บังคับ grill ก่อนแตะ contracts/ingest จึงบังคับจริงไม่ได้ (ใช้ `scrutinize` แทน)
 - รอบ 4 แพลตฟอร์ม ≈ $1.46 > เพดานต่อรอบ $1.00 → ต้องขยับเพดานหรือลดจำนวนผล ก่อนใส่ APIFY_TOKEN
 - Railway deploy ต้องใช้ผู้ใช้ (CLI login + APP_PASSWORD, CRON_SECRET, SETTINGS_SECRET, APIFY_TOKEN)
 - CI ต้อง `gh auth refresh -s workflow` แล้วย้าย deploy/ci.yml เข้าที่
 
 ## Next step
 
-ใส่ `ANTHROPIC_API_KEY` ที่หน้า ตั้งค่า › ระบบ แล้วกดปุ่ม "แปลชื่อสินค้าเป็นไทย" ที่หน้าสินค้า (≈ $0.04 ต่อ 135 ชื่อ) — โค้ดพร้อมแล้วแต่ยังไม่เคยเรียก API จริง
-ค้างอยู่: รูปแคชไม่ครบ · /actors ว่าง (ต้องรัน `pnpm --filter @pp/api evaluate`) — ทั้งคู่ต้องหยุด dev ก่อน
+ตัดสินใจเรื่องสาขา: merge `feat/buying-terms-and-detail-page` เข้า main แล้ว push (skill แปลภาษา
+ต้องผ่าน git ถึงจะขึ้น server) · ตั้งเรตบาทจริง · แล้วค่อยเรื่อง APIFY_TOKEN + เพดานต่อรอบ
