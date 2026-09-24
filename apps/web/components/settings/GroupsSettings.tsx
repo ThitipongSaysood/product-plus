@@ -227,6 +227,10 @@ export function GroupsTable({ groups, pg }: { groups: Group[]; pg: string }) {
                   <td>
                     <div className="ox-row">
                       <Link className="ox-btn ox-btn--ghost ox-btn--sm" href={`/overview?pg=${encodeURIComponent(g.slug)}`}>{t("groups.open")}</Link>
+                      {/* Budget, cap, platforms, result count and schedule are edited by GroupForm at the
+                          top of the keywords page. Linking there beats copying that form into a modal,
+                          which would leave two places to keep in step. */}
+                      <Link className="ox-btn ox-btn--ghost ox-btn--sm" href={`/settings/keywords?pg=${encodeURIComponent(g.slug)}`} aria-label={t("groups.settingsFor", { name: g.name })}>{t("groups.settings")}</Link>
                       <Button
                         size="sm"
                         variant="ghost"
@@ -277,6 +281,10 @@ export function GroupsTable({ groups, pg }: { groups: Group[]; pg: string }) {
             </>
           }
         >
+          <p className="ox-xs ox-muted">
+            {t("groups.renameOnly")}{" "}
+            <Link href={`/settings/keywords?pg=${encodeURIComponent(renaming.slug)}`}>{t("groups.toSettings")}</Link>
+          </p>
           <Field label={t("groups.name")} htmlFor="rn-name" required help={t("groups.renameHelp", { slug: renaming.slug })}>
             <TextInput id="rn-name" name="group-rename" autoComplete="off" value={newName} maxLength={80} autoFocus onChange={(e) => setNewName(e.target.value)} />
           </Field>
