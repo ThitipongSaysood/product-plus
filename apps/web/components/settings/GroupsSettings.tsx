@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import type { Group, Platform, Schedule, SourceMode } from "@pp/contracts";
 import { formatMoney, formatNumber } from "@/i18n";
 import { useT } from "@/i18n/client";
@@ -252,11 +252,24 @@ export function GroupsTable({ groups, pg }: { groups: Group[]; pg: string }) {
               {groups.map((g) => (
                 <tr key={g.slug}>
                   <td>{g.name}</td>
-                  <td><code>{g.slug}</code></td>
-                  <td className="ap-col-wide">{g.platforms.map((p) => platformName(t, p)).join(" · ") || "—"}</td>
+                  <td><code className="ap-slug">{g.slug}</code></td>
+                  <td className="ap-col-wide">
+                    {/* Rendered as items rather than a joined string: a plain join lets a line break fall
+                        inside "小红书 XHS", so the list may wrap between names but never through one. */}
+                    <span className="ap-platforms">
+                      {g.platforms.length
+                        ? g.platforms.map((p, i) => (
+                            <Fragment key={p}>
+                              {i ? <span className="ap-platforms__sep" aria-hidden="true">·</span> : null}
+                              <span>{platformName(t, p)}</span>
+                            </Fragment>
+                          ))
+                        : "—"}
+                    </span>
+                  </td>
                   <td className="is-num">{formatNumber(t.locale, g.productCount ?? null)}</td>
                   <td className="is-num ap-col-wide">{formatMoney(t.locale, g.monthlyBudgetUsd, "USD")}</td>
-                  <td>
+                  <td className="ap-row-actions">
                     <div className="ox-row">
                       <Link className="ox-btn ox-btn--ghost ox-btn--sm" href={`/overview?pg=${encodeURIComponent(g.slug)}`}>{t("groups.open")}</Link>
                       <Button

@@ -248,6 +248,15 @@ select.ox-control { appearance: none; padding-right: var(--omnix-space-8); backg
 .ox-table tr:last-child td { border-bottom: 0; }
 .ox-table th.is-num, .ox-table td.is-num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .ox-table--data td { padding: var(--omnix-space-2) var(--omnix-space-3); vertical-align: middle; }
+/* Row actions stay on one line. Left to wrap, the last icon drops to a second line, which doubles
+   every row's height and leaves the column ragged. width:1% makes the column take only what it needs. */
+.ap-row-actions { width: 1%; white-space: nowrap; }
+.ap-row-actions .ox-row { flex-wrap: nowrap; }
+/* A link id is one token — breaking it mid-word makes it unreadable and uncopyable by eye. */
+.ap-slug { white-space: nowrap; }
+.ap-platforms { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--omnix-space-1); }
+.ap-platforms > span { white-space: nowrap; }
+.ap-platforms__sep { color: var(--omnix-fg-muted); }
 .ox-bar { display: inline-block; height: 6px; border-radius: 3px; background: var(--c, var(--omnix-chart-1)); vertical-align: middle; min-width: 2px; }
 .ox-bar-cell { display: flex; align-items: center; gap: var(--omnix-space-2); min-width: 120px; }
 
