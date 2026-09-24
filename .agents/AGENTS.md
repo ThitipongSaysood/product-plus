@@ -49,4 +49,12 @@ duplicate it here. Short version: `using-superpowers` when unsure · `anthropic-
 - UI: OMNIX tokens only (no hex in components), every string via `t()` in th/en/zh, tables in `TableScroll`.
 - Errors from the API are i18n keys (`{error:"errors.x"}`).
 - Temu actors break when Temu updates its anti-bot: only `crw/temu-products-scraper` worked on 2026-09-24 (3 others blocked). A 0-row run is `suspect`, never a reason to mark products gone.
+- **A keyword must be in the platform's own language.** 1688, Douyin and XHS match an English term
+  against whatever text happens to contain it, so a round looks successful and is not. Measured
+  2026-09-24: `Tempered Glass` on those three plus Temu returned 150 rows for ~$1.46 and **0 of 150
+  were watch products** — phone film on 1688/Temu, tempered-glass tabletops on XHS. Row count is not
+  relevance; check titles before trusting a new keyword's round.
+- Trend and MOQ are shown as facts, never folded into a score. Only douyin reports a trend and only
+  1688 an MOQ, and of 135 real listings not one carried both — scoring either ranks the platforms
+  rather than the products (`domain/brand-brief.ts`, `scoreCandidates`).
 - Ports: api 4010, web 3020. Never 3010. Never touch the Ads Plus system.
