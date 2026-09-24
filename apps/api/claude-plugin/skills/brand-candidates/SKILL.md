@@ -127,7 +127,10 @@ Return one JSON object and nothing else.
 }
 ```
 
-Rules for the shape: `id` must be copied from the brief exactly — never invent one. Return at most 6
-picks, the fewest genuinely worth the merchant's time. `confidence` is `low` whenever the pick
-rests on a figure with no period, on a floor value, or on a listing with no trend. `avoid` may be
-empty. Add no field beyond those shown, and no prose outside the JSON.
+Rules for the shape: `id` must be copied from the brief exactly — never invent one. Return at most 12
+picks. Include every listing a merchant would actually open and look at, and stop there: do not pad the
+list to reach twelve, and do not hold one back merely to keep the list short. A weaker candidate that
+is still worth a look belongs in `picks` with `confidence: "low"` and its reservations in `cons` — that
+is more useful than leaving it out silently. `confidence` is `low` whenever the pick rests on a figure
+with no period, on a floor value, or on a listing with no trend. `avoid` may be empty. Add no field
+beyond those shown, and no prose outside the JSON.

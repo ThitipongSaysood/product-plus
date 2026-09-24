@@ -18,6 +18,9 @@ import { aiBackend, BRAND_MODEL } from "./llm.js";
 /** Enough to see the shape of a catalogue without paying for a prompt nobody reads. */
 const MAX_CANDIDATES = 60;
 
+/** Upper bound on what reaches the page. Keep in step with the cap written in brand-candidates/SKILL.md. */
+export const MAX_PICKS = 12;
+
 export async function loadBriefInput(groupId: string): Promise<{ rows: BriefInput[]; taxonomy: TaxonomyEntry[]; name: string }> {
   const db = await getDb();
   const [group] = await db.select().from(productGroups).where(eq(productGroups.id, groupId));
@@ -54,7 +57,9 @@ function sanitize(parsed: unknown, validIds: Set<string>): Pick<BrandReport, "su
   const picks = (Array.isArray(r.picks) ? r.picks : [])
     .map((p) => p as Record<string, unknown>)
     .filter((p) => typeof p.id === "string" && validIds.has(p.id))
-    .slice(0, 8)
+    // Matches the cap in the skill. A larger number here would not produce more picks — the model
+    // decides how many to return — it only stops a malformed reply from filling the page.
+    .slice(0, MAX_PICKS)
     .map((p) => ({
       id: p.id as string,
       why: str(p.why, 800),

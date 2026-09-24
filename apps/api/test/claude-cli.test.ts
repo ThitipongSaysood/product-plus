@@ -55,6 +55,7 @@ describe("validCliPath", () => {
 
 import { pooled } from "../src/jobs/translate.js";
 import { PLUGIN_DIR, skillBody, skillPath, skillPresent, SKILLS } from "../src/jobs/claude-cli.js";
+import { MAX_PICKS } from "../src/jobs/brand.js";
 
 describe("skill file", () => {
   const body = skillBody(SKILLS.translate);
@@ -86,6 +87,24 @@ describe("categorize skill file", () => {
     expect(body).toMatch(/resin|ceramic|jade/i);
     expect(body).toContain('{"results"'); // the output shape the parser expects
     expect(body).toMatch(/untrusted/i);
+  });
+});
+
+describe("brand-candidates skill", () => {
+  const body = skillBody(SKILLS.brand);
+  it("ships and carries the rules the report depends on", () => {
+    expect(skillPresent(SKILLS.brand)).toBe(true);
+    // The three the page would silently misreport if the model ignored them.
+    expect(body).toMatch(/NOT comparable across platforms|never compare sold counts/i);
+    expect(body).toMatch(/trendKnown/);
+    expect(body).toContain('"picks"');
+  });
+
+  it("states the same pick cap the code enforces", () => {
+    // Two places have to agree; changing one alone silently truncates or over-fills the page.
+    const m = body.match(/Return at most (\d+)\s*\n?picks/);
+    expect(m, "the skill must state a numeric cap").not.toBeNull();
+    expect(Number(m![1])).toBe(MAX_PICKS);
   });
 });
 
