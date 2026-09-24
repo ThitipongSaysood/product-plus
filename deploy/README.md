@@ -41,9 +41,9 @@ Only `web` needs a public domain; the browser reaches the api through the web's 
 ## 5. Title translation — API key or the `claude` CLI
 
 Chinese titles are translated to Thai by the **Translate titles** button on the Products page. Two backends;
-pick one with `TRANSLATE_BACKEND` (Settings → System, or an env var):
+pick one with `AI_BACKEND` (Settings → System, or an env var):
 
-| `TRANSLATE_BACKEND` | Needs | Notes |
+| `AI_BACKEND` | Needs | Notes |
 |---|---|---|
 | `sdk` (default when a key exists) | `ANTHROPIC_API_KEY` | Direct call to api.anthropic.com. Batches of 25. |
 | `cli` | a logged-in `claude` on the same host | No key. `CLAUDE_CLI_PATH` defaults to `claude`. Batches of 40, 3 at a time. |

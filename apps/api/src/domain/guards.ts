@@ -148,7 +148,7 @@ export const capsValid = (budgetUsd: number, runCapUsd: number) => !(budgetUsd >
 export function slugify(name: string): string {
   return name
     .normalize("NFKD")
-    .replace(/[̀-ͯ]/g, "") // "Café" → "Cafe"
+    .replace(/[\u0300-\u036f]/g, "") // "Café" → "Cafe"
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .slice(0, 60)

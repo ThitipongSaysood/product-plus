@@ -22,8 +22,6 @@ export type SupplyTerms = {
   tiers: PriceTier[];
   /** What one minimum order costs per unit — the ladder rung you are actually allowed to buy. */
   entryPrice: number | null;
-  /** Cheapest rung. Equal to `entryPrice` when there is no ladder or only one rung. */
-  lowestPrice: number | null;
   /** Distinct orders placed, NOT units sold and with no time window attached. */
   orderCount: number | null;
   videoUrl: string | null;
@@ -55,12 +53,16 @@ export function supplyTerms(platform: Platform, raw: unknown): SupplyTerms | nul
   const moq = declared !== null && declared > 0 ? declared : (ladder[0]?.minQty ?? null);
   const unit = str(get(raw, "unit"));
   const orderCount = int(get(raw, "orderCount"));
+  // The rung a buyer lands on is the last one whose minimum is still within the order they must place.
+  // Taking ladder[0] blindly is wrong whenever the seller declares a MOQ above the first rung: a listing
+  // with minOrderQuantity 100 and rungs [1-99 ¥13.50, 100+ ¥9.00] costs ¥9.00, not ¥13.50, and the
+  // detail page multiplies this by moq to show what one order actually costs.
+  const rung = moq === null ? ladder[0] : [...ladder].reverse().find((t) => t.minQty <= moq) ?? ladder[0];
   const terms: SupplyTerms = {
     moq,
     unit: unit && unit.length <= 8 ? unit : null,
     tiers: ladder,
-    entryPrice: ladder.length ? ladder[0].price : null,
-    lowestPrice: ladder.length ? Math.min(...ladder.map((t) => t.price)) : null,
+    entryPrice: rung?.price ?? null,
     orderCount: orderCount !== null && orderCount >= 0 ? orderCount : null,
     videoUrl: url(get(raw, "videoUrl")),
   };
@@ -68,9 +70,4 @@ export function supplyTerms(platform: Platform, raw: unknown): SupplyTerms | nul
   const empty =
     terms.moq === null && !terms.tiers.length && terms.orderCount === null && !terms.videoUrl && !terms.unit;
   return empty ? null : terms;
-}
-
-/** True when the headline `products.price` is a bulk rung the buyer cannot reach at the minimum order. */
-export function priceIsBulkOnly(price: number | null, terms: SupplyTerms | null): boolean {
-  return price !== null && terms?.entryPrice != null && terms.entryPrice > price;
 }

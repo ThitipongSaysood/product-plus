@@ -5,7 +5,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { priceIsBulkOnly, supplyTerms } from "../src/domain/normalize/supply.js";
+import { supplyTerms } from "../src/domain/normalize/supply.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const fixture = JSON.parse(readFileSync(path.join(here, "fixtures/real/1688-zen-studio.json"), "utf8")) as {
@@ -58,7 +58,6 @@ describe("supplyTerms — ladders are untrusted input", () => {
     const t = supplyTerms("1688", row)!;
     expect(t.tiers.map((x) => x.minQty)).toEqual([1, 500]);
     expect(t.entryPrice).toBe(6); // what you pay for one
-    expect(t.lowestPrice).toBe(5.5);
 
     const rising = supplyTerms("1688", {
       quantityPrices: [
@@ -66,8 +65,7 @@ describe("supplyTerms — ladders are untrusted input", () => {
         { quantityMin: 2, quantityMax: null, price: 10 },
       ],
     })!;
-    expect(rising.entryPrice).toBe(4);
-    expect(rising.lowestPrice).toBe(4); // not the last rung
+    expect(rising.entryPrice).toBe(4); // the rung for one unit, not the last one
   });
 
   it("drops malformed rungs, dedupes, and caps the ladder", () => {
@@ -98,21 +96,34 @@ describe("supplyTerms — ladders are untrusted input", () => {
   });
 });
 
-describe("priceIsBulkOnly", () => {
-  it("flags the case that made the page lie: stored price below the rung you may actually buy", () => {
-    // Measured on real rows: ¥9.00 stored, ¥13.50 at an order of one.
-    const terms = supplyTerms("1688", {
+describe("supplyTerms — the rung you actually land on", () => {
+  it("prices at the declared minimum order, not at the ladder's first rung", () => {
+    // The case that made this wrong: MOQ 100 with a 1-99 rung above it. You cannot buy 1, so the
+    // 1-99 price is unreachable and one order costs 100 x 9.00, not 100 x 13.50.
+    const t = supplyTerms("1688", {
+      minOrderQuantity: 100,
       quantityPrices: [
-        { quantityMin: 1, quantityMax: 9, price: 13.5 },
-        { quantityMin: 10, quantityMax: null, price: 9 },
+        { quantityMin: 1, quantityMax: 99, price: 13.5 },
+        { quantityMin: 100, quantityMax: null, price: 9 },
       ],
     })!;
-    expect(priceIsBulkOnly(9, terms)).toBe(true);
-    expect(priceIsBulkOnly(13.5, terms)).toBe(false); // already showing the entry price
+    expect(t.moq).toBe(100);
+    expect(t.entryPrice).toBe(9);
   });
 
-  it("stays quiet without a ladder or a price", () => {
-    expect(priceIsBulkOnly(9, null)).toBe(false);
-    expect(priceIsBulkOnly(null, supplyTerms("1688", { quantityPrices: [{ quantityMin: 1, price: 5 }] }))).toBe(false);
+  it("stays on the first rung when the minimum order sits inside it", () => {
+    const t = supplyTerms("1688", {
+      minOrderQuantity: 1,
+      quantityPrices: [
+        { quantityMin: 1, quantityMax: 9, price: 22 },
+        { quantityMin: 10, quantityMax: null, price: 18 },
+      ],
+    })!;
+    expect(t.entryPrice).toBe(22);
+  });
+
+  it("falls back to the first rung when a declared minimum is below every rung", () => {
+    const t = supplyTerms("1688", { minOrderQuantity: 1, quantityPrices: [{ quantityMin: 50, price: 4 }] })!;
+    expect(t.entryPrice).toBe(4);
   });
 });

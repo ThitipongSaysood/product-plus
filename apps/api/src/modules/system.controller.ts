@@ -72,7 +72,9 @@ export class SystemController {
     if (body.key === "SOURCE_MODE" && body.value && !["mock", "apify"].includes(body.value)) throw new AppError(400, "errors.validation");
     // An FX rate that does not parse would be stored and then silently ignored at read time, leaving
     // prices with no baht at all and no explanation. Reject it here instead.
-    if (e.group === "money" && body.value !== null && !isRate(body.value)) throw new AppError(400, "errors.settings.badRate");
+    // "" is how the settings form clears a value — saveSetting treats it as a delete. Only a
+    // non-empty value that does not parse is an error.
+    if (e.group === "money" && body.value && !isRate(body.value)) throw new AppError(400, "errors.settings.badRate");
     await saveSetting(body.key, body.value);
     return listSettings();
   }

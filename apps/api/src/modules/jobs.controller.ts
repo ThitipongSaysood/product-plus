@@ -89,14 +89,14 @@ export class JobsController {
     body: { pg?: string; lang?: "th" | "en" | "zh" },
   ) {
     const g = await groupBySlug(body.pg);
-    if (!skillPresent(SKILLS.brand)) throw new AppError(500, "errors.translate.noSkill");
+    if (!skillPresent(SKILLS.brand)) throw new AppError(500, "errors.brand.noSkill");
     if ((await aiBackend()) === "cli") {
       const bin = (await getSetting("CLAUDE_CLI_PATH")) ?? "claude";
       await claudeCliVersion(bin).catch(() => {
-        throw new AppError(400, "errors.translate.noCli");
+        throw new AppError(400, "errors.brand.noCli");
       });
     } else if (!(await getSetting("ANTHROPIC_API_KEY"))) {
-      throw new AppError(400, "errors.translate.needsKey");
+      throw new AppError(400, "errors.brand.needsKey");
     }
     await assertNotRunning(g.id, "brand");
     const runId = await createRun(await getDb(), { productGroupId: g.id, kind: "brand", status: "running" });

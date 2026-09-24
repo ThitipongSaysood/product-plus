@@ -131,6 +131,10 @@ export async function runClaudeCli(bin: string, model: string, prompt: string): 
         }
       }),
     );
+    // Without this listener an EPIPE — the binary exiting before it drains a prompt larger than the
+    // 64KB pipe buffer, which a 60-candidate brand brief always is — is an unhandled 'error' event and
+    // takes the whole api process down instead of failing this one run.
+    child.stdin.on("error", (e: Error) => done(() => reject(new Error(`claude cli: writing the prompt failed (${e.message})`))));
     child.stdin.end(prompt, "utf8");
   });
 }

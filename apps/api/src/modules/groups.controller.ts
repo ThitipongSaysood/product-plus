@@ -1,6 +1,6 @@
 // groups · keywords · taxonomy · category map
 import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query } from "@nestjs/common";
-import { and, eq, notExists, sql } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, notExists, sql } from "drizzle-orm";
 import { z } from "zod";
 import type { TaxonomyEntry } from "@pp/contracts";
 import { getDb } from "../db/client.js";
@@ -134,12 +134,29 @@ export class GroupsController {
       .where(and(eq(scrapeRuns.productGroupId, g.id), eq(scrapeRuns.status, "running")))
       .limit(1);
     if (running.length) throw new AppError(400, "errors.job.alreadyRunning");
+    // Read the blobs this group points at BEFORE the cascade clears the references, so the sweep below
+    // can be limited to them.
+    const owned = await db
+      .select({ id: products.imageMediaId })
+      .from(products)
+      .where(and(eq(products.productGroupId, g.id), isNotNull(products.imageMediaId)));
+    const ownedIds = [...new Set(owned.map((r) => r.id!))];
     await db.delete(productGroups).where(eq(productGroups.id, g.id));
-    // products are gone, but media rows only lost their reference (set null) — drop the now-unreachable blobs.
-    const orphans = await db
-      .delete(media)
-      .where(notExists(db.select({ x: sql`1` }).from(products).where(eq(products.imageMediaId, media.id))))
-      .returning({ id: media.id });
+    // products are gone, but media rows only lost their reference (set null) — drop the now-unreachable
+    // blobs. Restricted to the ids this group actually pointed at: an unrestricted sweep also deletes a
+    // row another group's media job inserted seconds ago but has not yet linked (jobs/media.ts inserts
+    // the row before it sets products.imageMediaId), which then fails that job on a foreign key.
+    const orphans = ownedIds.length
+      ? await db
+          .delete(media)
+          .where(
+            and(
+              inArray(media.id, ownedIds),
+              notExists(db.select({ x: sql`1` }).from(products).where(eq(products.imageMediaId, media.id))),
+            ),
+          )
+          .returning({ id: media.id })
+      : [];
     return { ok: true, mediaRemoved: orphans.length };
   }
 

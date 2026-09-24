@@ -28,7 +28,10 @@ export function ProductGallery({ product, alt, labels }: {
   const opener = useRef<HTMLButtonElement>(null);
   const box = useRef<HTMLDivElement>(null);
   const many = shots.length > 1;
-  const current = shots[active];
+  // Clamped as well as keyed: state that outlives a shorter gallery would otherwise index past
+  // the end and show the "no image" placeholder for a listing that does have photos.
+  const index = shots.length ? Math.min(active, shots.length - 1) : 0;
+  const current = shots[index];
   const step = useCallback((d: number) => setActive((i) => (i + d + shots.length) % shots.length), [shots.length]);
 
   // Arrow keys move through the images while the lightbox is open; Esc closes it. Tab is trapped inside:
@@ -77,7 +80,7 @@ export function ProductGallery({ product, alt, labels }: {
     <>
       <button type="button" className="ap-media-nav is-prev" aria-label={labels.prev} onClick={() => step(-1)}><ChevronLeftIcon size={size} /></button>
       <button type="button" className="ap-media-nav is-next" aria-label={labels.next} onClick={() => step(1)}><ChevronRightIcon size={size} /></button>
-      <span className="ap-media-count" aria-hidden="true">{active + 1}/{shots.length}</span>
+      <span className="ap-media-count" aria-hidden="true">{index + 1}/{shots.length}</span>
     </>
   );
 
@@ -100,9 +103,9 @@ export function ProductGallery({ product, alt, labels }: {
             <button
               key={u}
               type="button"
-              className={cn("ap-gallery__thumb", i === active && "is-active")}
+              className={cn("ap-gallery__thumb", i === index && "is-active")}
               aria-label={labels.thumbs[i] ?? labels.gallery}
-              aria-pressed={i === active}
+              aria-pressed={i === index}
               onClick={() => setActive(i)}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}

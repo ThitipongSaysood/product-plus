@@ -10,6 +10,8 @@ export function categoryLabel(t: T, key: string, taxonomy: { key: string; th: st
 }
 
 export function ProductCardView({ t, p, pg, from, categoryText }: { t: T; p: ProductCard; pg: string; from: string; categoryText: string }) {
+  // `== null`, not truthiness: a listing priced at 0 is free, not unpriced, and must not read as "—".
+  const buyPrice = p.entryPrice ?? p.price;
   return (
     <article className="ap-card">
       <Link className="ap-card-link" href={`/products/${encodeURIComponent(p.id)}?pg=${encodeURIComponent(pg)}&from=${encodeURIComponent(from)}`}>
@@ -27,7 +29,7 @@ export function ProductCardView({ t, p, pg, from, categoryText }: { t: T; p: Pro
             <div className="ox-stack" style={{ gap: 6, minWidth: 0 }}>
               {/* entryPrice first: `price` is the ladder's cheapest rung, which is often a bulk rate the
                   buyer cannot take at the minimum order — the detail page would then disagree with this card. */}
-              <span className="ap-wall__price">{p.entryPrice ?? p.price ? formatMoney(t.locale, (p.entryPrice ?? p.price)!, p.currency ?? "CNY") : "—"}</span>
+              <span className="ap-wall__price">{buyPrice == null ? "—" : formatMoney(t.locale, buyPrice, p.currency ?? "CNY")}</span>
               <SoldBadge t={t} sold={p.sold} />
             </div>
             <TrendTile t={t} trend={p.trend} />

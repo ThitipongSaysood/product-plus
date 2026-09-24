@@ -29,10 +29,15 @@ const files = [
   ...sourceFiles(join(ROOT, "i18n")),
 ];
 
-/** Zero-width, bidi and other invisible controls. Built from an escaped string on purpose: writing the
- *  class as a regex literal puts the real characters in this file, which is exactly what it forbids. */
+/** Zero-width, bidi, and combining marks. Built from an escaped string on purpose: writing the class as
+ *  a regex literal puts the real characters in this file, which is exactly what it forbids.
+ *
+ *  U+0300-U+036F is here because both copies of slugify wrote that very range as literal combining
+ *  marks inside a character class. They render as nothing in an editor, survive no normalisation, and
+ *  this test passed over them — the range it was written to protect was the one it did not cover.
+ *  Accented text belongs in this repo as precomposed characters (NFC), so nothing legitimate matches. */
 const INVISIBLE = new RegExp(
-  "[\\u0000-\\u0008\\u000b\\u000c\\u000e-\\u001f\\u200b-\\u200f\\u2028\\u2029\\u202a-\\u202e\\u2066-\\u2069\\ufeff]",
+  "[\\u0000-\\u0008\\u000b\\u000c\\u000e-\\u001f\\u0300-\\u036f\\u200b-\\u200f\\u2028\\u2029\\u202a-\\u202e\\u2066-\\u2069\\ufeff]",
 );
 
 describe("source hygiene", () => {
@@ -42,7 +47,7 @@ describe("source hygiene", () => {
     expect(files.filter((f) => f.bytes.includes(0)).map((f) => f.path)).toEqual([]);
   });
 
-  it("no zero-width or bidi control characters", () => {
+  it("no zero-width, bidi or combining characters — write them as \\uXXXX escapes", () => {
     const bad = files
       .map((f) => ({ path: f.path, m: f.bytes.toString("utf8").match(INVISIBLE) }))
       .filter((f) => f.m)

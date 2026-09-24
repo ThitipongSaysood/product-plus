@@ -20,8 +20,13 @@ docker compose up -d                     # Postgres 18 ที่ localhost:5433
 
 ฐานข้อมูล `omnix_marketing` schema `product_plus` — ตารางถูกสร้างเองตอน api บูตครั้งแรก
 
-ถ้าไม่ตั้ง `DATABASE_URL` api จะตกกลับไปใช้ PGlite ที่ `.pglite/` ซึ่งเปิดได้ทีละโปรเซส
-(ใช้ดูของเก่าได้ แต่ไม่ใช่ทางที่ใช้พัฒนาแล้ว)
+ถ้าไม่ตั้ง `DATABASE_URL` api จะตกกลับไปใช้ PGlite ที่ `.pglite/` (เปิดได้ทีละโปรเซส)
+
+> **อย่าใช้ PGlite เปิดข้อมูลเก่า** — ไฟล์ `.pglite` เดิมเก็บข้อมูลไว้ใน schema `scout` และ migration
+> ชุดใหม่ (`0000_init`) มี timestamp ใหม่กว่าที่มันเคยบันทึกไว้ พอบูตขึ้นมา drizzle จะรัน migration
+> สร้าง schema `product_plus` **เปล่า ๆ** ทับลงไป แล้วแอปจะขึ้นสินค้า 0 ชิ้นทั้งที่ข้อมูลยังอยู่ใน `scout`
+> ถ้าต้องการอ่านของเก่าจริง ๆ ให้ใช้ `pnpm --filter @pp/api migrate-store --verify` ซึ่งเปิดแบบอ่านอย่างเดียว
+> ไม่แตะ migration
 
 ```bash
 pnpm seed

@@ -13,7 +13,7 @@ import { getT } from "@/i18n/server";
 import { api, qs } from "@/lib/api";
 import { safeFrom } from "@/lib/back-link";
 import { getPg, href } from "@/lib/params";
-import { cheapestTier, entryTier, money, qtyLabel, tierRange, unitLabel } from "@/lib/supply";
+import { cheapestTier, entryTier, money, qtyLabel, tierRange } from "@/lib/supply";
 import { loadGroup } from "@/lib/group";
 
 export default async function ProductDetailPage(props: PageProps<"/products/[id]">) {
@@ -147,7 +147,11 @@ export default async function ProductDetailPage(props: PageProps<"/products/[id]
 
       <div className="ap-detail">
         <div className="ox-stack">
+          {/* key on the product id: this is a client component and Next reuses it across
+              /products/A -> /products/B, which would otherwise carry A's selected image index
+              into B and can leave it past the end of B's shorter gallery. */}
           <ProductGallery
+            key={p.id}
             product={{ ...p, imageUrls: gallery }}
             alt={shownTitle(t, p).text}
             labels={{

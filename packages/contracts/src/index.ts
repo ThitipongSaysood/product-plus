@@ -166,7 +166,6 @@ export type SupplyTerms = {
   unit: string | null; // the platform's own unit word, still in Chinese
   tiers: PriceTier[]; // ascending by minQty; empty when the listing has no ladder
   entryPrice: number | null;
-  lowestPrice: number | null;
   orderCount: number | null; // distinct orders, NOT units sold, and with no time window
   videoUrl: string | null;
 };
