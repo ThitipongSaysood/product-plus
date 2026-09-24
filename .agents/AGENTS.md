@@ -40,5 +40,5 @@
 - 50 results max per platform per keyword per run (actor input AND cut at ingest).
 - UI: OMNIX tokens only (no hex in components), every string via `t()` in th/en/zh, tables in `TableScroll`.
 - Errors from the API are i18n keys (`{error:"errors.x"}`).
-- Temu is disabled (blocked in smoke test 2026-09-24) — code kept, off per group.
+- Temu actors break when Temu updates its anti-bot: only `crw/temu-products-scraper` worked on 2026-09-24 (3 others blocked). A 0-row run is `suspect`, never a reason to mark products gone.
 - Ports: api 4010, web 3020. Never 3010. Never touch the Ads Plus system.
