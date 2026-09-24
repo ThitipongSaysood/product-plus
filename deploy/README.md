@@ -1,112 +1,462 @@
-# Deploy — Railway (workspace `np-nineplus`)
+# Deploy — Product Plus
 
-Not deployed yet. Two services from this one repo + one Postgres. Nothing here needs code changes.
+คู่มือลง deploy แบบครบขั้นตอน สำหรับคนที่ไม่ได้เขียนโค้ดตัวนี้
 
-## 1. Postgres
-Add a PostgreSQL service (18 to match development). The api creates schema `product_plus` inside the
-database `DATABASE_URL` points at, and runs migrations at boot (`DB_AUTO_MIGRATE=true`). One database
-per business area, one schema per app, so other services can share the server later.
+> **สถานะ: ยังไม่เคย deploy** ตัวเลขค่าใช้จ่ายทุกตัวในเอกสารนี้**วัดจากการรันจริงบนเครื่อง dev
+> เมื่อ 24 ก.ย. 2026** ไม่ใช่การประมาณ
 
-## 2. Service `api` (NestJS)
+---
+
+## 0. ภาพรวมสิ่งที่จะ deploy
+
+```text
+                 ┌──────────────────────────────┐
+  เบราว์เซอร์  ──▶│  web  (Next.js)  โดเมนสาธารณะ │
+                 │   /api/* ──rewrite──┐        │
+                 └─────────────────────┼────────┘
+                                       ▼
+                 ┌──────────────────────────────┐
+                 │  api  (NestJS)  ไม่ต้องมีโดเมน │
+                 │   · scheduler ในโปรเซส        │
+                 │   · เรียก Apify (เสียเงิน)     │
+                 │   · เรียก Claude (เสียเงิน)    │
+                 └─────────────────┬────────────┘
+                                   ▼
+                 ┌──────────────────────────────┐
+                 │  PostgreSQL 18               │
+                 │   database  omnix_marketing  │
+                 │   └ schema  product_plus     │
+                 └──────────────────────────────┘
+```
+
+**สามอย่างจาก repo เดียว** — `web` เป็นตัวเดียวที่ต้องมีโดเมนสาธารณะ เบราว์เซอร์คุยกับ api ผ่าน
+rewrite `/api/*` ของ web เท่านั้น api ไม่ต้องเปิดออกอินเทอร์เน็ต
+
+**ต้องมี:** Node ≥ 22 · pnpm 10.34.5 (ระบุไว้ใน `packageManager`) · PostgreSQL 18
+
+---
+
+## 1. ตัดสินใจก่อนเริ่ม — สี่ข้อ
+
+ทั้งสี่ข้อนี้เปลี่ยนทีหลังได้ แต่ข้อ 2 กับ 3 ถ้าพลาดคือ**เสียเงินจริง**
+
+| # | ตัดสินใจ | ทางเลือก |
+|---|---|---|
+| 1 | โฮสต์ที่ไหน | Railway (มีตัวอย่างคำสั่งในเอกสารนี้) · VPS ของตัวเอง · อื่น ๆ |
+| 2 | **เพดานค่าใช้จ่ายต่อรอบ** | ค่าเริ่มต้น `$1.00` แต่รอบจริง 4 แพลตฟอร์ม = **$1.46** → ดู §6 |
+| 3 | งาน AI ใช้ backend ไหน | `sdk` (ต้องมี API key) · `cli` (ต้องมี `claude` ล็อกอินค้างบนเครื่อง) → ดู §7 |
+| 4 | เริ่มด้วยข้อมูลอะไร | `seed` ข้อมูลจริง 24 ก.ย. (ฟรี) · ย้ายจาก dev · เริ่มเปล่า |
+
+### ความลับที่ต้องสร้างไว้ก่อน
+
+```bash
+# รันสามครั้ง เก็บค่าที่ได้ไว้ใช้ในขั้นตอนถัดไป
+node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
+```
+
+| ตัวแปร | ใช้ทำอะไร | ถ้าไม่ตั้ง |
+|---|---|---|
+| `APP_PASSWORD` | รหัสผ่านเข้าเว็บ | 🔴 **API เปิดโล่ง ใครก็เรียกได้ รวมถึงปุ่มที่เสียเงิน** |
+| `SETTINGS_SECRET` | เข้ารหัสความลับที่บันทึกผ่านหน้าเว็บ | 🔴 **`APIFY_TOKEN` ถูกเก็บเป็น plaintext ในฐานข้อมูล** |
+| `CRON_SECRET` | ยืนยันตัวตนของ timer ภายนอก | endpoint `/api/cron/*` ปฏิเสธทุกคำขอ (fail closed — ปลอดภัย) |
+
+> ⚠️ **`SETTINGS_SECRET` เปลี่ยนทีหลังแล้วมีผล** — ความลับที่บันทึกไว้ด้วยคีย์เก่าจะอ่านไม่ออก
+> และกลายเป็น "ยังไม่ได้ตั้งค่า" เงียบ ๆ ต้องไปใส่ใหม่ทุกตัว
+
+---
+
+## 2. PostgreSQL
+
+สร้าง PostgreSQL **18** (ให้ตรงกับที่ dev ใช้) แล้วเอา connection string มาใส่เป็น `DATABASE_URL`
+
+api จะ**สร้าง schema `product_plus` และตารางทั้งหมดเองตอนบูตครั้งแรก** ไม่ต้องรัน migration มือ
+
+```bash
+DATABASE_URL=postgres://<user>:<pass>@<host>:5432/omnix_marketing
+```
+
+**ทำไมเป็น database เดียว schema เดียว:** หนึ่ง database ต่อหนึ่งสายธุรกิจ หนึ่ง schema ต่อหนึ่งแอป
+บริการอื่นของ NinePlus จึงมาอยู่บนเซิร์ฟเวอร์เดียวกันได้โดยไม่ชนกัน
+
+ถ้าอยากตั้งชื่อ database อื่น เปลี่ยนที่ `DATABASE_URL` ได้เลย — **ชื่อ schema `product_plus` ฮาร์ดโค้ด**
+อยู่ใน [`apps/api/src/db/schema.ts`](../apps/api/src/db/schema.ts) ถ้าจะเปลี่ยนต้อง generate migration ใหม่
+
+### รูปภาพเก็บในฐานข้อมูล — ต้องรู้ก่อนเลือกแพ็กเกจ
+
+รูปสินค้าเก็บเป็น `bytea` ในตาราง `media` **ไม่ใช่ object storage**
+
+| วัดจริงบน dev | ค่า |
+|---|---|
+| รูป 294 ใบ | **42 MB** (เฉลี่ย 145 KB/ใบ) |
+| ข้อมูลอื่นทั้งหมด | 4.7 MB |
+
+`storage_key` เป็น sha1 ของไบต์จึง dedupe ให้อยู่แล้ว แต่ถ้าติดตามครบ 1,400 สินค้า (7 คีย์เวิร์ด ×
+4 แพลตฟอร์ม × 50 ผล) จะอยู่ราว **200 MB** และ backup จะ copy ทั้งหมดทุกครั้ง เลือกแพ็กเกจเผื่อไว้
+
+---
+
+## 3. Service `api`
+
 | setting | value |
 |---|---|
 | build | `pnpm install --frozen-lockfile && pnpm --filter @pp/api build` |
 | start | `pnpm --filter @pp/api start` |
-| replicas | **1** (the scheduler runs in-process; 2 replicas = 2 rounds = double spend) |
-| schedule | Each group picks its own day and hour (Asia/Bangkok) under Settings › Product groups. The in-process tick runs hourly and starts only the groups whose slot is that hour; a group runs at most once per Bangkok day (once per 6 days when weekly). If the process is down at a group's hour, that round is skipped rather than fired later at an hour nobody chose. |
-| claude CLI (AI jobs) | `AI_BACKEND=cli` runs translation and categorisation through the logged-in `claude` on the server, so no ANTHROPIC_API_KEY is needed. `--plugin-dir` **adds** this repo's plugin to whatever that account already has rather than replacing it, so keep the server's claude account free of unrelated skills — anything installed there is loaded into every job, costs tokens on every invocation and can change the output. The skills live outside `dist/`, so deploy the repo, not just the build. |
-| external timer (optional) | `GET /api/cron/tick` with `CRON_SECRET`, called hourly, does exactly what the in-process tick does. `GET /api/cron/{daily,weekly}` still force-run a whole schedule and ignore the configured hour — keep them for manual recovery, not for a timer. |
-| env | `DATABASE_URL=${{Postgres.DATABASE_URL}}` · `APP_PASSWORD` · `CRON_SECRET` · `SETTINGS_SECRET` (32+ random chars, encrypts secrets saved from the web) · `NODE_ENV=production` |
-| optional env | `APIFY_TOKEN` (or set it later on Settings → System) · `PUBLIC_URL=https://<api domain>` + `APIFY_WEBHOOK_SECRET` (webhooks; without them runs finish by polling) · `ANTHROPIC_API_KEY` (LLM category layer) |
+| port | ฟัง `$PORT` (ไม่ตั้ง = 4010) |
+| **replicas** | 🔴 **1 เท่านั้น** |
 
-First data: `railway run pnpm --filter @pp/api seed` — creates `apple-watch-bands` with the real 2026-09-24 Apify rows (`apps/api/data/real/…`, no Apify cost) and `demo-mock`.
+> 🔴 **ห้ามเกิน 1 replica** — scheduler รันอยู่ในโปรเซส สอง replica = สองรอบ = **จ่ายเงินสองเท่า**
+> ถ้าจำเป็นต้อง scale ให้ปิด scheduler ในโปรเซสแล้วใช้ `/api/cron/tick` จาก timer ภายนอกแทน (§8)
 
-## 3. Service `web` (Next.js)
+### ตัวแปรที่ต้องมี
+
+```bash
+DATABASE_URL=postgres://…/omnix_marketing
+APP_PASSWORD=<ที่สร้างไว้ใน §1>
+SETTINGS_SECRET=<ที่สร้างไว้ใน §1>
+CRON_SECRET=<ที่สร้างไว้ใน §1>
+NODE_ENV=production
+```
+
+Railway ใช้ตัวแปรอ้างอิงได้: `DATABASE_URL=${{Postgres.DATABASE_URL}}`
+
+### ตัวแปรที่ใส่ทีหลังได้
+
+| ตัวแปร | ผลถ้าไม่ใส่ |
+|---|---|
+| `APIFY_TOKEN` | ดึงข้อมูลจริงไม่ได้ · ปุ่มสโมกเทสต์ปิด · **ใส่ผ่านหน้า ตั้งค่า › ระบบ ก็ได้** |
+| `ANTHROPIC_API_KEY` | งาน AI ต้องใช้ backend `cli` แทน (§7) |
+| `AI_BACKEND` | เลือกเองเป็น `sdk` เมื่อมี key, `cli` เมื่อไม่มี |
+| `CLAUDE_CLI_PATH` | ค่าเริ่มต้น `claude` (ใช้เมื่อ `AI_BACKEND=cli`) |
+| `PUBLIC_URL` + `APIFY_WEBHOOK_SECRET` | ไม่มี webhook — รอบที่รันจะจบด้วยการ poll แทน ช้ากว่าแต่ทำงานได้ |
+| `DB_AUTO_MIGRATE` | ค่าเริ่มต้น `true` ตั้ง `false` เมื่อต้องการคุม migration เอง |
+
+---
+
+## 4. Service `web`
+
 | setting | value |
 |---|---|
 | build | `pnpm install --frozen-lockfile && pnpm --filter @pp/web build` |
-| start | `pnpm --filter @pp/web start` (listens on `$PORT`) |
-| env | `API_URL=http://${{api.RAILWAY_PRIVATE_DOMAIN}}:${{api.PORT}}` · `APP_PASSWORD` (same value as api — the login cookie is checked on both) |
+| start | `pnpm --filter @pp/web start` (ฟัง `$PORT`) |
+| โดเมน | **ตัวนี้ตัวเดียวที่ต้องมีโดเมนสาธารณะ** |
 
-`API_URL` must exist at **build** time too (Next bakes rewrites into the build) — Railway passes service variables to builds, so just set it before the first deploy.
+```bash
+API_URL=http://<api host>:<api port>
+APP_PASSWORD=<ค่าเดียวกับ api>
+```
 
-Only `web` needs a public domain; the browser reaches the api through the web's `/api/*` rewrite.
+Railway: `API_URL=http://${{api.RAILWAY_PRIVATE_DOMAIN}}:${{api.PORT}}`
 
-## 4. Money guards to set before adding `APIFY_TOKEN`
-- Apify console → Billing → **monthly spending limit** (second layer under the app's own budget).
-- In the app: Settings → Keywords & Taxonomy → group budget ($10/month default) and **per-round cap** ($1.00 default; each actor run gets its share as `maxTotalChargeUsd`).
-- A weekly round of 3 platforms × 50 ≈ $0.96 at FREE-tier prices (≈ $4/month).
-- Title translation (§5) is **not** covered by these guards — it bills Anthropic, not Apify.
+> ⚠️ **`API_URL` ต้องมีตั้งแต่ตอน build** — Next อบ rewrite `/api/*` ลงใน build
+> ([`next.config.ts`](../apps/web/next.config.ts)) ตั้งให้ครบก่อน deploy ครั้งแรก
+> ถ้าไม่ตั้ง มันจะ fallback เป็น `http://localhost:4010` แล้วหน้าเว็บจะขึ้น "ติดต่อเซิร์ฟเวอร์ข้อมูลไม่ได้"
 
-## 5. Title translation — API key or the `claude` CLI
+> ⚠️ **`APP_PASSWORD` ต้องเป็นค่าเดียวกันทั้งสอง service** — คุกกี้เป็น HMAC ที่ใช้รหัสผ่านเป็นคีย์
+> ถ้าไม่ตรงกัน ล็อกอินได้แต่ทุกคำขอไป api จะถูกปฏิเสธ 401
 
-Chinese titles are translated to Thai by the **Translate titles** button on the Products page. Two backends;
-pick one with `AI_BACKEND` (Settings → System, or an env var):
+---
 
-| `AI_BACKEND` | Needs | Notes |
+## 5. บูตครั้งแรกและใส่ข้อมูล
+
+### 5.1 ตรวจว่าขึ้นแล้วจริง
+
+```bash
+curl -s https://<โดเมน web>/api/health
+# {"ok":true,"db":true,"sourceMode":"mock"}
+```
+
+`db: true` แปลว่าต่อฐานข้อมูลติดและ migration รันแล้ว ·
+`sourceMode: "mock"` เป็นเรื่องปกติตอนยังไม่มี `APIFY_TOKEN`
+
+ตรวจว่า schema ถูกสร้างจริง — ต้องเห็น 10 ตาราง:
+
+```bash
+psql "$DATABASE_URL" -c "\dt product_plus.*"
+```
+
+### 5.2 ใส่ข้อมูลเริ่มต้น (ฟรี ไม่เรียก Apify)
+
+```bash
+pnpm --filter @pp/api seed
+# Railway: railway run pnpm --filter @pp/api seed
+```
+
+สร้างสองกลุ่ม:
+
+- **`apple-watch-bands`** — ข้อมูลจริงจาก Apify วันที่ 24 ก.ย. 2026 ที่เก็บไว้ใน `apps/api/data/real/`
+  **seed ไม่เรียก Apify จึงไม่เสียเงิน**
+- **`demo-mock`** — ข้อมูลจำลอง 3 รอบย้อนหลัง ไว้ดูหน้าตาเทรนด์ มีป้าย "ข้อมูลจำลอง" ทุกหน้า
+
+### 5.3 ประเมิน actor (ฟรี ใช้ Apify public API ไม่ต้องมี token)
+
+```bash
+pnpm --filter @pp/api evaluate
+```
+
+ไม่รันขั้นนี้ หน้า **ประเมิน Actor** จะว่างและระบบไม่รู้ว่าจะใช้ actor ตัวไหน
+
+---
+
+## 6. 🔴 ด่านเงิน — ทำให้ครบก่อนใส่ `APIFY_TOKEN`
+
+**ตราบใดที่ยังไม่ใส่ `APIFY_TOKEN` ระบบใช้เงิน Apify ไม่ได้เลย** ใช้ช่วงนี้ตั้งด่านให้ครบ
+
+### 6.1 สามชั้นที่ควรมี
+
+| ชั้น | ตั้งที่ไหน | ทำอะไร |
 |---|---|---|
-| `sdk` (default when a key exists) | `ANTHROPIC_API_KEY` | Direct call to api.anthropic.com. Batches of 25. |
-| `cli` | a logged-in `claude` on the same host | No key. `CLAUDE_CLI_PATH` defaults to `claude`. Batches of 40, 3 at a time. |
+| 1 | Apify Console → Billing → monthly spending limit | ตาข่ายสุดท้าย แอปข้ามไม่ได้ |
+| 2 | ตั้งค่า › กลุ่มสินค้า → **งบต่อเดือน** (ค่าเริ่มต้น $10) | รอบใหม่ถูกปฏิเสธเมื่อใช้เกินงบเดือนนั้น |
+| 3 | ตั้งค่า › กลุ่มสินค้า → **เพดานต่อรอบ** (ค่าเริ่มต้น $1.00) | actor แต่ละตัวได้ `maxTotalChargeUsd` ตามส่วนแบ่ง |
 
-Leave it unset and the app picks `sdk` when `ANTHROPIC_API_KEY` is set, `cli` otherwise.
+### 6.2 ตัวเลขจริงที่ต้องตัดสินใจ
 
-### Running the `cli` backend on a VPS
+วัดจาก actor ที่ระบบเลือกไว้ ที่ 50 ผลต่อแพลตฟอร์ม:
 
-The api shells out to `claude -p --output-format json --allowed-tools "" --strict-mcp-config --plugin-dir …`, so the
-binary has to be on the box **and logged in as the same OS user the api runs as** — credentials live in
-that user's `~/.claude`, and systemd units often run as a different user with a different `HOME`.
+| แพลตฟอร์ม | actor | ค่าใช้จ่าย |
+|---|---|---|
+| 1688 | `zen-studio/1688-wholesale-scraper` | $0.2549 |
+| douyin | `zen-studio/douyin-product-search-scraper` | $0.4050 |
+| temu | `crw/temu-products-scraper` | $0.5000 |
+| xhs | `zen-studio/rednote-product-search-scraper` | $0.3000 |
+| | **รวมต่อคีย์เวิร์ดต่อรอบ** | **$1.4599** |
 
-```bash
-# as the user that will run the api (e.g. `deploy`), not root
-curl -fsSL https://claude.ai/install.sh | bash     # or npm i -g @anthropic-ai/claude-code
-claude                                             # log in once, interactively
-claude -p --output-format json --allowed-tools "" 'say ok'   # must print JSON, not a login prompt
-```
+🔴 **$1.46 > เพดานเริ่มต้น $1.00 → รอบแรกจะถูกกั้น** เลือกอย่างใดอย่างหนึ่งก่อนใส่ token:
 
-Then point the app at it if the binary is not on the service's `PATH`:
-`CLAUDE_CLI_PATH=/home/deploy/.local/bin/claude` (absolute path or a bare command name only — anything a
-shell could reinterpret is rejected).
+- ขยับเพดานต่อรอบเป็น **$1.60** (เผื่อ 10%)
+- ลด **จำนวนผลต่อรอบ** จาก 50 ลง
+- **ตัดแพลตฟอร์มออก** — Temu แพงสุด ($0.50) และมีสินค้าแค่ 5 ชิ้นในข้อมูลปัจจุบัน
 
-**How to translate lives in a skill, not in the code.**
-`apps/api/claude-plugin/skills/translate-listing-titles/SKILL.md` holds the rules, the Chinese→Thai
-vocabulary table and the JSON output shape. The `cli` backend loads it with `--plugin-dir` and calls
-`/product-plus:translate-listing-titles`; the `sdk` backend reads the same file as its system prompt.
-Edit the skill to change how titles read — no TypeScript change, no redeploy of logic.
-The plugin dir is loaded explicitly, so nothing the host user has installed leaks into the session.
+> **คูณด้วยจำนวนคีย์เวิร์ดด้วย** — $1.46 คือ **ต่อคีย์เวิร์ดหนึ่งคำ** ดูจำนวนคีย์เวิร์ดที่
+> ตั้งค่า › คีย์เวิร์ดและหมวดหมู่ ก่อนคำนวณงบรายเดือน
 
-⚠️ **`claude-plugin/` must be deployed.** It sits next to `dist/`, not inside it — `tsc` does not copy
-`.md` files. Deploying the repo and building on the box (the build/start commands in §2) ships it
-automatically; a deploy that uploads only `apps/api/dist` does not. The api checks for it before every
-translate run and refuses with `errors.translate.noSkill` rather than failing mid-job.
+### 6.3 กฎที่ระบบบังคับอยู่แล้ว
 
-```bash
-# quick check on the server, as the user that runs the api
-ls apps/api/claude-plugin/skills/translate-listing-titles/SKILL.md
-```
+- 50 ผลต่อแพลตฟอร์มต่อคีย์เวิร์ดต่อรอบ เป็นเพดานแข็งในโค้ด
+- pipeline ที่กำลังรันอยู่ ห้ามมีเกินหนึ่งต่อกลุ่ม (บังคับด้วย partial unique index ในฐานข้อมูล)
+- กลุ่มหนึ่งรันตามตารางได้**วันละครั้ง** (รายสัปดาห์คือทุก 6 วัน)
 
-**Cost and speed, measured on 2026-09-24 (not estimates).**
+---
 
-| what | titles | cost | wall clock |
+## 7. งาน AI — สามงาน สอง backend
+
+ระบบเรียก Claude สามที่ ทุกที่กดเอง **ไม่มีอันไหนรันอัตโนมัติ**
+
+| งาน | ปุ่มอยู่ที่ | โมเดล | ค่าใช้จ่ายจริงที่วัดได้ |
 |---|---|---|---|
-| no skill, batch 120, sequential | 135 | $0.2124 | 5m27s |
-| with the skill, batch 10 | 10 | $0.0289 | 19s |
+| แปลชื่อสินค้าเป็นไทย | หน้าสินค้า | `claude-haiku-4-5` | **$0.3479** ต่อ 135 ชื่อ (1 นาที 58 วิ) |
+| จัดหมวดสินค้า (ชั้นที่ 3) | หน้าสินค้า | `claude-haiku-4-5` | **$0.0397** ต่อ 135 สินค้า (18 วิ) |
+| เสนอสินค้าน่าทำแบรนด์ | หน้า สินค้าน่าทำแบรนด์ | `claude-sonnet-5` | **$0.4575** ต่อรอบ |
 
-Cost is dominated by the **per-invocation** overhead — every `claude -p` re-sends Claude Code's own
-context and thinks before answering (~80-90% of output tokens are thinking, and `--effort low` barely
-moves it). That argues for big batches, but quality collapses past ~50 titles per call, so the job uses
-`CLI_BATCH = 40` and runs `CLI_CONCURRENCY = 3` batches at once; concurrency, not batch size, is what
-fixes the wall clock. Each run records what the CLI reported in `scrape_runs.cost_usd`, so the real
-number shows in the UI.
+> งาน brand scout ใช้โมเดลแรงกว่าโดยตั้งใจ — เป็น 1 call ต่อรอบ และเป็นงานตัดสินใจ + เขียนให้คนอ่าน
+> ตอนทดสอบด้วย Haiku มันให้ระดับความเหมาะสมเป็น "สูง" ทั้ง 6 ตัว ทั้งที่ skill สั่งให้ระบุว่าข้อมูลไม่พอ
+> ส่วน Sonnet ทำตามกฎถูกต้อง เปลี่ยนกลับได้ที่ `BRAND_MODEL` ใน
+> [`apps/api/src/jobs/llm.ts`](../apps/api/src/jobs/llm.ts)
 
-The `sdk` backend has none of this overhead (no Claude Code context, no forced thinking) and is both
-cheaper and faster. If the only reason to avoid it is not wanting to manage an API key, `ant auth login`
-on the box stores an OAuth profile the SDK picks up with no key set.
+### 7.1 เลือก backend ด้วย `AI_BACKEND`
 
-Not suitable for Railway or any ephemeral container: there is no persistent `~/.claude` to log into.
-Use `sdk` with `ANTHROPIC_API_KEY` there.
+| ค่า | ต้องมี | หมายเหตุ |
+|---|---|---|
+| `sdk` | `ANTHROPIC_API_KEY` | เรียก api.anthropic.com ตรง ๆ ไม่มี overhead **เหมาะกับ Railway / คอนเทนเนอร์** |
+| `cli` | `claude` ที่ล็อกอินค้างบนเครื่อง | ไม่ต้องมีคีย์ **ต้องมี home directory ถาวร → ใช้กับ VPS เท่านั้น** |
 
-## CI
-`deploy/ci.yml` is a ready GitHub Actions workflow (install → typecheck → test). It is not in `.github/workflows/` because the token used to push lacked the `workflow` scope. Enable it with:
+ไม่ตั้ง = เลือกเองเป็น `sdk` เมื่อมี key, `cli` เมื่อไม่มี
+
+### 7.2 🔴 ถ้าใช้ `cli` — สามเรื่องที่พลาดบ่อย
+
+**(ก) ต้องล็อกอินด้วย OS user ตัวเดียวกับที่รัน api**
+
+credential อยู่ใน `~/.claude` ของ user นั้น และ systemd unit มักรันด้วย user อื่นที่ `HOME` ต่างกัน
+
 ```bash
-gh auth refresh -s workflow && mkdir -p .github/workflows && git mv deploy/ci.yml .github/workflows/ci.yml && git commit -m "Add CI" && git push
+# รันในฐานะ user ที่จะรัน api (เช่น deploy) ไม่ใช่ root
+curl -fsSL https://claude.ai/install.sh | bash
+claude                                                        # ล็อกอินครั้งเดียว
+claude -p --output-format json --allowed-tools "" 'say ok'    # ต้องได้ JSON ไม่ใช่หน้าให้ล็อกอิน
 ```
+
+ถ้า binary ไม่อยู่ใน `PATH` ของ service ให้ตั้ง `CLAUDE_CLI_PATH=/home/deploy/.local/bin/claude`
+(รับเฉพาะชื่อคำสั่งล้วนหรือ absolute path — อะไรที่เชลล์ตีความได้จะถูกปฏิเสธ)
+
+**(ข) ต้อง deploy `claude-plugin/` ไปด้วย**
+
+โฟลเดอร์นี้อยู่**ข้าง ๆ** `dist/` ไม่ใช่ข้างใน เพราะ `tsc` ไม่ copy ไฟล์ `.md`
+deploy ทั้ง repo แล้ว build บนเครื่อง (ตามคำสั่งใน §3) จะได้ไปด้วยอัตโนมัติ
+แต่ถ้าอัปโหลดแค่ `apps/api/dist` จะหาย
+
+```bash
+# ตรวจบนเซิร์ฟเวอร์ — ต้องเห็นสามไฟล์
+ls apps/api/claude-plugin/skills/*/SKILL.md
+```
+
+api ตรวจก่อนทุกครั้งที่กดปุ่ม และปฏิเสธด้วย `errors.*.noSkill` แทนที่จะพังกลางทาง
+
+**(ค) 🔴 อย่าติดตั้ง skill อื่นในบัญชี claude ของเซิร์ฟเวอร์**
+
+`--plugin-dir` **เพิ่ม** ปลั๊กอินของเราเข้าไป **ไม่ได้แทนที่**ของที่บัญชีนั้นมีอยู่
+ทดสอบแล้วบนเครื่อง dev: โมเดลมองเห็น skill ส่วนตัวของผู้ใช้ทั้งชุด
+ผลคือ **dev กับ prod ให้ผลไม่เหมือนกัน** และ skill ที่ไม่เกี่ยวถูกโหลดทุก invocation = จ่ายโทเคนเพิ่มทุกครั้ง
+
+(`--bare` แยกได้จริงแต่บังคับใช้ `ANTHROPIC_API_KEY` ซึ่งขัดกับเหตุผลที่เลือก `cli` ตั้งแต่แรก)
+
+### 7.3 กฎการทำงานอยู่ใน skill ไม่ได้อยู่ในโค้ด
+
+```text
+apps/api/claude-plugin/skills/
+├── translate-listing-titles/SKILL.md   ตารางคำศัพท์จีน→ไทย + รูปแบบ JSON
+├── categorize-listings/SKILL.md        คำวัสดุจีน + กฎ "ไม่มี key ให้ตอบ unclassified"
+└── brand-candidates/SKILL.md           กฎห้ามเทียบยอดขายข้ามแพลตฟอร์ม + ขอบเขตคำแนะนำ
+```
+
+backend `cli` โหลดเป็น skill ส่วน `sdk` อ่านไฟล์เดียวกันเป็น system prompt
+**แก้ไฟล์ = เปลี่ยนพฤติกรรมทั้งสอง backend โดยไม่ต้องแก้ TypeScript**
+
+---
+
+## 8. ตารางเวลาดึงข้อมูล
+
+แต่ละกลุ่มตั้ง **วันและชั่วโมง** ของตัวเองได้ที่ ตั้งค่า › กลุ่มสินค้า (เวลาไทย Asia/Bangkok)
+ตั้งได้เป็นชั่วโมงเต็มเท่านั้น เพราะตัวจับเวลาเดินทุกต้นชั่วโมง
+
+| พฤติกรรม | รายละเอียด |
+|---|---|
+| tick | ทุกต้นชั่วโมง เริ่มเฉพาะกลุ่มที่ชั่วโมงตรงกับที่ตั้งไว้ |
+| กันรันซ้ำ | รายวัน = วันละครั้งตามวันไทย · รายสัปดาห์ = ทุก 6 วัน |
+| โปรเซสดับตอนถึงเวลา | **ข้ามรอบนั้น ไม่ไล่ตามทีหลัง** — ยิง actor ที่เสียเงินในชั่วโมงที่ไม่ได้เลือกแย่กว่า |
+| ย้ายวันของรายสัปดาห์ไปก่อนหน้า | **ข้ามหนึ่งรอบ** (จันทร์ → อาทิตย์ จะเว้น 13 วัน) เป็นการแลกเพื่อกันจ่ายซ้ำในสัปดาห์เดียว |
+
+### Timer ภายนอก (ถ้าต้องการ)
+
+```bash
+curl -H "Authorization: Bearer $CRON_SECRET" https://<โดเมน web>/api/cron/tick
+```
+
+เรียก**ทุกชั่วโมง** ทำงานเหมือน tick ในโปรเซสเป๊ะ
+
+`/api/cron/daily` และ `/api/cron/weekly` **ไม่สนใจชั่วโมงที่ตั้งไว้** สั่งรันทั้ง schedule ทันที
+เก็บไว้ใช้กู้สถานการณ์ด้วยมือ **อย่าเอาไปผูกกับ timer**
+
+---
+
+## 9. รายการตรวจหลัง deploy
+
+ไล่ทีละข้อ ทุกข้อควรผ่านก่อนใส่ `APIFY_TOKEN`
+
+```bash
+# 1. api มีชีวิตและต่อฐานข้อมูลได้
+curl -s https://<web>/api/health          # {"ok":true,"db":true,…}
+
+# 2. ตารางครบ 10
+psql "$DATABASE_URL" -c "\dt product_plus.*"
+
+# 3. ต้องล็อกอินก่อนถึงเรียกได้ (ถ้าได้ 200 แปลว่า APP_PASSWORD ไม่ได้ตั้ง)
+curl -s -o /dev/null -w "%{http_code}\n" https://<web>/api/groups    # ต้องเป็น 401
+
+# 4. cron ปฏิเสธคำขอที่ไม่มี secret
+curl -s -o /dev/null -w "%{http_code}\n" https://<web>/api/cron/tick # ต้องเป็น 401
+
+# 5. skill ครบสามตัว (เฉพาะเมื่อใช้ AI_BACKEND=cli)
+ls apps/api/claude-plugin/skills/*/SKILL.md
+```
+
+แล้วเปิดเว็บตรวจด้วยตา:
+
+- [ ] ล็อกอินด้วย `APP_PASSWORD` ได้
+- [ ] **ภาพรวม** เห็น KPI และงบประมาณ
+- [ ] **สินค้า** เห็นสินค้าและรูปขึ้น (รูปเสิร์ฟจากฐานข้อมูลผ่าน `/api/media/<id>`)
+- [ ] **ประเมิน Actor** ไม่ว่าง (ถ้าว่าง = ยังไม่ได้รัน `pnpm evaluate`)
+- [ ] ตั้งค่า › ระบบ — `SETTINGS_SECRET` ขึ้นว่า **ตั้งจาก env แล้ว**
+- [ ] ตั้งค่า › กลุ่มสินค้า — เพดานต่อรอบตรงกับที่ตัดสินใจใน §6
+- [ ] แถบข้างขึ้นป้าย **"ดึงใหม่ไม่ได้"** ถ้ายังไม่ใส่ `APIFY_TOKEN` (ถูกต้องแล้ว)
+
+---
+
+## 10. งานดูแลประจำ
+
+### สำรองข้อมูล
+
+```bash
+pg_dump "$DATABASE_URL" --schema=product_plus -Fc -f backup-$(date +%F).dump
+```
+
+กู้คืน:
+
+```bash
+pg_restore -d "$DATABASE_URL" --clean --if-exists backup-2026-09-24.dump
+```
+
+> รูปภาพอยู่ในฐานข้อมูล dump จึงมีขนาดเท่ากับข้อมูลทั้งหมด (~46 MB ตอนนี้)
+
+### อัปเกรดเวอร์ชัน
+
+```bash
+git pull && pnpm install --frozen-lockfile
+pnpm --filter @pp/api build && pnpm --filter @pp/web build
+# restart ทั้งสอง service — migration ใหม่รันเองตอน api บูต
+```
+
+### ตั้งเรตเงินบาท
+
+หน้ารายละเอียดสินค้าแสดงราคาเป็นบาทได้เมื่อตั้ง `FX_CNY_THB` ที่ **ตั้งค่า › ระบบ**
+เป็น**เรตที่กรอกเอง ไม่อัปเดตอัตโนมัติ** ระบบแสดงวันที่ตั้งไว้ข้างตัวเลขเสมอเพื่อไม่ให้เข้าใจผิดว่าเป็นเรตสด
+ต้องกลับมาอัปเดตเอง
+
+---
+
+## 11. เรื่องที่จะกัดคุณ — อ่านก่อนเจอเอง
+
+| อาการ | สาเหตุจริง |
+|---|---|
+| เว็บขึ้น "ติดต่อเซิร์ฟเวอร์ข้อมูลไม่ได้" | `API_URL` ไม่ได้ตั้งตอน **build** — Next อบ rewrite ลง build ต้อง build ใหม่ |
+| ล็อกอินได้แต่ทุกหน้าขึ้น 401 | `APP_PASSWORD` ของ web กับ api ไม่ตรงกัน |
+| ใครก็เปิดเว็บได้โดยไม่ต้องล็อกอิน | `APP_PASSWORD` ไม่ได้ตั้ง — โค้ดเปิดโล่งโดยตั้งใจเมื่อไม่มีค่า |
+| `APIFY_TOKEN` ที่ใส่ไว้หายไปเอง | `SETTINGS_SECRET` เปลี่ยน — ของเก่าถอดรหัสไม่ออกจึงนับเป็น "ยังไม่ได้ตั้ง" |
+| รอบแรกถูกปฏิเสธว่าเกินเพดาน | $1.46 > $1.00 ดู §6.2 |
+| ดึงข้อมูลสองรอบในวันเดียว จ่ายสองเท่า | มีมากกว่า 1 replica |
+| ปุ่ม AI ขึ้นว่าไม่พบ skill | deploy แค่ `dist/` — `claude-plugin/` อยู่ข้างนอก ดู §7.2(ข) |
+| แปลภาษาได้ผลต่างจากตอน dev | บัญชี claude บนเซิร์ฟเวอร์มี skill อื่นติดตั้งอยู่ ดู §7.2(ค) |
+| กลุ่มรายสัปดาห์เงียบไป 13 วัน | ย้ายวันไปก่อนหน้า ดู §8 |
+
+### 🔴 อย่าเปิดไฟล์ `.pglite` เก่าด้วย api ตัวใหม่
+
+ไฟล์ `.pglite` จากยุคก่อนย้าย Postgres เก็บข้อมูลไว้ใน schema `scout` และ migration ชุดปัจจุบันมี
+timestamp ใหม่กว่าที่ไฟล์นั้นเคยบันทึก พอบูตขึ้นมา drizzle จะสร้าง schema `product_plus` **เปล่า ๆ**
+ทับลงไป แล้วแอปขึ้นสินค้า 0 ชิ้นทั้งที่ข้อมูลยังอยู่ครบใน `scout`
+
+อยากอ่านของเก่าให้ใช้ `pnpm --filter @pp/api migrate-store --verify` ซึ่งเปิดแบบอ่านอย่างเดียว
+
+---
+
+## 12. CI
+
+`deploy/ci.yml` เป็น GitHub Actions workflow ที่พร้อมใช้ (install → typecheck → test)
+ยังไม่ได้อยู่ใน `.github/workflows/` เพราะโทเคนที่ push ตอนนั้นไม่มี scope `workflow`
+
+```bash
+gh auth refresh -s workflow
+mkdir -p .github/workflows
+git mv deploy/ci.yml .github/workflows/ci.yml
+git commit -m "Add CI" && git push
+```
+
+---
+
+## 13. ตารางตัวแปรทั้งหมด
+
+| ตัวแปร | service | จำเป็น | ค่าเริ่มต้น | หมายเหตุ |
+|---|---|---|---|---|
+| `DATABASE_URL` | api | 🔴 | — | ไม่ตั้ง = ตกไปใช้ PGlite (dev เท่านั้น) |
+| `APP_PASSWORD` | api + web | 🔴 | — | **ค่าเดียวกันทั้งสองฝั่ง** ไม่ตั้ง = เปิดโล่ง |
+| `SETTINGS_SECRET` | api | 🔴 | — | ไม่ตั้ง = ความลับเก็บเป็น plaintext · เปลี่ยนแล้วของเก่าอ่านไม่ออก |
+| `API_URL` | web | 🔴 | `http://localhost:4010` | **ต้องมีตั้งแต่ตอน build** |
+| `NODE_ENV` | ทั้งคู่ | ✓ | — | `production` |
+| `CRON_SECRET` | api | แนะนำ | — | ไม่ตั้ง = `/api/cron/*` ปฏิเสธทุกคำขอ |
+| `PORT` | ทั้งคู่ | — | api 4010 | แพลตฟอร์มมักตั้งให้เอง |
+| `APIFY_TOKEN` | api | — | — | ใส่ผ่านหน้าเว็บก็ได้ |
+| `ANTHROPIC_API_KEY` | api | — | — | จำเป็นเมื่อ `AI_BACKEND=sdk` |
+| `AI_BACKEND` | api | — | `sdk` ถ้ามี key ไม่งั้น `cli` | คุมทั้งสามงาน AI |
+| `CLAUDE_CLI_PATH` | api | — | `claude` | ใช้เมื่อ `AI_BACKEND=cli` |
+| `PUBLIC_URL` | api | — | — | คู่กับ `APIFY_WEBHOOK_SECRET` |
+| `APIFY_WEBHOOK_SECRET` | api | — | — | ไม่มี = รอบจบด้วยการ poll |
+| `DB_AUTO_MIGRATE` | api | — | `true` | `false` เมื่อคุม migration เอง |
+| `PGLITE_DIR` | api | — | `<repo>/.pglite` | dev เท่านั้น |
