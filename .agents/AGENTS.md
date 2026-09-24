@@ -7,7 +7,7 @@
 
 - **Name**: product-plus (China Marketplace Scout — Apple Watch bands)
 - **Type**: Next.js (apps/web) · NestJS (apps/api) · pnpm monorepo
-- **Git remote**: — (target: GitHub org OMNIX-9Plus, private)
+- **Git remote**: https://github.com/ThitipongSaysood/product-plus (private; moved from org OMNIX-9Plus on 2026-09-24 at the user's request)
 - **Branch**: main
 - **Bootstrapped**: 2026-09-24
 

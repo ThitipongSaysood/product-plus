@@ -13,7 +13,7 @@ Hard cap: **50 results per platform per keyword per run** (actor input AND cut a
 ## 2. Stack (user CLAUDE.md overrides handoff where they differ)
 | layer | choice | note |
 |---|---|---|
-| repo | pnpm monorepo `apps/api` `apps/web` `packages/contracts` | GitHub org **OMNIX-9Plus** (private) |
+| repo | pnpm monorepo `apps/api` `apps/web` `packages/contracts` | GitHub **ThitipongSaysood/product-plus** (private) — user moved it out of org OMNIX-9Plus 2026-09-24 |
 | backend | **NestJS 12** · TypeScript strict · Drizzle ORM · zod | handoff used Next route handlers; CLAUDE.md mandates NestJS |
 | DB | PostgreSQL (Railway, workspace np-nineplus) · schema `scout` · dev = **PGlite** (no install) | `DATABASE_URL` unset → PGlite at `.pglite/` |
 | frontend | **Next.js 16** App Router · Tailwind 4 · OMNIX tokens (design-system.md §1) · Recharts | no other UI lib |
