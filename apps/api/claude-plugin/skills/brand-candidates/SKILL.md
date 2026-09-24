@@ -83,15 +83,18 @@ what the numbers mean:
 
 - Bad: "Rising trend on Douyin (30d window), ranks 2 of 30 in metal category. 3133 sold in 30d at
   26.8 CNY."  — every one of those is already on screen next to it.
-- Good (`lang: "th"`): "ขายดีอันดับต้นของ Douyin และกำลังโต สายมิลานีสเป็นทรงคลาสสิก สลักโลโก้ได้"
+- Good (`lang: "th"`): "ติดอันดับต้นของ Douyin และมีแนวโน้มเติบโต ทรงมิลานีสเป็นพื้นผิวเรียบ สลักโลโก้ได้"
 - Good (`lang: "en"`): "Near the top of Douyin and still climbing. Milanese mesh takes an engraved logo."
 
 This applies to the pros and cons too. A con of "the price is 26.8 CNY, above the category median"
 is wasted — the price chip is directly above it. "Priced above others in its category" says the
 same thing and adds the judgement the number alone does not carry.
 
-Write the way a person speaks, not a literal rendering of English word order. If a phrase would
-make a native reader stop and re-read it, rewrite it shorter and plainer.
+Write plainly, but in the register of a written business report, not of conversation. This is a
+document a merchant may forward to a partner or a supplier. In Thai that means avoiding spoken
+shortenings — prefer ดำเนินการ over กด, ไม่เพียงพอ over ไม่พอ, ผลิตภัณฑ์ over ของ — while staying short.
+Never let formality turn into padding: if a phrase would make a reader stop and re-read it,
+rewrite it shorter and plainer.
 
 Length is a hard limit, not a suggestion:
 
