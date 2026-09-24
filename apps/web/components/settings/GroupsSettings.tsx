@@ -38,11 +38,14 @@ function useSaver() {
 
 const SLUG_RE = /^[a-z0-9]([a-z0-9-]{0,58}[a-z0-9])?$/;
 
-/** Mirrors slugify() on the api so the field shows the id that will actually be used. */
+/** Mirrors slugify() on the api so the field shows the id that will actually be used. Kept identical
+ *  on purpose — a divergence here would preview one id and create another. */
 function slugFromName(name: string): string {
   return name
     .normalize("NFKD")
     .replace(/[\u0300-\u036f]/g, "")
+    .replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2")
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .slice(0, 60)

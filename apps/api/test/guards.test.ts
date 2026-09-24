@@ -86,6 +86,12 @@ describe("budget + caps", () => {
     expect(slugify("Café Straps")).toBe("cafe-straps");
     expect(slugify("เคสมือถือ")).toBe(""); // caller must ask for an explicit slug
     expect(slugify("手机壳")).toBe("");
+    // A capital is a word boundary too — a name typed without spaces must still read back.
+    expect(slugify("TemperedGlassScreenProtector")).toBe("tempered-glass-screen-protector");
+    expect(slugify("AppleWatchBands")).toBe("apple-watch-bands");
+    expect(slugify("USBCable")).toBe("usb-cable"); // an acronym keeps its run
+    expect(slugify("iPhone15Cases")).toBe("i-phone15-cases");
+    expect(slugify("Phone Cases")).toBe("phone-cases"); // spaces still win, unchanged
     expect(slugify("x".repeat(80))).toHaveLength(60);
     expect(slugify("a".repeat(59) + " bands")).toMatch(/[a-z0-9]$/); // never ends on the cut dash
   });

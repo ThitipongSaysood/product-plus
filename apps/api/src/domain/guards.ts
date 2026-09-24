@@ -149,6 +149,11 @@ export function slugify(name: string): string {
   return name
     .normalize("NFKD")
     .replace(/[\u0300-\u036f]/g, "") // "Café" → "Cafe"
+    // A capital is a word boundary as much as a space is. Without these two the only names that
+    // slugify into something readable are the ones already typed with spaces, and a run-together name
+    // like "TemperedGlassScreenProtector" becomes one unreadable 28-character word.
+    .replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2") // "USBCable" → "USB Cable"
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2") // "TemperedGlass" → "Tempered Glass"
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .slice(0, 60)
