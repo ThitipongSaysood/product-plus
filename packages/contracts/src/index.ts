@@ -361,10 +361,12 @@ export type UnmappedCategory = { platform: Platform; path: string; count: number
 export type KeywordSuggestion = { platform: Platform; keyword: string; glossTh: string };
 // POST /groups/:slug/keyword-suggestions {productName}
 export type KeywordSuggestionsResponse = { suggestions: KeywordSuggestion[]; costUsd: number | null };
-// POST /groups/:slug/keyword-concepts {keyword} — one Keyword → one Platform term per watched platform
-export type KeywordAddResponse = {
-  concept: string;
-  created: Keyword[];
-  skipped: { platform: Platform; term: string; reason: string }[]; // reason = dict key
+// PUT /groups/:slug/keyword-list — the whole list, one Keyword per line: keyword | zh term | en term.
+// A missing term is filled by AI before saving; a Keyword left out of the list is deleted.
+export type KeywordListItem = { keyword: string; zh: string | null; en: string | null };
+export type KeywordListResponse = {
+  keywords: Keyword[];
+  translated: string[]; // Keywords whose missing terms AI filled in
+  skipped: { keyword: string; platform: Platform; reason: string }[]; // reason = dict key
   costUsd: number | null;
 };

@@ -2,13 +2,14 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Put, Query } from "@nestjs/common";
 import { and, eq, inArray, isNotNull, notExists, sql } from "drizzle-orm";
 import { z } from "zod";
-import type { KeywordAddResponse, KeywordSuggestionsResponse, Platform, TaxonomyEntry } from "@pp/contracts";
+import type { KeywordListResponse, KeywordSuggestionsResponse, Platform, TaxonomyEntry } from "@pp/contracts";
 import { getDb } from "../db/client.js";
 import { keywords, media, productGroups, products, scrapeRuns } from "../db/schema.js";
 import { AppError, notFound } from "../common/errors.js";
 import { ZodPipe } from "../common/http.js";
 import { UNCLASSIFIED } from "../domain/categorize.js";
 import { capsValid, isUniqueViolation, slugify } from "../domain/guards.js";
+import { planKeywordList } from "../domain/keywords.js";
 import { PLATFORM_LIST } from "../domain/types.js";
 import { claudeCliVersion, skillPresent, SKILLS } from "../jobs/claude-cli.js";
 import { aiBackend } from "../jobs/llm.js";
@@ -53,7 +54,10 @@ const keywordIn = z.object({
 });
 const keywordPatch = keywordIn.partial().omit({ platform: true }).extend({ concept: z.string().trim().min(1).max(100).nullable().optional() });
 const suggestIn = z.object({ productName: z.string().trim().min(1).max(120) });
-const conceptIn = z.object({ keyword: z.string().trim().min(1).max(100) });
+const termIn = z.string().trim().max(100).nullable().optional().transform((v) => v || null);
+const keywordListIn = z.object({
+  items: z.array(z.object({ keyword: z.string().trim().min(1).max(100), zh: termIn, en: termIn })).max(50),
+});
 const taxonomyIn = z
   .array(
     z.object({
@@ -201,33 +205,48 @@ export class GroupsController {
     return toKeyword(row);
   }
 
-  /** One Keyword in any language → one Platform term per watched platform, translated by AI
-   *  (CONTEXT.md). Rows share `concept` so the merchant sees and deletes them as one Keyword. */
-  @Post("groups/:slug/keyword-concepts")
-  @HttpCode(200)
-  async addConcept(@Param("slug") slug: string, @Body(new ZodPipe(conceptIn)) body: z.infer<typeof conceptIn>): Promise<KeywordAddResponse> {
+  /** Replace the whole Keyword list (the textarea editor). Lines missing a term get it from AI first. */
+  @Put("groups/:slug/keyword-list")
+  async putKeywordList(@Param("slug") slug: string, @Body(new ZodPipe(keywordListIn)) body: z.infer<typeof keywordListIn>): Promise<KeywordListResponse> {
     const g = await groupBySlug(slug);
-    await assertAiReady(SKILLS.translateKeyword);
-    let res: Awaited<ReturnType<typeof translateKeyword>>;
-    try {
-      res = await translateKeyword(body.keyword, g.platforms as Platform[]);
-    } catch {
-      throw new AppError(502, "errors.suggest.failed");
+    const platforms = g.platforms as Platform[];
+    const needZh = platforms.some((p) => p !== "temu");
+    const needEn = platforms.includes("temu");
+    const seen = new Set<string>();
+    const items = body.items.filter((i) => !seen.has(i.keyword) && seen.add(i.keyword));
+    const missing = items.filter((i) => (needZh && !i.zh) || (needEn && !i.en));
+    const translated: string[] = [];
+    let costUsd: number | null = null;
+    if (missing.length) {
+      await assertAiReady(SKILLS.translateKeyword);
+      for (const i of missing) {
+        try {
+          const r = await translateKeyword(i.keyword, platforms);
+          i.zh ??= platforms.filter((p) => p !== "temu").map((p) => r.terms.get(p)).find(Boolean) ?? null;
+          i.en ??= r.terms.get("temu") ?? null;
+          translated.push(i.keyword);
+          if (r.costUsd != null) costUsd = (costUsd ?? 0) + r.costUsd;
+        } catch {
+          // leave the terms empty: the plan reports them as skipped instead of failing the whole save
+        }
+      }
     }
     const db = await getDb();
-    const created: KeywordAddResponse["created"] = [];
-    const skipped: KeywordAddResponse["skipped"] = res.missing.map((platform) => ({ platform, term: "", reason: "keywords.skip.noTerm" }));
-    for (const [platform, term] of res.terms) {
-      const [row] = await db
-        .insert(keywords)
-        // Only Temu reads a region; its searches run on the US store (SPEC).
-        .values({ productGroupId: g.id, platform, keyword: term, concept: body.keyword, region: platform === "temu" ? "us" : null, enabled: true })
-        .onConflictDoNothing()
-        .returning();
-      if (row) created.push(toKeyword(row));
-      else skipped.push({ platform, term, reason: "keywords.skip.duplicate" });
+    const existing = (await db.select().from(keywords).where(eq(keywords.productGroupId, g.id))).map((k) => ({ ...k, platform: k.platform as Platform }));
+    const plan = planKeywordList(existing, items, platforms);
+    try {
+      await db.transaction(async (tx) => {
+        if (plan.deletes.length) await tx.delete(keywords).where(inArray(keywords.id, plan.deletes));
+        for (const u of plan.updates) await tx.update(keywords).set({ keyword: u.keyword, concept: u.concept }).where(eq(keywords.id, u.id));
+        if (plan.inserts.length)
+          await tx.insert(keywords).values(plan.inserts.map((i) => ({ productGroupId: g.id, ...i, region: i.platform === "temu" ? "us" : null, enabled: true })));
+      });
+    } catch (e) {
+      if (isUniqueViolation(e)) throw new AppError(409, "errors.keyword.duplicate");
+      throw e;
     }
-    return { concept: body.keyword, created, skipped, costUsd: res.costUsd };
+    const rows = await db.select().from(keywords).where(eq(keywords.productGroupId, g.id)).orderBy(keywords.createdAt);
+    return { keywords: rows.map(toKeyword), translated, skipped: plan.skipped, costUsd };
   }
 
   /** AI keyword suggestion — spends a little on Anthropic (or the local cli). Nothing is saved. */

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Platform } from "@pp/contracts";
-import { cleanSuggestions, cleanTerms, languageMismatch } from "../src/domain/keywords.js";
+import { cleanSuggestions, cleanTerms, languageMismatch, planKeywordList } from "../src/domain/keywords.js";
 
 describe("languageMismatch", () => {
   it("Chinese platforms need at least one CJK character", () => {
@@ -67,5 +67,39 @@ describe("cleanTerms", () => {
     const { terms, missing } = cleanTerms([{ platform: "temu", term: "苹果手表表带" }, null], ["temu", "douyin"]);
     expect(terms.size).toBe(0);
     expect(missing).toEqual(["temu", "douyin"]);
+  });
+});
+
+describe("planKeywordList", () => {
+  const P = ["douyin", "1688", "xhs", "temu"] as Platform[];
+  const row = (id: string, platform: Platform, keyword: string, concept: string | null = null) => ({ id, platform, keyword, concept });
+  it("keeps, updates, inserts and deletes to match the saved lines", () => {
+    const existing = [
+      row("a", "douyin", "苹果手表表带", "สายนาฬิกา Apple Watch"),
+      row("b", "temu", "apple watch band", "สายนาฬิกา Apple Watch"),
+      row("c", "1688", "苹果手表表带", "สายนาฬิกา Apple Watch"),
+      row("x", "douyin", "模块"), // legacy row, not in the list → deleted
+    ];
+    const plan = planKeywordList(existing, [{ keyword: "สายนาฬิกา Apple Watch", zh: "苹果手表表带", en: "apple watch strap" }], P);
+    expect(plan.updates).toEqual([{ id: "b", keyword: "apple watch strap", concept: "สายนาฬิกา Apple Watch" }]);
+    expect(plan.inserts).toEqual([{ platform: "xhs", keyword: "苹果手表表带", concept: "สายนาฬิกา Apple Watch" }]);
+    expect(plan.deletes).toEqual(["x"]);
+    expect(plan.skipped).toEqual([]);
+  });
+  it("a legacy row keyed by its own text is matched by that text", () => {
+    const plan = planKeywordList([row("l", "douyin", "硅胶表带")], [{ keyword: "硅胶表带", zh: "硅胶表带", en: null }], ["douyin"]);
+    expect(plan).toMatchObject({ updates: [{ id: "l", keyword: "硅胶表带", concept: "硅胶表带" }], inserts: [], deletes: [] });
+  });
+  it("reports missing terms and duplicate terms instead of writing them", () => {
+    const plan = planKeywordList([], [{ keyword: "A", zh: "手表带", en: null }, { keyword: "B", zh: "手表带", en: "watch band" }], ["douyin", "temu"]);
+    expect(plan.skipped).toEqual([
+      { keyword: "A", platform: "temu", reason: "keywords.skip.noTerm" },
+      { keyword: "B", platform: "douyin", reason: "keywords.skip.duplicate" },
+    ]);
+    expect(plan.inserts.map((i) => `${i.platform}:${i.keyword}`)).toEqual(["douyin:手表带", "temu:watch band"]);
+  });
+  it("leaves rows of unwatched platforms for Keywords that stay", () => {
+    const plan = planKeywordList([row("t", "temu", "apple watch band", "K")], [{ keyword: "K", zh: "苹果手表表带", en: null }], ["douyin"]);
+    expect(plan.deletes).toEqual([]);
   });
 });

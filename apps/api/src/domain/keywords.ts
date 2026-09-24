@@ -59,3 +59,51 @@ export function cleanTerms(raw: unknown[], platforms: Platform[]): { terms: Map<
   }
   return { terms: got, missing };
 }
+
+// ---------- Keyword list (the textarea editor: one line = one Keyword) ----------
+export type KeywordListItem = { keyword: string; zh: string | null; en: string | null };
+type ExistingRow = { id: string; platform: Platform; keyword: string; concept: string | null };
+export type KeywordListPlan = {
+  inserts: { platform: Platform; keyword: string; concept: string }[];
+  updates: { id: string; keyword: string; concept: string }[];
+  deletes: string[];
+  skipped: { keyword: string; platform: Platform; reason: "keywords.skip.noTerm" | "keywords.skip.duplicate" }[];
+};
+
+const isCjkPlatform = (p: Platform) => CJK_PLATFORMS.includes(p);
+
+/** Replace a Group's Keywords with the list the merchant saved. The Chinese term goes to every Chinese
+ *  platform and the English term to Temu; a Keyword removed from the list loses all its rows. Rows of
+ *  platforms the group does not watch are left alone for Keywords that stay. Pure — the controller
+ *  fills missing terms with AI first and then applies this in one transaction. */
+export function planKeywordList(existing: ExistingRow[], items: KeywordListItem[], platforms: Platform[]): KeywordListPlan {
+  const plan: KeywordListPlan = { inserts: [], updates: [], deletes: [], skipped: [] };
+  const labelOf = (r: ExistingRow) => r.concept ?? r.keyword;
+  const wanted = new Set(items.map((i) => i.keyword));
+  const taken = new Set<string>(); // platform|term already claimed in the new list
+  const kept = new Set<string>(); // existing row ids that stay
+  for (const item of items) {
+    for (const p of platforms) {
+      const term = (isCjkPlatform(p) ? item.zh : item.en)?.trim() || "";
+      if (!term) {
+        plan.skipped.push({ keyword: item.keyword, platform: p, reason: "keywords.skip.noTerm" });
+        continue;
+      }
+      if (taken.has(`${p}|${term}`)) {
+        plan.skipped.push({ keyword: item.keyword, platform: p, reason: "keywords.skip.duplicate" });
+        continue;
+      }
+      taken.add(`${p}|${term}`);
+      const row = existing.find((r) => r.platform === p && labelOf(r) === item.keyword && !kept.has(r.id));
+      if (row) {
+        kept.add(row.id);
+        if (row.keyword !== term || row.concept !== item.keyword) plan.updates.push({ id: row.id, keyword: term, concept: item.keyword });
+      } else plan.inserts.push({ platform: p, keyword: term, concept: item.keyword });
+    }
+  }
+  for (const r of existing) {
+    if (kept.has(r.id)) continue;
+    if (platforms.includes(r.platform) || !wanted.has(labelOf(r))) plan.deletes.push(r.id);
+  }
+  return plan;
+}
