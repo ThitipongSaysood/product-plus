@@ -9,7 +9,7 @@ import { AppError } from "../common/errors.js";
 import { cronAuthorized, safeEqual, issueSession, SESSION_COOKIE, ZodPipe } from "../common/http.js";
 import { entryFor, getSetting, listSettings, saveSetting, sourceMode, testService } from "../settings/settings.js";
 import { mockSvg } from "../sources/mock.js";
-import { apifyFetch } from "../sources/apify.js";
+import { apifyFetch, relatedKeyFor } from "../sources/apify.js";
 import { finishApifyRun } from "../jobs/reconcile.js";
 import { clientIp, RateLimiter } from "../domain/guards.js";
 import { runScheduled } from "./weekly.js";
@@ -120,7 +120,7 @@ export class SystemController {
     if (!run) return { ok: true, ignored: true };
     const token = await getSetting("APIFY_TOKEN");
     if (!token) return { ok: true, ignored: true };
-    const res = await apifyFetch(token, apifyRunId, 50);
+    const res = await apifyFetch(token, apifyRunId, 50, relatedKeyFor(run.platform));
     if (!res.finished) return { ok: true, ignored: true };
     const r = await finishApifyRun(run, res); // closed run → cost-only update, never re-ingested
     return r.ignored ? { ok: true, ignored: true } : { ok: true };

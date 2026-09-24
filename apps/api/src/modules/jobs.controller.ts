@@ -25,7 +25,7 @@ import { apifyStart } from "../sources/apify.js";
 import { getSetting } from "../settings/settings.js";
 
 const platform = z.enum(PLATFORM_LIST as ["douyin", "1688", "temu", "xhs"]);
-const KINDS = ["scrape", "categorize", "media", "trend", "evaluate", "smoke", "pipeline", "translate", "brand"] as const;
+const KINDS = ["scrape", "categorize", "media", "trend", "evaluate", "smoke", "pipeline", "translate", "brand", "trial"] as const;
 
 const toEval = (r: typeof actorEvaluations.$inferSelect): ActorEvaluation => ({
   id: r.id,

@@ -26,6 +26,7 @@ export const SKILLS = {
   translate: "translate-listing-titles",
   categorize: "categorize-listings",
   brand: "brand-candidates",
+  suggest: "suggest-keywords",
 } as const;
 export type SkillName = (typeof SKILLS)[keyof typeof SKILLS];
 

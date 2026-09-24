@@ -68,7 +68,7 @@ export async function planScrape(g: GroupRecord, now = new Date()) {
   const running = await db
     .select({ platform: scrapeRuns.platform, keyword: scrapeRuns.keyword, groupId: scrapeRuns.productGroupId, apify: scrapeRuns.apifyRunId, cost: scrapeRuns.costUsd })
     .from(scrapeRuns)
-    .where(and(inArray(scrapeRuns.kind, ["scrape", "smoke"]), eq(scrapeRuns.status, "running")));
+    .where(and(inArray(scrapeRuns.kind, ["scrape", "smoke", "trial"]), eq(scrapeRuns.status, "running")));
   let slots = APIFY_CONCURRENCY - running.filter((r) => r.apify !== null).length;
 
   for (const k of kws) {

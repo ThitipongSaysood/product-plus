@@ -19,4 +19,4 @@ export type StartResult =
 
 export type FetchResult =
   | { finished: false }
-  | { finished: true; apifyStatus: string; rows: unknown[]; costUsd: number | null; charged?: Record<string, number> | null };
+  | { finished: true; apifyStatus: string; rows: unknown[]; costUsd: number | null; charged?: Record<string, number> | null; record?: unknown };

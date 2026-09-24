@@ -34,11 +34,19 @@ export async function apifyStart(token: string, t: ScrapeTarget, webhookSecret: 
   }
 }
 
-export async function apifyFetch(token: string, runId: string, limit: number): Promise<FetchResult> {
+/** The run's default key-value store may hold extra output; XHS actors write RELATED_KEYWORDS there. */
+export const relatedKeyFor = (platform: string | null) => (platform === "xhs" ? "RELATED_KEYWORDS" : undefined);
+
+export async function apifyFetch(token: string, runId: string, limit: number, recordKey?: string): Promise<FetchResult> {
   const client = new ApifyClient({ token });
   const run = await client.run(runId).get();
   if (!run || !TERMINAL.has(run.status)) return { finished: false };
   const rows = run.defaultDatasetId ? (await client.dataset(run.defaultDatasetId).listItems({ limit: limit * 3 })).items : [];
   const charged = (run as { chargedEventCounts?: Record<string, number> }).chargedEventCounts ?? null;
-  return { finished: true, apifyStatus: run.status, rows, costUsd: typeof run.usageTotalUsd === "number" ? run.usageTotalUsd : null, charged };
+  // Best effort: a missing record or store is normal and must never fail the run.
+  const record =
+    recordKey && run.defaultKeyValueStoreId
+      ? await client.keyValueStore(run.defaultKeyValueStoreId).getRecord(recordKey).then((r) => r?.value ?? null, () => null)
+      : null;
+  return { finished: true, apifyStatus: run.status, rows, costUsd: typeof run.usageTotalUsd === "number" ? run.usageTotalUsd : null, charged, record };
 }
