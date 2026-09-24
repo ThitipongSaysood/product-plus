@@ -37,10 +37,34 @@ export class RateLimiter {
   }
 }
 
-/** Schedules due at the 05:00 Asia/Bangkok tick: daily always, weekly on Bangkok Mondays. */
-export function schedulesDue(now: Date): Schedule[] {
-  const bkkDay = new Date(now.getTime() + 7 * 3_600_000).getUTCDay();
-  return bkkDay === 1 ? ["daily", "weekly"] : ["daily"];
+/** Bangkok is UTC+7 the whole year, so shifting and reading the UTC parts is exact — no DST table. */
+export function bangkok(now: Date): { hour: number; weekday: number; dayStart: Date } {
+  const d = new Date(now.getTime() + 7 * 3_600_000);
+  const midnightBkk = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()) - 7 * 3_600_000;
+  return { hour: d.getUTCHours(), weekday: d.getUTCDay(), dayStart: new Date(midnightBkk) };
+}
+
+export type ScheduleSlot = { schedule: Schedule; scheduleHour: number; scheduleWeekday: number };
+
+/** Is this the group's slot right now? Exact hour, no catch-up: a catch-up would start a paid actor
+ *  round at an hour nobody chose, which is worse than missing one round if the process was down. */
+export function isScheduleSlot(g: ScheduleSlot, now: Date): boolean {
+  if (g.schedule !== "daily" && g.schedule !== "weekly") return false;
+  const { hour, weekday } = bangkok(now);
+  if (hour !== g.scheduleHour) return false;
+  return g.schedule === "daily" || weekday === g.scheduleWeekday;
+}
+
+/**
+ * Earliest start time that still counts as "already ran", so the slot is not taken twice.
+ *
+ * A rolling 12h window was enough while every group fired at the same 05:00 tick, but once the hour is
+ * user-editable it both double-charges and silently skips: moving a daily group from 05:00 to 22:00 at
+ * midday leaves 17h between the two, so it runs twice the same day; moving it back leaves 7h, so the
+ * next morning is skipped. Anchor on the Bangkok day instead.
+ */
+export function repeatWindowStart(schedule: Schedule, now: Date): Date {
+  return schedule === "weekly" ? new Date(now.getTime() - 6 * 24 * 3_600_000) : bangkok(now).dayStart;
 }
 
 /** Postgres unique violation (drizzle wraps the driver error in `cause`). */

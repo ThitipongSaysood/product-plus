@@ -17,7 +17,9 @@ import {
   needsJson415,
   normalizeImageType,
   RateLimiter,
-  schedulesDue,
+  bangkok,
+  isScheduleSlot,
+  repeatWindowStart,
   slugify,
   smokeCap,
 } from "../src/domain/guards.js";
@@ -112,9 +114,58 @@ describe("concurrency / schedules", () => {
     expect(isUniqueViolation({ code: "23505" })).toBe(true);
     expect(isUniqueViolation(new Error("x"))).toBe(false);
   });
-  it("daily every day, weekly only on Bangkok Mondays", () => {
-    expect(schedulesDue(new Date("2026-09-27T22:00:00Z"))).toEqual(["daily", "weekly"]); // Mon 05:00 BKK
-    expect(schedulesDue(new Date("2026-09-28T22:00:00Z"))).toEqual(["daily"]); // Tue 05:00 BKK
+});
+
+// 2026-09-27T22:00:00Z is Monday 05:00 in Bangkok; 2026-09-28T22:00:00Z is Tuesday 05:00.
+const MON_0500 = new Date("2026-09-27T22:00:00Z");
+const TUE_0500 = new Date("2026-09-28T22:00:00Z");
+const daily = (hour: number) => ({ schedule: "daily" as const, scheduleHour: hour, scheduleWeekday: 1 });
+const weekly = (hour: number, weekday: number) => ({ schedule: "weekly" as const, scheduleHour: hour, scheduleWeekday: weekday });
+
+describe("bangkok clock", () => {
+  it("reads the local hour and weekday without a DST table (Thailand is UTC+7 all year)", () => {
+    expect(bangkok(MON_0500)).toMatchObject({ hour: 5, weekday: 1 });
+    expect(bangkok(TUE_0500)).toMatchObject({ hour: 5, weekday: 2 });
+    // 23:30 UTC on the 27th is already 06:30 on the 28th in Bangkok
+    expect(bangkok(new Date("2026-09-27T23:30:00Z"))).toMatchObject({ hour: 6, weekday: 1 });
+  });
+  it("puts dayStart at Bangkok midnight, not UTC midnight", () => {
+    expect(bangkok(MON_0500).dayStart.toISOString()).toBe("2026-09-27T17:00:00.000Z");
+  });
+});
+
+describe("isScheduleSlot", () => {
+  it("fires a daily group on its own hour only", () => {
+    expect(isScheduleSlot(daily(5), MON_0500)).toBe(true);
+    expect(isScheduleSlot(daily(22), MON_0500)).toBe(false);
+    expect(isScheduleSlot(daily(5), TUE_0500)).toBe(true); // any weekday
+  });
+  it("fires a weekly group only on its hour AND its weekday", () => {
+    expect(isScheduleSlot(weekly(5, 1), MON_0500)).toBe(true);
+    expect(isScheduleSlot(weekly(5, 1), TUE_0500)).toBe(false); // right hour, wrong day
+    expect(isScheduleSlot(weekly(5, 2), TUE_0500)).toBe(true); // a Tuesday group is possible now
+    expect(isScheduleSlot(weekly(5, 0), new Date("2026-09-26T22:00:00Z"))).toBe(true); // Sunday
+  });
+  it("never fires a manual group", () => {
+    expect(isScheduleSlot({ schedule: "manual", scheduleHour: 5, scheduleWeekday: 1 }, MON_0500)).toBe(false);
+  });
+});
+
+describe("repeatWindowStart", () => {
+  // The bug this replaces: with a rolling 12h window, moving a daily group from 05:00 to 22:00 at midday
+  // left 17h between the two slots, so the group ran — and was charged — twice the same day.
+  it("lets a daily group run once per Bangkok day, whatever hour it moves to", () => {
+    const ranAt0500 = new Date("2026-09-27T22:00:00Z");
+    const at2200 = new Date("2026-09-28T15:00:00Z"); // same Bangkok day, 22:00
+    expect(repeatWindowStart("daily", at2200).getTime()).toBeLessThanOrEqual(ranAt0500.getTime());
+  });
+  it("does not skip the next morning after a late run the evening before", () => {
+    const ranAt2200 = new Date("2026-09-28T15:00:00Z"); // Mon 22:00 BKK
+    const next0500 = new Date("2026-09-28T22:00:00Z"); // Tue 05:00 BKK — only 7h later
+    expect(repeatWindowStart("daily", next0500).getTime()).toBeGreaterThan(ranAt2200.getTime());
+  });
+  it("holds a weekly group for six days so changing its weekday cannot double-charge", () => {
+    expect(repeatWindowStart("weekly", MON_0500).getTime()).toBe(MON_0500.getTime() - 6 * 24 * 3_600_000);
   });
 });
 

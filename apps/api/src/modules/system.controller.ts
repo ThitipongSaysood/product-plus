@@ -124,6 +124,14 @@ export class SystemController {
     return r.ignored ? { ok: true, ignored: true } : { ok: true };
   }
 
+  /** For an external hourly timer: starts exactly the groups whose configured slot is this hour.
+   *  The two endpoints below ignore the clock and force-run a whole schedule instead. */
+  @Get("cron/tick")
+  async cronTick(@Req() req: Request) {
+    if (!cronAuthorized(req)) throw new AppError(401, "common.unauthorized");
+    return { ok: true, ...(await runScheduled(["daily", "weekly"], { onlyDue: true })) };
+  }
+
   @Get("cron/weekly")
   async weekly(@Req() req: Request) {
     if (!cronAuthorized(req)) throw new AppError(401, "common.unauthorized");

@@ -1,0 +1,2 @@
+ALTER TABLE "scout"."product_groups" ADD COLUMN "schedule_hour" integer DEFAULT 5 NOT NULL;--> statement-breakpoint
+ALTER TABLE "scout"."product_groups" ADD COLUMN "schedule_weekday" integer DEFAULT 1 NOT NULL;

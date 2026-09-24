@@ -31,6 +31,10 @@ export type Group = {
   resultLimit: number; // default 50 — also enforced at ingest
   runCapUsd: number; // max Apify spend per pipeline round (default 1.00); passed to actors as maxTotalChargeUsd
   schedule: Schedule;
+  /** Asia/Bangkok hour the scheduled round fires. Hour only — the scheduler ticks hourly. */
+  scheduleHour: number;
+  /** 0=Sunday. Weekly groups only; ignored for daily and manual. */
+  scheduleWeekday: number;
   taxonomy: TaxonomyEntry[];
   productCount?: number; // GET /groups only — what a delete would take with it
 };
@@ -41,6 +45,8 @@ export type GroupCreate = {
   slug?: string; // omitted → derived from name; required when the name has no ASCII (Thai/Chinese)
   platforms: Platform[];
   schedule?: Schedule;
+  scheduleHour?: number;
+  scheduleWeekday?: number;
   resultLimit?: number;
   monthlyBudgetUsd?: number; // default 0 = spending paused
   runCapUsd?: number;
@@ -55,6 +61,8 @@ export type GroupPatch = {
   resultLimit?: number;
   runCapUsd?: number;
   schedule?: Schedule;
+  scheduleHour?: number;
+  scheduleWeekday?: number;
   platforms?: Platform[];
 };
 

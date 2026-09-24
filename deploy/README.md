@@ -10,7 +10,9 @@ Add a PostgreSQL service. The api creates schema `scout` and runs migrations at 
 |---|---|
 | build | `pnpm install --frozen-lockfile && pnpm --filter @pp/api build` |
 | start | `pnpm --filter @pp/api start` |
-| replicas | **1** (the weekly scheduler runs in-process; 2 replicas = 2 rounds = double spend) |
+| replicas | **1** (the scheduler runs in-process; 2 replicas = 2 rounds = double spend) |
+| schedule | Each group picks its own day and hour (Asia/Bangkok) under Settings › Product groups. The in-process tick runs hourly and starts only the groups whose slot is that hour; a group runs at most once per Bangkok day (once per 6 days when weekly). If the process is down at a group's hour, that round is skipped rather than fired later at an hour nobody chose. |
+| external timer (optional) | `GET /api/cron/tick` with `CRON_SECRET`, called hourly, does exactly what the in-process tick does. `GET /api/cron/{daily,weekly}` still force-run a whole schedule and ignore the configured hour — keep them for manual recovery, not for a timer. |
 | env | `DATABASE_URL=${{Postgres.DATABASE_URL}}` · `APP_PASSWORD` · `CRON_SECRET` · `SETTINGS_SECRET` (32+ random chars, encrypts secrets saved from the web) · `NODE_ENV=production` |
 | optional env | `APIFY_TOKEN` (or set it later on Settings → System) · `PUBLIC_URL=https://<api domain>` + `APIFY_WEBHOOK_SECRET` (webhooks; without them runs finish by polling) · `ANTHROPIC_API_KEY` (LLM category layer) |
 

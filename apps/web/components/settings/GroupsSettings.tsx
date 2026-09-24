@@ -11,6 +11,10 @@ import { platformName } from "../bits";
 import { EditIcon, PlusIcon, TrashIcon } from "../icons";
 import { Alert, Button, Card, Checkbox, EmptyState, Field, Modal, SectionTitle, Select, TableScroll, TextInput } from "../ui";
 
+// 0 = Sunday, matching Date#getUTCDay and the api column.
+const WEEKDAYS = [0, 1, 2, 3, 4, 5, 6] as const;
+const HOURS = Array.from({ length: 24 }, (_, h) => h);
+
 type Msg = { tone: "success" | "danger"; text: string } | null;
 
 /** Same shape as the keywords page: one busy flag, one message, refresh the server data on success. */
@@ -54,6 +58,10 @@ export function NewGroupForm({ groups }: { groups: Group[] }) {
   const [slugTouched, setSlugTouched] = useState(false);
   const [platforms, setPlatforms] = useState<Platform[]>([...PLATFORM_LIST]);
   const [schedule, setSchedule] = useState<Schedule>("weekly");
+  // 05:00 Monday is what every group ran on before the time was configurable — keep it as the default
+  // so creating a group without touching these two fields behaves exactly as it used to.
+  const [scheduleHour, setScheduleHour] = useState(5);
+  const [scheduleWeekday, setScheduleWeekday] = useState(1);
   const [sourceMode, setSourceMode] = useState<SourceMode>("apify");
   const [budget, setBudget] = useState("0");
   const [copyFrom, setCopyFrom] = useState("");
@@ -82,6 +90,8 @@ export function NewGroupForm({ groups }: { groups: Group[] }) {
               slug: effectiveSlug,
               platforms: PLATFORM_LIST.filter((p) => platforms.includes(p)),
               schedule,
+              scheduleHour,
+              scheduleWeekday,
               sourceMode,
               monthlyBudgetUsd: budgetN,
               ...(copyFrom ? { copyTaxonomyFrom: copyFrom } : {}),
@@ -131,11 +141,26 @@ export function NewGroupForm({ groups }: { groups: Group[] }) {
               <option value="mock">{t("groups.mode.mock")}</option>
             </Select>
           </Field>
-          <Field label={t("group.schedule")} htmlFor="ng-schedule" help={t("group.scheduleHelp")}>
+          <Field label={t("group.schedule")} htmlFor="ng-schedule" help={schedule === "manual" ? t("group.scheduleManualNote") : t("group.scheduleHelp")}>
             <Select id="ng-schedule" value={schedule} onChange={(e) => setSchedule(e.target.value as Schedule)}>
               {(["weekly", "daily", "manual"] as const).map((v) => <option key={v} value={v}>{t(`schedule.${v}`)}</option>)}
             </Select>
           </Field>
+          {/* Both only mean anything for an automatic schedule; weekday only for a weekly one. */}
+          {schedule === "weekly" ? (
+            <Field label={t("group.scheduleWeekday")} htmlFor="ng-weekday" help={t("group.scheduleWeekdayHelp")}>
+              <Select id="ng-weekday" value={String(scheduleWeekday)} onChange={(e) => setScheduleWeekday(Number(e.target.value))}>
+                {WEEKDAYS.map((d) => <option key={d} value={d}>{t(`weekday.${d}`)}</option>)}
+              </Select>
+            </Field>
+          ) : null}
+          {schedule !== "manual" ? (
+            <Field label={t("group.scheduleHour")} htmlFor="ng-hour" help={t("group.scheduleHourHelp")}>
+              <Select id="ng-hour" value={String(scheduleHour)} onChange={(e) => setScheduleHour(Number(e.target.value))}>
+                {HOURS.map((h) => <option key={h} value={h}>{`${String(h).padStart(2, "0")}:00`}</option>)}
+              </Select>
+            </Field>
+          ) : null}
           <Field
             label={t("groups.budgetStart")}
             htmlFor="ng-budget"

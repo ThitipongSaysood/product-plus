@@ -1,6 +1,8 @@
-// Schedules (SPEC §3 #6): one in-process tick every day 05:00 Asia/Bangkok runs "daily" groups, and on
-// Mondays also "weekly" groups; GET /api/cron/{daily,weekly} for an external timer. A pipeline started
-// < 12 h ago is not repeated.
+// Schedules (SPEC §3 #6): an in-process tick every hour (Asia/Bangkok) starts each group at the hour it
+// is configured for — daily groups on their hour, weekly groups on their hour and weekday. The tick is
+// hourly rather than daily only so that per-group times are possible; a group still fires at most once
+// per slot, guarded by repeatWindowStart(). GET /api/cron/tick drives the same logic from an external
+// timer, and /api/cron/{daily,weekly} remain a force-run escape hatch that ignores the clock.
 import { Injectable } from "@nestjs/common";
 import { Cron } from "@nestjs/schedule";
 import { and, eq, gte, inArray } from "drizzle-orm";
@@ -8,18 +10,26 @@ import type { Schedule, TriggerResult } from "@pp/contracts";
 import { getDb } from "../db/client.js";
 import { productGroups, scrapeRuns } from "../db/schema.js";
 import { AppError } from "../common/errors.js";
-import { schedulesDue } from "../domain/guards.js";
+import { isScheduleSlot, repeatWindowStart, type ScheduleSlot } from "../domain/guards.js";
 import { triggerPipeline } from "../jobs/pipeline.js";
 import { reconcile } from "../jobs/reconcile.js";
 
-export async function runScheduled(schedules: Schedule[]) {
+/**
+ * `onlyDue` runs the groups whose configured slot is the current hour; without it every group with one
+ * of `schedules` is started regardless of the clock (the force-run endpoints).
+ */
+export async function runScheduled(schedules: Schedule[], opts: { onlyDue?: boolean; now?: Date } = {}) {
   await reconcile().catch(() => 0);
+  const now = opts.now ?? new Date();
   const db = await getDb();
-  const groups = await db.select().from(productGroups).where(inArray(productGroups.schedule, schedules));
+  const all = await db.select().from(productGroups).where(inArray(productGroups.schedule, schedules));
+  // Filtered here rather than in SQL: a handful of rows, and the Bangkok clock maths stays in one
+  // tested pure function instead of being restated in the query.
+  const groups = opts.onlyDue ? all.filter((g) => isScheduleSlot(g as ScheduleSlot, now)) : all;
   const started: (TriggerResult["started"][number] & { group: string })[] = [];
   const skipped: (TriggerResult["skipped"][number] & { group: string })[] = [];
-  const since = new Date(Date.now() - 12 * 3_600_000);
   for (const g of groups) {
+    const since = repeatWindowStart(g.schedule as Schedule, now);
     const recent = await db
       .select({ id: scrapeRuns.id })
       .from(scrapeRuns)
@@ -43,10 +53,11 @@ export async function runScheduled(schedules: Schedule[]) {
 
 @Injectable()
 export class WeeklyCron {
-  @Cron("0 5 * * *", { timeZone: "Asia/Bangkok", name: "scheduled-pipelines" })
+  @Cron("0 * * * *", { timeZone: "Asia/Bangkok", name: "scheduled-pipelines" })
   async tick() {
-    const due = schedulesDue(new Date());
-    const r = await runScheduled(due);
-    console.log(`[cron] ${due.join("+")}: started ${r.started.length}, skipped ${r.skipped.length}`);
+    const r = await runScheduled(["daily", "weekly"], { onlyDue: true });
+    if (r.started.length || r.skipped.length) {
+      console.log(`[cron] started ${r.started.length}, skipped ${r.skipped.length}`);
+    }
   }
 }

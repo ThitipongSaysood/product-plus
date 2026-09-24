@@ -47,6 +47,10 @@ export const productGroups = scout.table("product_groups", {
   // max Apify spend per pipeline round; each actor gets maxTotalChargeUsd = its share of this cap
   runCapUsd: numeric("run_cap_usd", { precision: 8, scale: 2, mode: "number" }).notNull().default(1),
   schedule: text("schedule").notNull().default("weekly"),
+  // When the scheduled round fires, in Asia/Bangkok. Hour only: the tick runs hourly, so offering
+  // minutes would promise precision the scheduler cannot keep. Weekday is 0=Sunday, weekly groups only.
+  scheduleHour: integer("schedule_hour").notNull().default(5),
+  scheduleWeekday: integer("schedule_weekday").notNull().default(1),
   // null = follow the SOURCE_MODE setting; "mock" pins a demo group, "apify" pins a real-data group
   // (a real group never receives mock rows, even when the app runs in mock mode).
   sourceMode: text("source_mode"),

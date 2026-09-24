@@ -22,6 +22,8 @@ const groupPatch = z.object({
   resultLimit: z.number().int().min(1).max(50).optional(),
   runCapUsd: z.number().min(0.1).max(1000).optional(),
   schedule: z.enum(["weekly", "daily", "manual"]).optional(),
+  scheduleHour: z.number().int().min(0).max(23).optional(),
+  scheduleWeekday: z.number().int().min(0).max(6).optional(),
   platforms: z.array(platform).min(1).max(4).optional(),
 });
 // A new group starts with spending paused ($0) so creating one can never begin an Apify charge.
@@ -30,6 +32,9 @@ const groupCreate = z.object({
   slug: slugIn.optional(),
   platforms: z.array(platform).min(1).max(4),
   schedule: z.enum(["weekly", "daily", "manual"]).default("weekly"),
+  // 05:00 Monday keeps every group that existed before this was configurable on its old slot.
+  scheduleHour: z.number().int().min(0).max(23).default(5),
+  scheduleWeekday: z.number().int().min(0).max(6).default(1),
   resultLimit: z.number().int().min(1).max(50).default(50),
   monthlyBudgetUsd: z.number().min(0).max(10000).default(0),
   runCapUsd: z.number().min(0.1).max(1000).default(1),
@@ -90,6 +95,8 @@ export class GroupsController {
           resultLimit: body.resultLimit,
           runCapUsd: body.runCapUsd,
           schedule: body.schedule,
+          scheduleHour: body.scheduleHour,
+          scheduleWeekday: body.scheduleWeekday,
           sourceMode: body.sourceMode,
           taxonomy,
         })

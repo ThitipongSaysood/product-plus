@@ -43,6 +43,8 @@ export const toGroup = (g: GroupRecord): Group => ({
   resultLimit: g.resultLimit,
   runCapUsd: g.runCapUsd,
   schedule: g.schedule as Group["schedule"],
+  scheduleHour: g.scheduleHour,
+  scheduleWeekday: g.scheduleWeekday,
   taxonomy: g.taxonomy,
 });
 
