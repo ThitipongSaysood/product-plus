@@ -173,11 +173,6 @@ export const scrapeRuns = pp.table(
     // Output a run produced that is too structured for `note`. Only the "brand" job writes it today
     // (its report); null everywhere else.
     report: jsonb("report"),
-    // Keyword trial only: the ≤5 normalized listings, shown in the keyword form and never ingested.
-    // Nulled after 7 days by the trial list endpoint.
-    trialItems: jsonb("trial_items"),
-    // XHS only: the actor's RELATED_KEYWORDS record (the platform's related searches), as strings.
-    relatedKeywords: jsonb("related_keywords"),
   },
   (t) => [
     index("scrape_runs_group_kind_idx").on(t.productGroupId, t.kind, t.startedAt),

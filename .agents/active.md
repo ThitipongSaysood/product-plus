@@ -33,6 +33,10 @@ Next.js + NestJS (pnpm monorepo) · PostgreSQL 18
 
 ## Blockers
 
+- **Keyword form reverted to the 17:11 version + AI suggestion panel** (session 2026-09-24-2105). Keyword trial,
+  language guard and frequent-term chips were removed at the user's request.
+- **16 junk keywords** (模块 原创 硅胶 透气 × 4 platforms) still on `apple-watch-bands` — awaiting the user's OK to delete.
+
 - **Postgres volume was wiped 2026-09-24 ~19:44** (container + volume `product-plus_omnix_pgdata` recreated empty,
   `apps/api/.env` gone — not by an AI session as far as the notes show). Everything created in Postgres after the
   afternoon move is lost: group `tempered-glass-screen-protector`, brand reports, System settings. No backup found.

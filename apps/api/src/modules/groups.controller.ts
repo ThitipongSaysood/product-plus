@@ -1,22 +1,18 @@
 // groups · keywords · taxonomy · category map
 import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Put, Query } from "@nestjs/common";
-import { and, eq, gte, inArray, isNotNull, notExists, sql } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, notExists, sql } from "drizzle-orm";
 import { z } from "zod";
-import type { FrequentTermsResponse, KeywordSuggestionsResponse, KeywordTrialResult, KeywordTrialsResponse, Platform, TaxonomyEntry } from "@pp/contracts";
+import type { KeywordSuggestionsResponse, Platform, TaxonomyEntry } from "@pp/contracts";
 import { getDb } from "../db/client.js";
 import { keywords, media, productGroups, products, scrapeRuns } from "../db/schema.js";
 import { AppError, notFound } from "../common/errors.js";
 import { ZodPipe } from "../common/http.js";
 import { UNCLASSIFIED } from "../domain/categorize.js";
 import { capsValid, isUniqueViolation, slugify } from "../domain/guards.js";
-import { frequentTerms, languageMismatch, rankRelated, TRIAL_MAX_ITEMS } from "../domain/keywords.js";
 import { PLATFORM_LIST } from "../domain/types.js";
-import { aiBackend } from "../jobs/llm.js";
 import { claudeCliVersion, skillPresent, SKILLS } from "../jobs/claude-cli.js";
-import { groupMode } from "../jobs/scrape.js";
+import { aiBackend } from "../jobs/llm.js";
 import { suggestKeywords } from "../jobs/suggest.js";
-import { listTrials, startTrials, trialEstimates } from "../jobs/trials.js";
-import { reconcile } from "../jobs/reconcile.js";
 import { getSetting } from "../settings/settings.js";
 import { applyCategoryMap } from "../jobs/categorize.js";
 import { groupBySlug } from "../jobs/runs.js";
@@ -54,13 +50,8 @@ const keywordIn = z.object({
   keyword: z.string().trim().min(1).max(100),
   region: z.string().trim().max(10).nullable().optional(),
   enabled: z.boolean().optional(),
-  allowLanguageMismatch: z.boolean().optional(),
 });
-const keywordPatch = keywordIn.partial().omit({ platform: true, allowLanguageMismatch: true });
-const trialIn = z.object({
-  items: z.array(z.object({ platform, keyword: z.string().trim().min(1).max(100), region: z.string().trim().max(10).nullable().optional() })).min(1).max(100),
-  confirm: z.boolean().optional(),
-});
+const keywordPatch = keywordIn.partial().omit({ platform: true });
 const suggestIn = z.object({ productName: z.string().trim().min(1).max(120) });
 const taxonomyIn = z
   .array(
@@ -190,34 +181,11 @@ export class GroupsController {
       .from(keywords)
       .where(and(eq(keywords.productGroupId, g.id), eq(keywords.platform, body.platform), eq(keywords.keyword, body.keyword)));
     if (dup.length) throw new AppError(409, "errors.keyword.duplicate");
-    // A wrong-language keyword "works" — rows come back — and is still useless (CONTEXT.md: Language mismatch).
-    if (!body.allowLanguageMismatch && languageMismatch(body.platform, body.keyword)) throw new AppError(400, "errors.keyword.languageMismatch");
     const [row] = await db
       .insert(keywords)
       .values({ productGroupId: g.id, platform: body.platform, keyword: body.keyword, region: body.region ?? null, enabled: body.enabled ?? true })
       .returning();
     return toKeyword(row);
-  }
-
-  /** Keyword trial — PAID in an apify group (each item capped like a smoke test, all of them within the
-   *  monthly budget), free and inline in a mock group. Listings never enter the Group. */
-  @Post("groups/:slug/keyword-trials")
-  @HttpCode(200)
-  async startTrials(@Param("slug") slug: string, @Body(new ZodPipe(trialIn)) body: z.infer<typeof trialIn>): Promise<KeywordTrialResult> {
-    const g = await groupBySlug(slug);
-    if (body.items.length > TRIAL_MAX_ITEMS) throw new AppError(400, "errors.keyword.trialTooMany");
-    if (body.items.some((i) => !g.platforms.includes(i.platform))) throw new AppError(400, "errors.validation");
-    if (body.confirm !== true) throw new AppError(400, "errors.confirmRequired"); // mock too: the dialog is the same
-    if ((await groupMode(g)) === "apify" && !(await getSetting("APIFY_TOKEN"))) throw new AppError(400, "errors.actors.needsToken");
-    return startTrials(g, body.items);
-  }
-
-  @Get("groups/:slug/keyword-trials")
-  async trials(@Param("slug") slug: string, @Query("since") since?: string): Promise<KeywordTrialsResponse> {
-    void reconcile().catch(() => 0); // apify trials finish here when no webhook reaches this host
-    const g = await groupBySlug(slug);
-    const from = since && !Number.isNaN(Date.parse(since)) ? new Date(since) : null;
-    return { mode: await groupMode(g), estimates: await trialEstimates(g), trials: await listTrials(g, from) };
   }
 
   /** AI keyword suggestion — spends a little on Anthropic (or the local cli). Nothing is saved. */
@@ -240,26 +208,6 @@ export class GroupsController {
     } catch {
       throw new AppError(502, "errors.suggest.failed");
     }
-  }
-
-  /** Free: terms frequent in the Group's own titles, plus XHS related searches from finished runs. */
-  @Get("groups/:slug/keyword-suggestions/frequent")
-  async frequent(@Param("slug") slug: string): Promise<FrequentTermsResponse> {
-    const g = await groupBySlug(slug);
-    const db = await getDb();
-    const saved = await db.select({ platform: keywords.platform, keyword: keywords.keyword }).from(keywords).where(eq(keywords.productGroupId, g.id));
-    const titles = await db.select({ platform: products.platform, title: products.title }).from(products).where(eq(products.productGroupId, g.id));
-    const frequent: FrequentTermsResponse["frequent"] = {};
-    for (const p of g.platforms as Platform[]) {
-      const own = titles.filter((r) => r.platform === p).map((r) => r.title);
-      const terms = own.length ? frequentTerms(p, own, saved.filter((k) => k.platform === p).map((k) => k.keyword)) : [];
-      if (terms.length) frequent[p] = terms;
-    }
-    const lists = await db
-      .select({ r: scrapeRuns.relatedKeywords })
-      .from(scrapeRuns)
-      .where(and(eq(scrapeRuns.productGroupId, g.id), eq(scrapeRuns.platform, "xhs"), isNotNull(scrapeRuns.relatedKeywords), gte(scrapeRuns.startedAt, new Date(Date.now() - 30 * 86_400_000))));
-    return { frequent, related: rankRelated(lists.map((l) => l.r), saved.filter((k) => k.platform === "xhs").map((k) => k.keyword)) };
   }
 
   @Patch("keywords/:id")

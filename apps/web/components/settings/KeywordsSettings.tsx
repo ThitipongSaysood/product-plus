@@ -9,9 +9,8 @@ import { PLATFORM_LIST } from "@/lib/platform";
 import { platformName } from "../bits";
 import { PlusIcon, TrashIcon } from "../icons";
 import { Alert, Button, Card, Checkbox, ComboBox, EmptyState, Field, SectionTitle, Select, TableScroll, TextArea, TextInput, Toggle } from "../ui";
-import { languageMismatch } from "@/lib/keyword-lang";
 import { GroupFields, useGroupEdit } from "./group-edit";
-import { KeywordSuggestions, KeywordTrials, type Picker } from "./keyword-helpers";
+import { KeywordSuggest } from "./keyword-suggest";
 import { parseTaxonomy, taxonomyToText } from "./taxonomy";
 
 type Msg = { tone: "success" | "danger" | "warning"; text: string } | null;
@@ -78,27 +77,6 @@ export function KeywordsEditor({ pg, keywords, platforms }: { pg: string; keywor
   const terms = [...new Set(text.split(/[\n,]/).map((x) => x.trim()).filter(Boolean))];
   const chosen = PLATFORM_LIST.filter((p) => platforms.includes(p) && picked.includes(p));
   const pending = terms.length * chosen.length;
-  // Said while typing, not after a paid round: a wrong-language keyword still returns rows (CONTEXT.md).
-  const mismatches = terms.flatMap((k) => chosen.filter((p) => languageMismatch(p, k)).map((p) => ({ k, p })));
-  const [allowMismatch, setAllowMismatch] = useState(false);
-  const blocked = mismatches.length > 0 && !allowMismatch;
-  const picker: Picker = {
-    isOn: (word, p) => terms.includes(word) && chosen.includes(p),
-    toggle: (word, ps) => {
-      if (ps.every((p) => terms.includes(word) && chosen.includes(p))) {
-        setText((cur) =>
-          cur
-            .split("\n")
-            .map((l) => l.split(",").map((x) => x.trim()).filter((x) => x && x !== word).join(", "))
-            .filter(Boolean)
-            .join("\n"),
-        );
-        return;
-      }
-      if (!terms.includes(word)) setText((cur) => (cur.trim() ? `${cur.replace(/\s+$/, "")}\n${word}` : word));
-      setPicked((cur) => [...new Set([...cur, ...ps])]);
-    },
-  };
 
   return (
     <Card>
@@ -150,12 +128,13 @@ export function KeywordsEditor({ pg, keywords, platforms }: { pg: string; keywor
           </table>
         </TableScroll>
       )}
-      <KeywordSuggestions pg={pg} platforms={platforms} picker={picker} />
+      <SectionTitle title={t("kwsug.title")} />
+      <KeywordSuggest pg={pg} platforms={platforms} />
       <form
         className="ox-stack"
         onSubmit={async (e) => {
           e.preventDefault();
-          if (!pending || blocked) return;
+          if (!pending) return;
           let added = 0;
           let skipped = 0;
           const ok = await s.run(async () => {
@@ -168,7 +147,6 @@ export function KeywordsEditor({ pg, keywords, platforms }: { pg: string; keywor
                   // nothing acts on and that reads as though it did something.
                   region: platform === "temu" ? region.trim() || null : null,
                   enabled: true,
-                  allowLanguageMismatch: allowMismatch || undefined,
                 });
                 if (!r.error) added++;
                 else if (r.error === "errors.keyword.duplicate") skipped++;
@@ -179,7 +157,6 @@ export function KeywordsEditor({ pg, keywords, platforms }: { pg: string; keywor
           }, t("keywords.added"));
           if (ok) {
             setText("");
-            setAllowMismatch(false);
             s.setMsg({
               tone: skipped ? "warning" : "success",
               text: skipped
@@ -190,16 +167,7 @@ export function KeywordsEditor({ pg, keywords, platforms }: { pg: string; keywor
         }}
       >
         <Field label={t("keywords.keywordsMulti")} htmlFor="kw-keyword" required help={t("keywords.multiHelp")}>
-          <TextArea
-            id="kw-keyword"
-            rows={3}
-            value={text}
-            // a confirmation covers the words it was given, not whatever is typed after it
-            onChange={(e) => { setText(e.target.value); setAllowMismatch(false); }}
-            placeholder={"苹果手表钢化膜\n苹果手表保护膜"}
-            lang="zh-CN"
-            aria-describedby={mismatches.length ? "kw-lang" : undefined}
-          />
+          <TextArea id="kw-keyword" rows={3} value={text} onChange={(e) => setText(e.target.value)} placeholder={"苹果手表钢化膜\n苹果手表保护膜"} lang="zh-CN" />
         </Field>
         <fieldset className="ox-field" style={{ border: 0, padding: 0, margin: 0 }}>
           <legend className="ox-label">{t("group.platforms")}</legend>
@@ -210,19 +178,6 @@ export function KeywordsEditor({ pg, keywords, platforms }: { pg: string; keywor
           </div>
           {chosen.length === 0 ? <div className="ox-error" role="alert">{t("group.platformsRequired")}</div> : null}
         </fieldset>
-        {mismatches.length ? (
-          <div className="ox-stack" id="kw-lang">
-            <Alert tone="warning" title={t("kwlang.title")}>
-              <ul className="ap-kwlang">
-                {mismatches.map(({ k, p }) => (
-                  <li key={`${p}|${k}`}>{t(p === "temu" ? "kwlang.needLatin" : "kwlang.needChinese", { keyword: k, platform: platformName(t, p) })}</li>
-                ))}
-              </ul>
-              <div className="ox-xs">{t("kwlang.lesson")}</div>
-            </Alert>
-            <Checkbox checked={allowMismatch} onChange={setAllowMismatch} label={t("kwlang.confirm")} />
-          </div>
-        ) : null}
         <div className="ap-form-row ap-form-row--level">
           <Field label={t("keywords.region")} htmlFor="kw-region" help={t("keywords.regionTemuOnly")}>
             <TextInput id="kw-region" value={region} onChange={(e) => setRegion(e.target.value)} placeholder="us" disabled={!chosen.includes("temu")} />
@@ -237,13 +192,12 @@ export function KeywordsEditor({ pg, keywords, platforms }: { pg: string; keywor
           </div>
         ) : null}
         <div>
-          <Button type="submit" icon={<PlusIcon size={16} />} disabled={s.busy || !pending || blocked}>
+          <Button type="submit" icon={<PlusIcon size={16} />} disabled={s.busy || !pending}>
             {pending > 1 ? t("keywords.addN", { n: formatNumber(t.locale, pending) }) : t("keywords.add")}
           </Button>
         </div>
       </form>
       <Status msg={s.msg} />
-      <KeywordTrials pg={pg} terms={terms} platforms={chosen} disabled={s.busy} />
     </Card>
   );
 }

@@ -32,8 +32,6 @@ const ALLOW_GRID: Record<string, string> = {
   ".ap-judge li": "14px icon | minmax(0,1fr) text — an icon column, not a layout",
   ".ap-avoid__row": "48px thumb | minmax(0,1fr) text",
   ".ap-score": "score meter: label | minmax(0,1fr) bar | number \u2014 a content row, and the bar column can shrink to 40px",
-  ".ap-trial-grid": "keyword trial cards: auto-fill minmax(260px,1fr) — one column below ~560px, fits 375px inside the card padding",
-  ".ap-trial__row": "44px thumb | minmax(0,1fr) text | link icon — same fixed-thumb pattern as .ap-lane__row",
   ".ap-tiers": "price ladder: two content-sized columns (\"1–9 เส้น\" + ¥13.50) — ~160px total, safe at 320px",
 };
 const ALLOW_WIDTH: Record<string, string> = {};

@@ -8,13 +8,11 @@ import { NOTE } from "../domain/notes.js";
 import { normalizeRows } from "../domain/normalize/index.js";
 import { costFromEvents, pickActualCost } from "../domain/cost.js";
 import type { Platform } from "@pp/contracts";
-import { apifyFetch, relatedKeyFor } from "../sources/apify.js";
-import { parseRelatedKeywords } from "../domain/keywords.js";
+import { apifyFetch } from "../sources/apify.js";
 import type { FetchResult } from "../sources/types.js";
 import { getSetting } from "../settings/settings.js";
 import { ingestRun } from "./ingest.js";
 import { finishRun, type RunRecord } from "./runs.js";
-import { finishTrial } from "./trials.js";
 
 const START_LOST_MS = 10 * 60_000;
 const TIMED_OUT_MS = 60 * 60_000;
@@ -42,18 +40,8 @@ export async function finishApifyRun(run: RunRecord, res: Extract<FetchResult, {
   }
   if (run.kind === "scrape") {
     const r = await ingestRun(run.id, { rows: res.rows, costUsd: cost ?? run.costUsd, apifyStatus: res.apifyStatus });
-    const related = parseRelatedKeywords(res.record);
-    if (cost !== null || related.length)
-      await (await getDb())
-        .update(scrapeRuns)
-        .set({ ...(cost !== null ? { costFinal: true } : {}), ...(related.length ? { relatedKeywords: related } : {}) })
-        .where(eq(scrapeRuns.id, run.id));
+    if (cost !== null) await (await getDb()).update(scrapeRuns).set({ costFinal: true }).where(eq(scrapeRuns.id, run.id));
     return r;
-  }
-  if (run.kind === "trial") {
-    // like smoke, but the listings are kept on the run for the keyword form — never ingested
-    await finishTrial(run, res, cost ?? run.costUsd, cost !== null);
-    return { ignored: false };
   }
   // smoke: record what the actor really returned against the evaluation row
   const { items, itemsIn } = normalizeRows(run.platform as Platform, res.rows, run.keyword ?? "", 5);
@@ -98,7 +86,7 @@ async function doReconcile(now: Date) {
     .from(scrapeRuns)
     .where(
       and(
-        inArray(scrapeRuns.kind, ["scrape", "smoke", "trial"]),
+        inArray(scrapeRuns.kind, ["scrape", "smoke"]),
         or(
           eq(scrapeRuns.status, "running"),
           and(
@@ -123,7 +111,7 @@ async function doReconcile(now: Date) {
     }
     if (token && shouldPoll(run.id, run.status === "running", now.getTime())) {
       try {
-        const res = await apifyFetch(token, run.apifyRunId, 50, relatedKeyFor(run.platform));
+        const res = await apifyFetch(token, run.apifyRunId, 50);
         if (res.finished) {
           await finishApifyRun(run, res);
           closed++;

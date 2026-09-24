@@ -9,7 +9,7 @@ export type SoldPeriod = "30d" | "lifetime" | "unknown";
 export type TrendLabel = "rising" | "falling" | "flat" | "insufficient_history";
 export type CategorySource = "platform" | "rules" | "llm" | "manual";
 export type RunStatus = "running" | "succeeded" | "failed" | "suspect";
-export type RunKind = "scrape" | "categorize" | "media" | "trend" | "evaluate" | "smoke" | "pipeline" | "translate" | "brand" | "trial";
+export type RunKind = "scrape" | "categorize" | "media" | "trend" | "evaluate" | "smoke" | "pipeline" | "translate" | "brand";
 export type EventKind = "new" | "gone" | "price_drop" | "sales_surge" | "rank_up";
 export type SourceMode = "mock" | "apify";
 /** The three languages the interface ships in; AI prose is written in whichever one the reader is using. */
@@ -74,68 +74,6 @@ export type Keyword = {
   keyword: string;
   region: string | null;
   enabled: boolean;
-};
-
-// POST /groups/:slug/keywords. A Language mismatch is refused (errors.keyword.languageMismatch) unless
-// the merchant ticked the explicit confirmation.
-export type KeywordCreate = {
-  platform: Platform;
-  keyword: string;
-  region?: string | null;
-  enabled?: boolean;
-  allowLanguageMismatch?: boolean;
-};
-
-// ---------- keyword trials (CONTEXT.md "Keyword trial") ----------
-// POST /groups/:slug/keyword-trials — paid unless the group is mock; max 8 items (errors.keyword.trialTooMany).
-export type KeywordTrialRequest = { items: { platform: Platform; keyword: string; region?: string | null }[]; confirm: true };
-export type KeywordTrialResult = {
-  runIds: string[];
-  started: { platform: Platform; keyword: string }[];
-  skipped: { platform: Platform; keyword: string; reason: string }[]; // reason = dict key
-};
-
-/** One listing a trial saw. Never stored as a product; the image is the platform's own URL. */
-export type TrialItem = {
-  title: string | null;
-  imageUrl: string | null;
-  price: number | null;
-  currency: Currency | null;
-  sold: SoldInfo;
-  productUrl: string | null;
-  rank: number;
-};
-
-export type TrialRun = {
-  id: string;
-  platform: Platform;
-  keyword: string;
-  status: RunStatus;
-  costUsd: number | null;
-  note: string | null;
-  startedAt: string;
-  finishedAt: string | null;
-  items: TrialItem[] | null; // null while running, and after the 7-day retention
-};
-
-// GET /groups/:slug/keyword-trials?since=ISO
-export type KeywordTrialsResponse = {
-  mode: SourceMode;
-  /** Apify's hard cap for one trial on each platform (start fee + 5 results + headroom); null = no chosen
-   *  actor, so a trial there would be skipped. 0 in a mock group. */
-  estimates: Partial<Record<Platform, number | null>>;
-  trials: TrialRun[];
-};
-
-// ---------- keyword suggestions (CONTEXT.md "Keyword suggestion") ----------
-export type KeywordSuggestion = { platform: Platform; keyword: string; glossTh: string };
-// POST /groups/:slug/keyword-suggestions {productName}
-export type KeywordSuggestionsResponse = { suggestions: KeywordSuggestion[]; costUsd: number | null };
-// GET /groups/:slug/keyword-suggestions/frequent — empty lists when the group has no data yet.
-export type FrequentTerm = { term: string; count: number };
-export type FrequentTermsResponse = {
-  frequent: Partial<Record<Platform, FrequentTerm[]>>; // from the Group's own listing titles
-  related: FrequentTerm[]; // Xiaohongshu's related searches, collected from finished xhs runs
 };
 
 // ---------- products ----------
@@ -417,3 +355,8 @@ export type BrandItem = {
 export type BrandResponse = { report: BrandReport | null; items: Record<string, BrandItem> };
 
 export type UnmappedCategory = { platform: Platform; path: string; count: number };
+
+// ---------- keyword suggestions (CONTEXT.md "Keyword suggestion") ----------
+export type KeywordSuggestion = { platform: Platform; keyword: string; glossTh: string };
+// POST /groups/:slug/keyword-suggestions {productName}
+export type KeywordSuggestionsResponse = { suggestions: KeywordSuggestion[]; costUsd: number | null };
