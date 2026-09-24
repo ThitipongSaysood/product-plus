@@ -34,3 +34,28 @@ export function cleanSuggestions(raw: unknown[], platforms: Platform[], existing
   }
   return out;
 }
+
+const CJK_PLATFORM_LIST: readonly Platform[] = CJK_PLATFORMS;
+const normTerm = (s: string) => s.trim().replace(/\s+/g, " ").slice(0, 100);
+
+/** One Platform term per watched platform from the AI's answer. A wrong-language or missing term is
+ *  filled from another platform of the same language when one exists (the three Chinese platforms
+ *  normally share a term), otherwise that platform is left out and reported as skipped. */
+export function cleanTerms(raw: unknown[], platforms: Platform[]): { terms: Map<Platform, string>; missing: Platform[] } {
+  const got = new Map<Platform, string>();
+  for (const r of raw) {
+    const x = r as { platform?: unknown; term?: unknown; keyword?: unknown } | null;
+    const platform = x?.platform as Platform;
+    const text = x?.term ?? x?.keyword; // the model sometimes names the field after the skill's input
+    const term = typeof text === "string" ? normTerm(text) : "";
+    if (platforms.includes(platform) && term && !languageMismatch(platform, term) && !got.has(platform)) got.set(platform, term);
+  }
+  const cjk = CJK_PLATFORM_LIST.map((p) => got.get(p)).find(Boolean);
+  const missing: Platform[] = [];
+  for (const p of platforms) {
+    if (got.has(p)) continue;
+    if (CJK_PLATFORM_LIST.includes(p) && cjk) got.set(p, cjk);
+    else missing.push(p);
+  }
+  return { terms: got, missing };
+}

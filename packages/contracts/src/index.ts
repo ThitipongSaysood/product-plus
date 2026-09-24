@@ -71,7 +71,8 @@ export type GroupPatch = {
 export type Keyword = {
   id: string;
   platform: Platform;
-  keyword: string;
+  keyword: string; // the Platform term actually searched (CONTEXT.md)
+  concept: string | null; // the Keyword the merchant typed; rows sharing it are one Keyword
   region: string | null;
   enabled: boolean;
 };
@@ -360,3 +361,10 @@ export type UnmappedCategory = { platform: Platform; path: string; count: number
 export type KeywordSuggestion = { platform: Platform; keyword: string; glossTh: string };
 // POST /groups/:slug/keyword-suggestions {productName}
 export type KeywordSuggestionsResponse = { suggestions: KeywordSuggestion[]; costUsd: number | null };
+// POST /groups/:slug/keyword-concepts {keyword} — one Keyword → one Platform term per watched platform
+export type KeywordAddResponse = {
+  concept: string;
+  created: Keyword[];
+  skipped: { platform: Platform; term: string; reason: string }[]; // reason = dict key
+  costUsd: number | null;
+};

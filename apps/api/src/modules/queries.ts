@@ -52,6 +52,7 @@ export const toKeyword = (k: typeof keywords.$inferSelect): Keyword => ({
   id: k.id,
   platform: k.platform as Platform,
   keyword: k.keyword,
+  concept: k.concept,
   region: k.region,
   enabled: k.enabled,
 });

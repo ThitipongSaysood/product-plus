@@ -2,7 +2,7 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Put, Query } from "@nestjs/common";
 import { and, eq, inArray, isNotNull, notExists, sql } from "drizzle-orm";
 import { z } from "zod";
-import type { KeywordSuggestionsResponse, Platform, TaxonomyEntry } from "@pp/contracts";
+import type { KeywordAddResponse, KeywordSuggestionsResponse, Platform, TaxonomyEntry } from "@pp/contracts";
 import { getDb } from "../db/client.js";
 import { keywords, media, productGroups, products, scrapeRuns } from "../db/schema.js";
 import { AppError, notFound } from "../common/errors.js";
@@ -12,7 +12,7 @@ import { capsValid, isUniqueViolation, slugify } from "../domain/guards.js";
 import { PLATFORM_LIST } from "../domain/types.js";
 import { claudeCliVersion, skillPresent, SKILLS } from "../jobs/claude-cli.js";
 import { aiBackend } from "../jobs/llm.js";
-import { suggestKeywords } from "../jobs/suggest.js";
+import { suggestKeywords, translateKeyword } from "../jobs/suggest.js";
 import { getSetting } from "../settings/settings.js";
 import { applyCategoryMap } from "../jobs/categorize.js";
 import { groupBySlug } from "../jobs/runs.js";
@@ -51,8 +51,9 @@ const keywordIn = z.object({
   region: z.string().trim().max(10).nullable().optional(),
   enabled: z.boolean().optional(),
 });
-const keywordPatch = keywordIn.partial().omit({ platform: true });
+const keywordPatch = keywordIn.partial().omit({ platform: true }).extend({ concept: z.string().trim().min(1).max(100).nullable().optional() });
 const suggestIn = z.object({ productName: z.string().trim().min(1).max(120) });
+const conceptIn = z.object({ keyword: z.string().trim().min(1).max(100) });
 const taxonomyIn = z
   .array(
     z.object({
@@ -68,6 +69,18 @@ const taxonomyIn = z
 const mapIn = z.object({ platform, path: z.string().trim().min(1).max(300), categoryKey: z.string().regex(/^[a-z0-9_]{1,40}$/) });
 
 const isUuid = (id: string) => /^[0-9a-f-]{36}$/i.test(id);
+
+/** Both AI keyword jobs need the skill file and a working backend (api key or local claude CLI). */
+async function assertAiReady(skill: (typeof SKILLS)[keyof typeof SKILLS]) {
+  if (!skillPresent(skill)) throw new AppError(500, "errors.suggest.noSkill");
+  if ((await aiBackend()) === "cli") {
+    await claudeCliVersion((await getSetting("CLAUDE_CLI_PATH")) ?? "claude").catch(() => {
+      throw new AppError(400, "errors.suggest.noCli");
+    });
+  } else if (!(await getSetting("ANTHROPIC_API_KEY"))) {
+    throw new AppError(400, "errors.suggest.needsKey");
+  }
+}
 
 @Controller()
 export class GroupsController {
@@ -188,19 +201,41 @@ export class GroupsController {
     return toKeyword(row);
   }
 
+  /** One Keyword in any language → one Platform term per watched platform, translated by AI
+   *  (CONTEXT.md). Rows share `concept` so the merchant sees and deletes them as one Keyword. */
+  @Post("groups/:slug/keyword-concepts")
+  @HttpCode(200)
+  async addConcept(@Param("slug") slug: string, @Body(new ZodPipe(conceptIn)) body: z.infer<typeof conceptIn>): Promise<KeywordAddResponse> {
+    const g = await groupBySlug(slug);
+    await assertAiReady(SKILLS.translateKeyword);
+    let res: Awaited<ReturnType<typeof translateKeyword>>;
+    try {
+      res = await translateKeyword(body.keyword, g.platforms as Platform[]);
+    } catch {
+      throw new AppError(502, "errors.suggest.failed");
+    }
+    const db = await getDb();
+    const created: KeywordAddResponse["created"] = [];
+    const skipped: KeywordAddResponse["skipped"] = res.missing.map((platform) => ({ platform, term: "", reason: "keywords.skip.noTerm" }));
+    for (const [platform, term] of res.terms) {
+      const [row] = await db
+        .insert(keywords)
+        // Only Temu reads a region; its searches run on the US store (SPEC).
+        .values({ productGroupId: g.id, platform, keyword: term, concept: body.keyword, region: platform === "temu" ? "us" : null, enabled: true })
+        .onConflictDoNothing()
+        .returning();
+      if (row) created.push(toKeyword(row));
+      else skipped.push({ platform, term, reason: "keywords.skip.duplicate" });
+    }
+    return { concept: body.keyword, created, skipped, costUsd: res.costUsd };
+  }
+
   /** AI keyword suggestion — spends a little on Anthropic (or the local cli). Nothing is saved. */
   @Post("groups/:slug/keyword-suggestions")
   @HttpCode(200)
   async suggest(@Param("slug") slug: string, @Body(new ZodPipe(suggestIn)) body: z.infer<typeof suggestIn>): Promise<KeywordSuggestionsResponse> {
     const g = await groupBySlug(slug);
-    if (!skillPresent(SKILLS.suggest)) throw new AppError(500, "errors.suggest.noSkill");
-    if ((await aiBackend()) === "cli") {
-      await claudeCliVersion((await getSetting("CLAUDE_CLI_PATH")) ?? "claude").catch(() => {
-        throw new AppError(400, "errors.suggest.noCli");
-      });
-    } else if (!(await getSetting("ANTHROPIC_API_KEY"))) {
-      throw new AppError(400, "errors.suggest.needsKey");
-    }
+    await assertAiReady(SKILLS.suggest);
     const db = await getDb();
     const existing = await db.select({ platform: keywords.platform, keyword: keywords.keyword }).from(keywords).where(eq(keywords.productGroupId, g.id));
     try {

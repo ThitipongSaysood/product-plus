@@ -70,6 +70,9 @@ export const keywords = pp.table(
       .references(() => productGroups.id, { onDelete: "cascade" }),
     platform: text("platform").notNull(),
     keyword: text("keyword").notNull(),
+    // The Keyword the merchant typed (CONTEXT.md); this row is its Platform term. Null for rows added
+    // before Keywords existed or typed for one platform only — those are shown by their own text.
+    concept: text("concept"),
     region: text("region"),
     enabled: boolean("enabled").notNull().default(true),
     createdAt: ts("created_at").notNull().defaultNow(),

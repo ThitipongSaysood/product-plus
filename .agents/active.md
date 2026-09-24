@@ -37,8 +37,10 @@ Next.js + NestJS (pnpm monorepo) · PostgreSQL 18
   language guard and frequent-term chips were removed at the user's request.
 - 16 junk keywords deleted 21:20 (user OK). `apple-watch-bands` now: 苹果手表表带 (douyin/1688/xhs) + apple watch band (temu, us)
   → a round ≈ $1.46, still above the $1.00 per-round cap — user has not decided.
-- Keyword card (21:20): AI panel on top · one table row per word with platform chips (tap = enable/disable) ·
-  add form back to one word + platform dropdown (pre-17:08).
+- Keyword card (21:45): type a Keyword once in any language → AI (skill translate-keyword) makes one Platform term
+  per watched platform (Chinese for douyin/1688/xhs, English for temu), stored as rows sharing `keywords.concept`.
+  Table = one row per Keyword; edit button fixes terms; AI suggestion chips live in a <details> under the box.
+  apple-watch-bands now has 2 Keywords (สายนาฬิกา Apple Watch + Apple Watch) → ≈ $2.92/round vs $1 cap.
 
 - **Postgres volume was wiped 2026-09-24 ~19:44** (container + volume `product-plus_omnix_pgdata` recreated empty,
   `apps/api/.env` gone — not by an AI session as far as the notes show). Everything created in Postgres after the

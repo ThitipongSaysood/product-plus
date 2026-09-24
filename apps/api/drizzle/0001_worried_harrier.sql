@@ -1,0 +1,1 @@
+ALTER TABLE "product_plus"."keywords" ADD COLUMN "concept" text;

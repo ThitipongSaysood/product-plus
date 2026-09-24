@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Platform } from "@pp/contracts";
-import { cleanSuggestions, languageMismatch } from "../src/domain/keywords.js";
+import { cleanSuggestions, cleanTerms, languageMismatch } from "../src/domain/keywords.js";
 
 describe("languageMismatch", () => {
   it("Chinese platforms need at least one CJK character", () => {
@@ -43,5 +43,29 @@ describe("cleanSuggestions", () => {
   it("caps each platform at 6", () => {
     const raw = Array.from({ length: 9 }, (_, i) => ({ platform: "1688", keyword: `苹果手表膜${i}`, glossTh: "" }));
     expect(cleanSuggestions(raw, ["1688"], [])).toHaveLength(6);
+  });
+});
+
+describe("cleanTerms", () => {
+  it("one term per platform in its language; Chinese platforms share a term when one is missing or wrong", () => {
+    const { terms, missing } = cleanTerms(
+      [
+        { platform: "douyin", term: " 苹果手表表带 " },
+        { platform: "1688", term: "apple watch band" }, // wrong language → falls back to the Chinese term
+        { platform: "temu", term: "apple watch band" },
+        { platform: "temu", term: "second answer ignored" },
+      ],
+      ["douyin", "1688", "xhs", "temu"],
+    );
+    expect(Object.fromEntries(terms)).toEqual({ douyin: "苹果手表表带", "1688": "苹果手表表带", xhs: "苹果手表表带", temu: "apple watch band" });
+    expect(missing).toEqual([]);
+  });
+  it("accepts `keyword` as the field name", () => {
+    expect(cleanTerms([{ platform: "temu", keyword: "apple watch band" }], ["temu"]).terms.get("temu")).toBe("apple watch band");
+  });
+  it("reports a platform it cannot fill instead of guessing", () => {
+    const { terms, missing } = cleanTerms([{ platform: "temu", term: "苹果手表表带" }, null], ["temu", "douyin"]);
+    expect(terms.size).toBe(0);
+    expect(missing).toEqual(["temu", "douyin"]);
   });
 });

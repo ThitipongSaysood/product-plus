@@ -11,8 +11,12 @@ One product niche being watched (e.g. Apple Watch bands), with its own keywords,
 _Avoid_: project, category, collection
 
 **Keyword**:
-A search term saved on a Group for one platform, written in that platform's own language; every Round searches it.
-_Avoid_: tag, query
+What the merchant types once for a Group, in any language (e.g. "สายนาฬิกา Apple Watch"); it stands for one Platform term per watched platform.
+_Avoid_: tag, query, concept
+
+**Platform term**:
+The search text actually sent to one platform for a Keyword, in that platform's own language (Chinese for Douyin, 1688 and Xiaohongshu; English for Temu); every Round searches each enabled Platform term.
+_Avoid_: translation, variant
 
 **Round**:
 One scheduled or button-triggered fetch of every enabled Keyword of a Group, up to 50 listings per platform per Keyword; the only way listings enter a Group.
@@ -23,5 +27,5 @@ A paid 5-listing run that checks whether an **actor** still works and returns th
 _Avoid_: keyword test
 
 **Keyword suggestion**:
-A candidate Keyword proposed by AI from a product name, per platform and in that platform's own language; nothing is saved until the merchant picks it.
+A candidate Platform term proposed by AI from a product name; nothing is saved until the merchant picks it.
 _Avoid_: recommendation, auto keyword
