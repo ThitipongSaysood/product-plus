@@ -571,13 +571,9 @@ select.ox-control { appearance: none; padding-right: var(--omnix-space-8); backg
 .ap-kwsug__hint { color: var(--omnix-fg-muted); font-size: var(--omnix-text-xs); }
 .ap-kwsug__chip.is-active .ap-kwsug__hint { color: inherit; }
 @media (max-width: 767px) { .ap-kwsug__chip { min-height: 44px; } }
-/* Keyword table: one row per word, platform chips toggle each platform (KeywordsSettings.tsx) */
+/* Keyword table: one row per Keyword, its Platform terms as a muted line (KeywordsSettings.tsx) */
 .ap-kwbox { display: flex; flex-direction: column; gap: var(--omnix-space-2); padding: var(--omnix-space-4); background: var(--omnix-surface-2); border-radius: var(--omnix-radius-lg); }
 .ap-kwrow__word { font-weight: 500; min-width: 140px; }
-.ap-kwrow__term { display: flex; flex-wrap: wrap; align-items: center; gap: var(--omnix-space-2); }
-.ap-kwrow__text { font-weight: 500; }
 .ap-kwmore > summary { cursor: pointer; color: var(--omnix-accent); font-size: var(--omnix-text-xs); padding-block: var(--omnix-space-1); }
 .ap-kwmore[open] > summary { margin-bottom: var(--omnix-space-3); }
-.ap-kwrow__chips { display: flex; flex-wrap: wrap; gap: var(--omnix-space-2); }
-@media (max-width: 767px) { .ap-kwrow__chips .ox-chip { min-height: 44px; } }
 

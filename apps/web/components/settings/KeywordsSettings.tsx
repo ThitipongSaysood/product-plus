@@ -8,7 +8,7 @@ import { send } from "@/lib/client-api";
 import { PLATFORM_LIST } from "@/lib/platform";
 import { platformName } from "../bits";
 import { EditIcon, PlusIcon, TrashIcon } from "../icons";
-import { Alert, Button, Card, Checkbox, Chip, ComboBox, Modal, EmptyState, Field, SectionTitle, Select, TableScroll, TextArea, TextInput, Toggle } from "../ui";
+import { Alert, Button, Card, Checkbox, ComboBox, Modal, EmptyState, Field, SectionTitle, Select, TableScroll, TextArea, TextInput, Toggle } from "../ui";
 import { GroupFields, useGroupEdit } from "./group-edit";
 import { KeywordSuggest } from "./keyword-suggest";
 import { parseTaxonomy, taxonomyToText } from "./taxonomy";
@@ -204,36 +204,18 @@ export function KeywordsEditor({ pg, keywords, platforms }: { pg: string; keywor
             <thead>
               <tr>
                 <th>{t("keywords.keyword")}</th>
-                <th>{t("keywords.termsCol")}</th>
                 <th><span className="sr-only">{t("common.actions")}</span></th>
               </tr>
             </thead>
             <tbody>
               {rows.map((r) => (
                 <tr key={r.label}>
-                  <td className="ap-kwrow__word">{r.label}</td>
                   <td>
-                    <div className="ox-stack" style={{ gap: "var(--omnix-space-2)" }}>
-                      {r.terms.map((g) => (
-                        <div key={g.term} className="ap-kwrow__term">
-                          <span className="ap-kwrow__text" lang={g.items[0].platform === "temu" ? "en" : "zh-CN"} translate="no">{g.term}</span>
-                          <div className="ap-kwrow__chips">
-                            {g.items.map((k) => (
-                              <Chip
-                                key={k.id}
-                                active={k.enabled}
-                                disabled={s.busy}
-                                title={k.enabled ? t("keywords.chipOnHint") : t("keywords.chipOffHint")}
-                                onClick={() => void s.run(() => send("PATCH", `/api/keywords/${encodeURIComponent(k.id)}`, { enabled: !k.enabled }), t("common.saved"))}
-                              >
-                                {platformName(t, k.platform)}
-                                {k.platform === "temu" && k.region ? ` · ${k.region.toUpperCase()}` : ""}
-                                {k.enabled ? null : <span className="ox-xs"> · {t("keywords.off")}</span>}
-                              </Chip>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
+                    {/* Which platforms are searched is the group's setting; here the merchant sees the
+                        Keyword, and the terms only as a check that the translation is right. */}
+                    <div className="ap-kwrow__word">{r.label}</div>
+                    <div className="ox-xs ox-muted" translate="no">
+                      {r.terms.map((g) => g.term).join(" · ")}
                     </div>
                   </td>
                   <td className="ap-row-actions">
