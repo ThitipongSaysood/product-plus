@@ -571,3 +571,9 @@ select.ox-control { appearance: none; padding-right: var(--omnix-space-8); backg
 .ap-kwsug__hint { color: var(--omnix-fg-muted); font-size: var(--omnix-text-xs); }
 .ap-kwsug__chip.is-active .ap-kwsug__hint { color: inherit; }
 @media (max-width: 767px) { .ap-kwsug__chip { min-height: 44px; } }
+/* Keyword table: one row per word, platform chips toggle each platform (KeywordsSettings.tsx) */
+.ap-kwbox { display: flex; flex-direction: column; gap: var(--omnix-space-2); padding: var(--omnix-space-4); background: var(--omnix-surface-2); border-radius: var(--omnix-radius-lg); }
+.ap-kwrow__word { font-weight: 500; white-space: nowrap; }
+.ap-kwrow__chips { display: flex; flex-wrap: wrap; gap: var(--omnix-space-2); }
+@media (max-width: 767px) { .ap-kwrow__chips .ox-chip { min-height: 44px; } }
+

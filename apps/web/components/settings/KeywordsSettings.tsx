@@ -8,7 +8,7 @@ import { send } from "@/lib/client-api";
 import { PLATFORM_LIST } from "@/lib/platform";
 import { platformName } from "../bits";
 import { PlusIcon, TrashIcon } from "../icons";
-import { Alert, Button, Card, Checkbox, ComboBox, EmptyState, Field, SectionTitle, Select, TableScroll, TextArea, TextInput, Toggle } from "../ui";
+import { Alert, Button, Card, Checkbox, Chip, ComboBox, EmptyState, Field, SectionTitle, Select, TableScroll, TextArea, TextInput, Toggle } from "../ui";
 import { GroupFields, useGroupEdit } from "./group-edit";
 import { KeywordSuggest } from "./keyword-suggest";
 import { parseTaxonomy, taxonomyToText } from "./taxonomy";
@@ -63,24 +63,37 @@ export function GroupForm({ group }: { group: Group }) {
 }
 
 // ---------- keywords ----------
+type KeywordRow = { keyword: string; items: Keyword[] };
+
+/** One row per keyword text: the same word usually sits on several platforms, and a row per platform
+ *  made five words read as twenty rows. */
+export function groupKeywordRows(keywords: Keyword[], platforms: Platform[]): KeywordRow[] {
+  const byWord = new Map<string, Keyword[]>();
+  for (const k of keywords) {
+    if (!platforms.includes(k.platform)) continue;
+    byWord.set(k.keyword, [...(byWord.get(k.keyword) ?? []), k]);
+  }
+  return [...byWord.entries()].map(([keyword, items]) => ({
+    keyword,
+    items: items.sort((a, b) => PLATFORM_LIST.indexOf(a.platform) - PLATFORM_LIST.indexOf(b.platform)),
+  }));
+}
+
 export function KeywordsEditor({ pg, keywords, platforms }: { pg: string; keywords: Keyword[]; platforms: Platform[] }) {
   const t = useT();
   const s = useSaver();
-  // One box, one keyword per line: the same term normally has to go on several platforms, and adding
-  // it one platform at a time is four submits for what is one decision.
-  const [text, setText] = useState("");
-  const [picked, setPicked] = useState<Platform[]>(platforms);
+  const [platform, setPlatform] = useState<Platform>(platforms[0] ?? "douyin");
+  const [keyword, setKeyword] = useState("");
   const [region, setRegion] = useState("");
-  const rows = keywords.filter((k) => platforms.includes(k.platform)).sort((a, b) => PLATFORM_LIST.indexOf(a.platform) - PLATFORM_LIST.indexOf(b.platform));
-  // Deduplicated here as well as on the server, so a list pasted with repeats does not send the same
-  // row twice and count one of them as "already there".
-  const terms = [...new Set(text.split(/[\n,]/).map((x) => x.trim()).filter(Boolean))];
-  const chosen = PLATFORM_LIST.filter((p) => platforms.includes(p) && picked.includes(p));
-  const pending = terms.length * chosen.length;
+  const rows = groupKeywordRows(keywords, platforms);
 
   return (
     <Card>
       <SectionTitle title={t("keywords.title")} sub={t("keywords.sub")} />
+      <div className="ap-kwbox">
+        <div className="ox-label">{t("kwsug.title")}</div>
+        <KeywordSuggest pg={pg} platforms={platforms} />
+      </div>
       {rows.length === 0 ? (
         <EmptyState title={t("keywords.empty")} body={t("keywords.emptyBody")} />
       ) : (
@@ -88,37 +101,49 @@ export function KeywordsEditor({ pg, keywords, platforms }: { pg: string; keywor
           <table className="ox-table ox-table--data">
             <thead>
               <tr>
-                <th>{t("facts.platform")}</th>
                 <th>{t("keywords.keyword")}</th>
-                <th>{t("keywords.region")}</th>
-                <th>{t("keywords.enabled")}</th>
+                <th>{t("keywords.platformsCol")}</th>
                 <th><span className="sr-only">{t("common.actions")}</span></th>
               </tr>
             </thead>
             <tbody>
-              {rows.map((k) => (
-                <tr key={k.id}>
-                  <td>{platformName(t, k.platform)}</td>
-                  <td lang="zh-CN">{k.keyword}</td>
-                  <td>{k.region ?? "—"}</td>
+              {rows.map((r) => (
+                <tr key={r.keyword}>
+                  <td className="ap-kwrow__word" translate="no">{r.keyword}</td>
                   <td>
-                    <Toggle
-                      checked={k.enabled}
-                      disabled={s.busy}
-                      label={k.enabled ? t("keywords.on") : t("keywords.off")}
-                      onChange={(v) => void s.run(() => send("PATCH", `/api/keywords/${encodeURIComponent(k.id)}`, { enabled: v }), t("common.saved"))}
-                    />
+                    <div className="ap-kwrow__chips">
+                      {r.items.map((k) => (
+                        <Chip
+                          key={k.id}
+                          active={k.enabled}
+                          disabled={s.busy}
+                          title={k.enabled ? t("keywords.chipOnHint") : t("keywords.chipOffHint")}
+                          onClick={() => void s.run(() => send("PATCH", `/api/keywords/${encodeURIComponent(k.id)}`, { enabled: !k.enabled }), t("common.saved"))}
+                        >
+                          {platformName(t, k.platform)}
+                          {k.platform === "temu" && k.region ? ` · ${k.region.toUpperCase()}` : ""}
+                          {k.enabled ? null : <span className="ox-xs"> · {t("keywords.off")}</span>}
+                        </Chip>
+                      ))}
+                    </div>
                   </td>
-                  <td>
+                  <td className="ap-row-actions">
                     <Button
                       size="sm"
                       variant="ghost"
                       iconOnly
-                      aria-label={t("keywords.delete", { keyword: k.keyword })}
+                      aria-label={t("keywords.delete", { keyword: r.keyword })}
                       icon={<TrashIcon size={16} />}
                       disabled={s.busy}
                       onClick={() => {
-                        if (window.confirm(t("keywords.deleteConfirm", { keyword: k.keyword }))) void s.run(() => send("DELETE", `/api/keywords/${encodeURIComponent(k.id)}`), t("common.deleted"));
+                        if (!window.confirm(t("keywords.deleteAllConfirm", { keyword: r.keyword, n: formatNumber(t.locale, r.items.length) }))) return;
+                        void s.run(async () => {
+                          for (const k of r.items) {
+                            const res = await send("DELETE", `/api/keywords/${encodeURIComponent(k.id)}`);
+                            if (res.error) return { error: res.error };
+                          }
+                          return { data: true };
+                        }, t("common.deleted"));
                       }}
                     />
                   </td>
@@ -128,74 +153,36 @@ export function KeywordsEditor({ pg, keywords, platforms }: { pg: string; keywor
           </table>
         </TableScroll>
       )}
-      <SectionTitle title={t("kwsug.title")} />
-      <KeywordSuggest pg={pg} platforms={platforms} />
       <form
-        className="ox-stack"
+        className="ap-form-row ap-form-row--level"
         onSubmit={async (e) => {
           e.preventDefault();
-          if (!pending) return;
-          let added = 0;
-          let skipped = 0;
-          const ok = await s.run(async () => {
-            for (const keyword of terms) {
-              for (const platform of chosen) {
-                const r = await send<Keyword>("POST", `/api/groups/${encodeURIComponent(pg)}/keywords`, {
-                  platform,
-                  keyword,
-                  // Only Temu reads a region; storing one against the others would be a value that
-                  // nothing acts on and that reads as though it did something.
-                  region: platform === "temu" ? region.trim() || null : null,
-                  enabled: true,
-                });
-                if (!r.error) added++;
-                else if (r.error === "errors.keyword.duplicate") skipped++;
-                else return { error: r.error };
-              }
-            }
-            return { data: true };
-          }, t("keywords.added"));
-          if (ok) {
-            setText("");
-            s.setMsg({
-              tone: skipped ? "warning" : "success",
-              text: skipped
-                ? t("keywords.addedNSkipped", { added: formatNumber(t.locale, added), skipped: formatNumber(t.locale, skipped) })
-                : t("keywords.addedN", { added: formatNumber(t.locale, added) }),
-            });
-          }
+          if (!keyword.trim()) return;
+          const ok = await s.run(
+            () =>
+              send<Keyword>("POST", `/api/groups/${encodeURIComponent(pg)}/keywords`, {
+                platform,
+                keyword: keyword.trim(),
+                region: platform === "temu" ? region.trim() || null : null,
+                enabled: true,
+              }),
+            t("keywords.added"),
+          );
+          if (ok) { setKeyword(""); setRegion(""); }
         }}
       >
-        <Field label={t("keywords.keywordsMulti")} htmlFor="kw-keyword" required help={t("keywords.multiHelp")}>
-          <TextArea id="kw-keyword" rows={3} value={text} onChange={(e) => setText(e.target.value)} placeholder={"苹果手表钢化膜\n苹果手表保护膜"} lang="zh-CN" />
+        <Field label={t("facts.platform")} htmlFor="kw-platform">
+          <Select id="kw-platform" value={platform} onChange={(e) => setPlatform(e.target.value as Platform)}>
+            {platforms.map((p) => <option key={p} value={p}>{platformName(t, p)}</option>)}
+          </Select>
         </Field>
-        <fieldset className="ox-field" style={{ border: 0, padding: 0, margin: 0 }}>
-          <legend className="ox-label">{t("group.platforms")}</legend>
-          <div className="ox-row" style={{ gap: 16 }}>
-            {platforms.map((p) => (
-              <Checkbox key={p} checked={picked.includes(p)} label={platformName(t, p)} onChange={(v) => setPicked((cur) => (v ? [...cur, p] : cur.filter((x) => x !== p)))} />
-            ))}
-          </div>
-          {chosen.length === 0 ? <div className="ox-error" role="alert">{t("group.platformsRequired")}</div> : null}
-        </fieldset>
-        <div className="ap-form-row ap-form-row--level">
-          <Field label={t("keywords.region")} htmlFor="kw-region" help={t("keywords.regionTemuOnly")}>
-            <TextInput id="kw-region" value={region} onChange={(e) => setRegion(e.target.value)} placeholder="us" disabled={!chosen.includes("temu")} />
-          </Field>
-        </div>
-        {/* Said before the click, not after: keywords multiply the bill for every round from here on. */}
-        {pending ? (
-          <div className="ox-xs ox-muted">
-            {t("keywords.willAdd", { n: formatNumber(t.locale, pending), k: formatNumber(t.locale, terms.length), p: formatNumber(t.locale, chosen.length) })}
-            {" — "}
-            {t("keywords.costNote")}
-          </div>
-        ) : null}
-        <div>
-          <Button type="submit" icon={<PlusIcon size={16} />} disabled={s.busy || !pending}>
-            {pending > 1 ? t("keywords.addN", { n: formatNumber(t.locale, pending) }) : t("keywords.add")}
-          </Button>
-        </div>
+        <Field label={t("keywords.keyword")} htmlFor="kw-keyword" required>
+          <TextInput id="kw-keyword" value={keyword} onChange={(e) => setKeyword(e.target.value)} placeholder="苹果手表表带" lang="zh-CN" required />
+        </Field>
+        <Field label={t("keywords.region")} htmlFor="kw-region" help={t("keywords.regionTemuOnly")}>
+          <TextInput id="kw-region" value={region} onChange={(e) => setRegion(e.target.value)} placeholder="us" disabled={platform !== "temu"} />
+        </Field>
+        <Button type="submit" icon={<PlusIcon size={16} />} disabled={s.busy || !keyword.trim()}>{t("keywords.add")}</Button>
       </form>
       <Status msg={s.msg} />
     </Card>
