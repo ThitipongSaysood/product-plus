@@ -95,6 +95,12 @@ Settings › our categories is now a table (name · AI badge · match words · c
 releases its products (`releaseKeys`, manual picks too) and re-runs the rules — fixes gap "taxonomy edits don't
 re-sort". `addedBy` survives text-editor saves (server merges by key). Not yet run against live data.
 
+## One category agent (2026-09-25, live)
+Settings › our categories: a single agent box lists its 3 steps with what is waiting for each and one button
+(mode auto). Removed the separate AI buttons (platform "ให้ AI จับคู่", "ให้ AI เสนอหมวดใหม่"); manual path
+matching, broad list and text editing sit under "ขั้นสูง". /categories "ให้ AI จัดการ" links to #ai-sort.
+First live press (03:57): +1 category (wool), 2 sorted, 3 left, $0.14.
+
 ## Blockers
 - ⚠️ The api answers without login from the internet (checked 2026-09-25: POST category-suggestions returned 200
   with no cookie) — anyone can start AI jobs. Set `APP_PASSWORD` (and `NODE_ENV=production` now that https is up).

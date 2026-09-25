@@ -29,7 +29,7 @@ export default async function CategoriesPage(props: PageProps<"/categories">) {
       {res.error ? <ApiErrorAlert t={t} error={res.error} /> : (
         <>
           {res.data.unmappedCount > 0 ? (
-            <Alert tone="info" action={<Link className="ox-btn ox-btn--secondary ox-btn--sm" href={`/settings/keywords${qs({ pg })}#unmapped`}>{t("categories.mapNow")}</Link>}>
+            <Alert tone="info" action={<Link className="ox-btn ox-btn--secondary ox-btn--sm" href={`/settings/keywords${qs({ pg })}#ai-sort`}>{t("categories.mapNow")}</Link>}>
               {t("categories.unmapped", { n: formatNumber(t.locale, res.data.unmappedCount) })}
             </Alert>
           ) : null}

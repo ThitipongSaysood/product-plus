@@ -1,6 +1,6 @@
 import type { CategoriesResponse, Group, Keyword, RoundEstimate, TaxonomyEntry, UnmappedCategory } from "@pp/contracts";
 import { ApiErrorAlert } from "@/components/bits";
-import { GroupForm, KeywordsEditor, TaxonomyEditor, UnmappedQueue } from "@/components/settings/KeywordsSettings";
+import { GroupForm, KeywordsEditor, TaxonomyEditor } from "@/components/settings/KeywordsSettings";
 import { getT } from "@/i18n/server";
 import { api, qs } from "@/lib/api";
 import { getPg } from "@/lib/params";
@@ -36,8 +36,16 @@ export default async function KeywordsSettingsPage(props: PageProps<"/settings/k
       {err ? <ApiErrorAlert t={t} error={err} /> : null}
       {group ? <GroupForm key={`g-${group.slug}-${group.platforms.join()}`} group={group} /> : null}
       {keywords.data ? <KeywordsEditor key={`k-${pg}-${groupPlatforms(group).join()}`} pg={pg} keywords={keywords.data} platforms={groupPlatforms(group)} estimate={estimate.data ?? null} /> : null}
-      {taxonomy.data ? <TaxonomyEditor key={`t-${pg}`} pg={pg} taxonomy={taxonomy.data} counts={counts} unclassified={counts.unclassified ?? 0} /> : null}
-      {unmapped.data ? <UnmappedQueue key={`u-${pg}`} pg={pg} items={unmapped.data} broad={broad.data ?? []} taxonomy={taxonomy.data ?? []} platforms={groupPlatforms(group)} /> : null}
+      {taxonomy.data ? <TaxonomyEditor
+          key={`t-${pg}`}
+          pg={pg}
+          taxonomy={taxonomy.data}
+          counts={counts}
+          unclassified={counts.unclassified ?? 0}
+          unmapped={unmapped.data ?? []}
+          broad={broad.data ?? []}
+          platforms={groupPlatforms(group)}
+        /> : null}
     </>
   );
 }

@@ -575,3 +575,7 @@ select.ox-control { appearance: none; padding-right: var(--omnix-space-8); backg
 
 .ap-catmap__list { margin: 0; padding-left: var(--omnix-space-4); display: flex; flex-direction: column; gap: var(--omnix-space-1); }
 .ap-taxo__ai { display: flex; flex-direction: column; gap: var(--omnix-space-2); padding: var(--omnix-space-3) var(--omnix-space-4); background: var(--omnix-accent-soft); border-radius: var(--omnix-radius-lg); }
+.ap-taxo__ai-title { font-size: var(--omnix-text-sm); font-weight: 600; }
+.ap-taxo__steps { margin: 0; padding-left: var(--omnix-space-5); display: flex; flex-direction: column; gap: var(--omnix-space-1); }
+.ap-taxo__steps li { display: flex; flex-wrap: wrap; column-gap: var(--omnix-space-2); }
+.ap-taxo__sub { font-size: var(--omnix-text-sm); font-weight: 600; margin-top: var(--omnix-space-2); }

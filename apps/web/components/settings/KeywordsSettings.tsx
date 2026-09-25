@@ -1,7 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import type { CategorySuggestion, Group, Keyword, KeywordListResponse, KeywordSuggestion, Platform, RoundEstimate, Schedule, TaxonomyEntry, UnmappedCategory } from "@pp/contracts";
+import type { Group, Keyword, KeywordListResponse, KeywordSuggestion, Platform, RoundEstimate, Schedule, TaxonomyEntry, UnmappedCategory } from "@pp/contracts";
 import { formatMoney, formatNumber } from "@/i18n";
 import { useT } from "@/i18n/client";
 import { send } from "@/lib/client-api";
@@ -10,9 +10,8 @@ import { platformName } from "../bits";
 import { AnalyseIcon } from "../icons";
 import { JobButton } from "../JobButton";
 
-import { Alert, Badge, Button, Card, ComboBox, ConfirmSubmit, EmptyState, Field, SectionTitle, TableScroll, TextArea } from "../ui";
-import { AutoMapButton, BroadPaths } from "./category-map-ai";
-import { CategorySuggest } from "./category-suggest";
+import { Alert, Badge, Button, Card, ComboBox, ConfirmSubmit, Field, SectionTitle, TableScroll, TextArea } from "../ui";
+import { BroadPaths } from "./category-map-ai";
 import { GroupFields, useGroupEdit } from "./group-edit";
 import { keywordsToText, needsTranslation, parseKeywordList, wrongLanguage } from "./keyword-list";
 import { KeywordSuggest } from "./keyword-suggest";
@@ -171,33 +170,59 @@ export function KeywordsEditor({ pg, keywords, platforms, estimate }: { pg: stri
 // The table is what a merchant reads; the one button lets AI do the sorting (jobs/auto-categorize.ts in the api).
 // The text box stays for exact edits, folded under "advanced". The card itself is keyed on the group only, so the
 // AI button keeps its result message when the page refreshes with the categories it added.
-export function TaxonomyEditor({ pg, taxonomy, counts, unclassified }: { pg: string; taxonomy: TaxonomyEntry[]; counts: Record<string, number>; unclassified: number }) {
+export function TaxonomyEditor({ pg, taxonomy, counts, unclassified, unmapped: allUnmapped, broad, platforms }: {
+  pg: string;
+  taxonomy: TaxonomyEntry[];
+  counts: Record<string, number>;
+  unclassified: number;
+  unmapped: UnmappedCategory[];
+  broad: UnmappedCategory[];
+  platforms: Platform[];
+}) {
   const t = useT();
   const s = useSaver();
   const sorted = taxonomy.reduce((n, c) => n + (counts[c.key] ?? 0), 0);
+  const unmapped = allUnmapped.filter((u) => platforms.includes(u.platform));
   const put = (entries: TaxonomyEntry[]) => send<TaxonomyEntry[]>("PUT", `/api/groups/${encodeURIComponent(pg)}/taxonomy`, entries);
 
   return (
     <Card>
       <SectionTitle title={t("taxonomy.title")} sub={t("taxonomy.subAi")} />
-      <div className="ap-taxo__ai">
+      {/* The category agent: one press runs all three steps (api jobs/auto-categorize.ts). Each step shows what
+          is waiting for it, so the merchant can see what pressing will do before pressing. */}
+      <section id="ai-sort" className="ap-taxo__ai" aria-labelledby="ai-sort-title">
+        <h3 id="ai-sort-title" className="ap-taxo__ai-title">{t("agent.title")}</h3>
+        <ol className="ap-taxo__steps">
+          <li>
+            <span>{t("agent.step1")}</span>
+            <span className="ox-xs ox-muted ox-num">{unmapped.length ? t("agent.step1Todo", { n: formatNumber(t.locale, unmapped.length) }) : t("agent.nothing")}</span>
+          </li>
+          <li>
+            <span>{t("agent.step2")}</span>
+            <span className="ox-xs ox-muted ox-num">{unclassified ? t("agent.step2Todo", { n: formatNumber(t.locale, unclassified) }) : t("agent.nothing")}</span>
+          </li>
+          <li>
+            <span>{t("agent.step3")}</span>
+            <span className="ox-xs ox-muted ox-num">{t("agent.step3Todo")}</span>
+          </li>
+        </ol>
         <div className="ox-row">
           <JobButton
             kind="categorize"
             pg={pg}
             path="/api/jobs/categorize"
             body={{ pg, mode: "auto" }}
-            label={t("taxonomy.autoRun")}
+            label={t("agent.run")}
             icon={<AnalyseIcon size={16} />}
             variant="primary"
             confirm={t("taxonomy.autoConfirm")}
           />
-          <span className="ox-num">
+          <span className="ox-num ox-xs ox-muted">
             {t("taxonomy.summary", { n: formatNumber(t.locale, taxonomy.length), sorted: formatNumber(t.locale, sorted), left: formatNumber(t.locale, unclassified) })}
           </span>
         </div>
-        <div className="ox-help">{t("taxonomy.autoHelp")}</div>
-      </div>
+        <div className="ox-help">{t("agent.help")}</div>
+      </section>
 
       <TableScroll label={t("taxonomy.title")}>
         <table className="ox-table ox-table--data">
@@ -250,9 +275,15 @@ export function TaxonomyEditor({ pg, taxonomy, counts, unclassified }: { pg: str
       </TableScroll>
       <Status msg={s.msg} />
 
-      <details className="ap-kwmore">
+      <details className="ap-kwmore" id="unmapped">
         <summary>{t("taxonomy.advanced")}</summary>
-        <TaxonomyText key={taxonomy.map((c) => c.key).join()} pg={pg} taxonomy={taxonomy} />
+        <div className="ox-stack">
+          <h3 className="ap-taxo__sub">{t("unmapped.title")}</h3>
+          <UnmappedTable items={unmapped} taxonomy={taxonomy} />
+          <BroadPaths items={broad} platforms={platforms} />
+          <h3 className="ap-taxo__sub">{t("taxonomy.textTitle")}</h3>
+          <TaxonomyText key={taxonomy.map((c) => c.key).join()} pg={pg} taxonomy={taxonomy} />
+        </div>
       </details>
     </Card>
   );
@@ -264,10 +295,6 @@ function TaxonomyText({ pg, taxonomy }: { pg: string; taxonomy: TaxonomyEntry[] 
   const s = useSaver();
   const [text, setText] = useState(() => taxonomyToText(taxonomy));
   const parsed = parseTaxonomy(text);
-
-  /** A suggestion is a whole line; tapping it again does nothing once its key is in the text. */
-  const addLine = (c: CategorySuggestion) =>
-    setText((cur) => (parseTaxonomy(cur).entries.some((e) => e.key === c.key) ? cur : `${cur.trimEnd()}${cur.trim() ? "\n" : ""}${taxonomyToText([c])}`));
 
   return (
     <div className="ox-stack">
@@ -293,17 +320,13 @@ function TaxonomyText({ pg, taxonomy }: { pg: string; taxonomy: TaxonomyEntry[] 
         </div>
         <Status msg={s.msg} />
       </form>
-      <details className="ap-kwmore">
-        <summary>{t("catsug.title")}</summary>
-        <CategorySuggest pg={pg} onPick={addLine} />
-      </details>
     </div>
   );
 }
 
 // ---------- unmapped queue ----------
-export function UnmappedQueue({ pg, items: all, broad, taxonomy, platforms }: { pg: string; items: UnmappedCategory[]; broad: UnmappedCategory[]; taxonomy: TaxonomyEntry[]; platforms: Platform[] }) {
-  const items = all.filter((u) => platforms.includes(u.platform));
+// Matching a platform path by hand. The category agent does this too; this is for overriding it.
+function UnmappedTable({ items, taxonomy }: { items: UnmappedCategory[]; taxonomy: TaxonomyEntry[] }) {
   const t = useT();
   const s = useSaver();
   const [values, setValues] = useState<Record<string, string>>({});
@@ -311,12 +334,10 @@ export function UnmappedQueue({ pg, items: all, broad, taxonomy, platforms }: { 
   const known = new Set(taxonomy.map((c) => c.key));
 
   return (
-    <Card>
-      <div id="unmapped">
-        <SectionTitle title={t("unmapped.title")} sub={t("unmapped.sub")} />
-      </div>
+    <div className="ox-stack">
+      <div className="ox-help">{t("unmapped.sub")}</div>
       {items.length === 0 ? (
-        <EmptyState title={t("unmapped.empty")} body={t("unmapped.emptyBody")} />
+        <div className="ox-help">{t("unmapped.empty")} · {t("unmapped.emptyBody")}</div>
       ) : (
         <TableScroll label={t("unmapped.title")}>
           <table className="ox-table ox-table--data">
@@ -361,8 +382,6 @@ export function UnmappedQueue({ pg, items: all, broad, taxonomy, platforms }: { 
         </TableScroll>
       )}
       <Status msg={s.msg} />
-      {items.length ? <AutoMapButton pg={pg} taxonomy={taxonomy} /> : null}
-      <BroadPaths items={broad} platforms={platforms} />
-    </Card>
+    </div>
   );
 }

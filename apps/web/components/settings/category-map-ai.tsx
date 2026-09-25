@@ -1,65 +1,14 @@
 "use client";
-// AI matching for platform category paths. Each unmapped path is either mapped to one of our keys or marked
-// too broad — a path like "smartwatch bands" holds every material, and mapping it would move all of them into
-// one category ahead of the keyword rules. Decisions are saved at once; a broad mark can be undone below.
+// Platform paths the category agent marked too broad — a path like "smartwatch bands" holds every material, and
+// mapping it would move all of them into one category ahead of the keyword rules. Undo sends one back to the queue.
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import type { AutoMapResponse, Platform, TaxonomyEntry, UnmappedCategory } from "@pp/contracts";
+import type { Platform, UnmappedCategory } from "@pp/contracts";
 import { formatNumber } from "@/i18n";
 import { useT } from "@/i18n/client";
 import { send } from "@/lib/client-api";
 import { platformName } from "../bits";
-import { AnalyseIcon } from "../icons";
 import { Alert, Button, TableScroll } from "../ui";
-
-export function AutoMapButton({ pg, taxonomy }: { pg: string; taxonomy: TaxonomyEntry[] }) {
-  const t = useT();
-  const router = useRouter();
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [res, setRes] = useState<AutoMapResponse | null>(null);
-  const nameOf = (key: string) => taxonomy.find((c) => c.key === key)?.[t.locale] ?? key;
-
-  async function run() {
-    setBusy(true);
-    setError(null);
-    const r = await send<AutoMapResponse>("POST", "/api/category-map/auto", { pg });
-    setBusy(false);
-    if (r.error || !r.data) return setError(r.error ?? "errors.http");
-    setRes(r.data);
-    router.refresh();
-  }
-
-  const mapped = res?.decisions.filter((d) => d.categoryKey) ?? [];
-  const broad = res?.decisions.filter((d) => !d.categoryKey) ?? [];
-  return (
-    <div className="ox-stack">
-      <div className="ox-row">
-        <Button icon={<AnalyseIcon size={16} />} disabled={busy} aria-busy={busy} onClick={() => void run()}>
-          {busy ? t("catmap.thinking") : t("catmap.run")}
-        </Button>
-        <span className="ox-help">{t("catmap.help")}</span>
-      </div>
-      <div aria-live="polite" className="ox-stack">
-        {error ? <Alert tone="danger">{t.or(error, t("errors.http"))}</Alert> : null}
-        {res ? (
-          <Alert tone="success" title={t("catmap.done", { mapped: formatNumber(t.locale, mapped.length), broad: formatNumber(t.locale, broad.length) })}>
-            <ul className="ap-catmap__list">
-              {res.decisions.map((d) => (
-                <li key={`${d.platform}|${d.path}`}>
-                  <span lang="zh-CN">{platformName(t, d.platform)} · {d.path}</span>
-                  {" → "}
-                  <strong>{d.categoryKey ? nameOf(d.categoryKey) : t("catmap.broad")}</strong>
-                  {d.reasonTh ? <span className="ox-xs"> — {t.or(d.reasonTh, d.reasonTh)}</span> : null}
-                </li>
-              ))}
-            </ul>
-          </Alert>
-        ) : null}
-      </div>
-    </div>
-  );
-}
 
 /** Paths marked too broad. Undoing one puts it back in the queue above. */
 export function BroadPaths({ items: all, platforms }: { items: UnmappedCategory[]; platforms: Platform[] }) {
