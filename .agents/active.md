@@ -83,6 +83,8 @@ Server guard `mappingSafe`: refuse a map when > 20 % of rule-sorted listings und
 Dry run on the 5 real paths: all broad (after the skill was told to judge the path name, not the samples —
 the first try mapped 腕表配件 to silicone because both samples were silicone) · control 智能手表保护壳 → case. $0.08.
 Also: taxonomy card "ให้ AI จัดสินค้าที่ยังไม่มีหมวด" = `jobs/categorize` mode `pending` (fill without the 7-day wait).
+Live 2026-09-25 after the user ran both buttons: 12 categories, 5 paths broad, 6 unclassified (lace, leopard,
+jade, 蓝猩 no material: 1 each; wool ×2 now proposed after 7c829a6 — counts listings, not distinct titles).
 Category gaps found, not fixed: no manual category pick anywhere; taxonomy edits don't re-sort already-sorted
 products (retag has no button); category_map is global while taxonomies are per group.
 
