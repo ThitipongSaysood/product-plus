@@ -24,9 +24,11 @@ describe("cleanCategorySuggestions", () => {
     expect(s.keywords).toEqual(["蕾丝"]);
   });
 
-  it("needs 2 different titles — the same listing relisted twice is not a pattern", () => {
+  it("counts listings, not distinct titles — two XHS variants of one shop share a title", () => {
+    // Real: two XHS goods (…8ea1, …8e9b) from Tengmin.的店, same title, both unclassified on 2026-09-25.
     const wool = "Teng`冬季新款毛昵iwatch表带，适配苹果S7/8/9/10/11，适合通勤";
-    expect(cleanCategorySuggestions([line({ key: "material_wool", keywords: ["毛昵"] })], DEFAULT_TAXONOMY, [wool, wool])).toEqual([]);
+    const [s] = cleanCategorySuggestions([line({ key: "material_wool", keywords: ["毛昵"] })], DEFAULT_TAXONOMY, [wool, wool]);
+    expect(s).toMatchObject({ key: "material_wool", matches: 2, examples: [wool] });
   });
 
   it("drops a line that catches fewer than 2 titles", () => {

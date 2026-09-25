@@ -68,7 +68,7 @@ export async function translateKeywords(list: string[]) {
 export async function suggestCategories(taxonomy: TaxonomyEntry[], titles: string[]): Promise<{ suggestions: CategorySuggestion[]; costUsd: number | null }> {
   const item = z.object({ key: z.string().max(60), en: z.string().max(80), th: z.string().max(80), zh: z.string().max(80), keywords: z.array(z.string().max(40)).max(12) });
   const current = taxonomy.map((t) => ({ key: t.key, en: t.en, keywords: t.keywords }));
-  const { raw, costUsd } = await askSkill(SKILLS.suggestCategories, { taxonomy: current, titles: [...new Set(titles)] }, "categories", item);
+  const { raw, costUsd } = await askSkill(SKILLS.suggestCategories, { taxonomy: current, titles }, "categories", item);
   return { suggestions: cleanCategorySuggestions(raw, taxonomy, titles), costUsd };
 }
 

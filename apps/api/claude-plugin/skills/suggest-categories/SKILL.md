@@ -26,7 +26,8 @@ any keyword that is not in a title, and any category left with no keyword.
 1. **Group by what a shopper chooses between** — material (lace 蕾丝, resin 树脂, wool 毛呢), pattern
    (leopard 豹纹), or a distinct style — the same kind of split the existing categories make. Look at
    the existing categories first and follow their style (`material_*`, `style_*`, `accessory_*`).
-2. **A category must cover at least 2 titles.** A one-off listing is not a category.
+2. **A category must cover at least 2 listings.** A one-off listing is not a category. Two listings can
+   share a title (colour variants from one shop) — they still count as 2.
 3. **Do not duplicate an existing category.** If a title belongs in an existing category and only
    missed because the category lacks a word, skip it — this task is new categories only.
 4. **Keywords: 1 to 6 per category, short and specific** — 2 to 4 Chinese characters is typical.

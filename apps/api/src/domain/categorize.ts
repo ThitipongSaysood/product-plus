@@ -91,9 +91,9 @@ const nameOf = (v: unknown) => (typeof v === "string" ? v.trim().slice(0, 80) : 
 /**
  * AI category proposals are only as good as the rules they feed: a keyword counts when it is literally in
  * one of the unclassified titles (the rules are a substring match), and a line counts when, added to the
- * taxonomy, the same fromRules() would sort at least 2 different titles into it. The model is told this;
- * this is where it is enforced, so the count the merchant sees is the effect they get. `titles` has one entry
- * per listing, so `matches` counts listings; the ≥ 2 is counted on distinct titles.
+ * taxonomy, the same fromRules() would sort at least 2 listings into it. The model is told this; this is
+ * where it is enforced, so the count the merchant sees is the effect they get. `titles` has one entry per
+ * listing: two listings can share a title (colour variants of one shop — seen on XHS) and both count.
  */
 export function cleanCategorySuggestions(raw: unknown[], taxonomy: TaxonomyEntry[], titles: string[]): CategorySuggestion[] {
   const taken = new Set([...taxonomy.map((t) => t.key), UNCLASSIFIED]);
@@ -109,10 +109,9 @@ export function cleanCategorySuggestions(raw: unknown[], taxonomy: TaxonomyEntry
     if (!keywords.length) continue;
     const entry: TaxonomyEntry = { key, en, th, zh, keywords };
     const caught = titles.filter((t) => fromRules(t, [...taxonomy, entry]) === key);
-    const distinct = [...new Set(caught)]; // one listing relisted under the same title is not a pattern
-    if (distinct.length < 2) continue;
+    if (caught.length < 2) continue;
     taken.add(key);
-    out.push({ ...entry, matches: caught.length, examples: distinct.slice(0, 3) });
+    out.push({ ...entry, matches: caught.length, examples: [...new Set(caught)].slice(0, 3) });
   }
   return out.sort((a, b) => b.matches - a.matches).slice(0, CATEGORY_SUGGEST_MAX);
 }
