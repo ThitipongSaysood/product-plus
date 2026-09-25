@@ -14,6 +14,7 @@ const SAMPLES: [string, string, Record<string, string>][] = [
   ["Timed out: still running after 60 minutes.", "notes.timedOut", {}],
   ["Server restarted while this job was running.", "notes.orphaned", {}],
   ["Could not start the actor: 402", "notes.startFailed", { detail: "402" }],
+  ["AI sorted categories: 1 categories added, 0 paths mapped, 5 marked broad, 4 products sorted, 2 left unclassified.", "notes.autoCategorized", { added: "1", mapped: "0", broad: "5", sorted: "4", left: "2" }],
   ["Categorized 128 products: 40 by platform map, 70 by rules, 0 by AI, 18 unclassified.", "notes.categorized", { n: "128", platform_n: "40", rules: "70", llm: "0", unclassified: "18" }],
   ["AI categorization failed: 429", "notes.llmFailed", { detail: "429" }],
   ["Cached 120 images, 8 failed.", "notes.media", { ok: "120", failed: "8" }],

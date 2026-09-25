@@ -131,6 +131,16 @@ async function aiCategorizeBackend(): Promise<{ kind: "sdk"; apiKey: string } | 
   return apiKey ? { kind: "sdk", apiKey } : null;
 }
 
+/** Products filed under taxonomy keys that no longer exist lose them (manual picks too — their key is gone);
+ *  the caller re-runs the rules. */
+export async function releaseKeys(groupId: string, keys: string[]) {
+  const db = await getDb();
+  await db
+    .update(products)
+    .set({ categoryKey: UNCLASSIFIED, categorySource: null, categoryTaggedAt: null })
+    .where(and(eq(products.productGroupId, groupId), inArray(products.categoryKey, keys)));
+}
+
 /** Non-manual products of `platform` whose path starts with `path` — the ones a category_map row governs. */
 async function productsUnder(platform: string, path: string) {
   const db = await getDb();

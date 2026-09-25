@@ -23,3 +23,7 @@ No breaking change to `packages/contracts` is required. Notes for the web side:
    `catmap.guardBroad`. `GET /api/category-map/broad?pg=` → `UnmappedCategory[]`; `DELETE /api/category-map?platform=&path=`
    undoes any decision. `POST /api/jobs/categorize` accepts mode `pending` (fill without the 7-day retry wait).
    Taxonomy keys may not start with `_`. Error key `errors.catmap.failed`. Additive.
+10. 2026-09-25 — `TaxonomyEntry.addedBy?: "ai"` marks a line the AI added; `PUT /groups/:slug/taxonomy` keeps it by key
+    when the body omits it, and products whose key was deleted are released and re-sorted by the rules.
+    `POST /api/jobs/categorize` accepts mode `auto` (paths → new categories → sort the rest); its note is
+    `AI sorted categories: A categories added, M paths mapped, B marked broad, S products sorted, L left unclassified.`

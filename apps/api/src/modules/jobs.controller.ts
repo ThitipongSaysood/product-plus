@@ -12,6 +12,7 @@ import { choosable, confirmMissing, isUniqueViolation, smokeCap } from "../domai
 import { NOTE } from "../domain/notes.js";
 import { PLATFORM_LIST } from "../domain/types.js";
 import { chooseManually, evaluateActors } from "../actors/evaluate.js";
+import { runAutoCategorize } from "../jobs/auto-categorize.js";
 import { runCategorize } from "../jobs/categorize.js";
 import { runTranslate } from "../jobs/translate.js";
 import { latestBrandReport, runBrandScout } from "../jobs/brand.js";
@@ -68,11 +69,13 @@ export class JobsController {
 
   @Post("jobs/categorize")
   @HttpCode(200)
-  async categorize(@Body(new ZodPipe(z.object({ pg: z.string().optional(), mode: z.enum(["fill", "pending", "retag"]) }))) body: { pg?: string; mode: "fill" | "pending" | "retag" }) {
+  async categorize(@Body(new ZodPipe(z.object({ pg: z.string().optional(), mode: z.enum(["fill", "pending", "retag", "auto"]) }))) body: { pg?: string; mode: "fill" | "pending" | "retag" | "auto" }) {
     const g = await groupBySlug(body.pg);
     await assertNotRunning(g.id, "categorize");
     const runId = await createRun(await getDb(), { productGroupId: g.id, kind: "categorize", status: "running", step: body.mode });
-    void runCategorize(g.id, body.mode, (done, total) => updateRun(runId, { progressDone: done, progressTotal: total }))
+    const progress = (done: number, total: number) => updateRun(runId, { progressDone: done, progressTotal: total });
+    // auto = the three AI steps behind "Let AI sort everything" (jobs/auto-categorize.ts)
+    void (body.mode === "auto" ? runAutoCategorize(g.id, progress).then((r) => ({ ...r, total: 0 })) : runCategorize(g.id, body.mode, progress))
       // Layer 3 spends on Anthropic, so the run carries its cost like every other paid job does.
       .then((r) => finishRun(runId, r.failed ? "suspect" : "succeeded", r.note, { itemsIn: r.total, itemsOut: r.total, costUsd: r.costUsd ?? undefined }))
       .catch((e) => finishRun(runId, "failed", NOTE.stepFailed("categorize", String(e?.message ?? e).slice(0, 200))));

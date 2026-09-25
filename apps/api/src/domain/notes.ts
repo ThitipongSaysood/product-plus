@@ -15,6 +15,8 @@ export const NOTE = {
   startFailed: (detail: string) => `Could not start the actor: ${detail}`,
   categorized: (n: number, platform: number, rules: number, llm: number, unclassified: number) =>
     `Categorized ${n} products: ${platform} by platform map, ${rules} by rules, ${llm} by AI, ${unclassified} unclassified.`,
+  autoCategorized: (added: number, mapped: number, broad: number, sorted: number, left: number) =>
+    `AI sorted categories: ${added} categories added, ${mapped} paths mapped, ${broad} marked broad, ${sorted} products sorted, ${left} left unclassified.`,
   llmFailed: (detail: string) => `AI categorization failed: ${detail}`,
   translated: (done: number, total: number) => `Translated ${done} of ${total} titles.`,
   translateFailed: (detail: string) => `AI translation failed: ${detail}`,

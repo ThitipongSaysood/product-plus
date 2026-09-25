@@ -16,7 +16,8 @@ import { aiBackend } from "../jobs/llm.js";
 import { matchPlatformPaths, suggestCategories, suggestKeywords, translateKeywords } from "../jobs/suggest.js";
 import { chosenActor, groupMode } from "../jobs/scrape.js";
 import { getSetting } from "../settings/settings.js";
-import { applyCategoryMap, applyRules, removeCategoryMap } from "../jobs/categorize.js";
+import { autoMapPaths, unclassifiedTitles } from "../jobs/auto-categorize.js";
+import { applyCategoryMap, applyRules, releaseKeys, removeCategoryMap } from "../jobs/categorize.js";
 import { groupBySlug } from "../jobs/runs.js";
 import { broadPaths, toGroup, toKeyword, unmapped } from "./queries.js";
 
@@ -59,10 +60,6 @@ const termIn = z.string().trim().max(100).nullable().optional().transform((v) =>
 const keywordListIn = z.object({
   items: z.array(z.object({ keyword: z.string().trim().min(1).max(100), zh: termIn, en: termIn })).max(50),
 });
-/** Enough titles for patterns to show, few enough for one call to answer inside the web's proxy timeout. */
-const CATEGORY_SUGGEST_TITLES = 80;
-/** One AI call decides at most this many paths; a longer queue is finished by pressing the button again. */
-const AUTO_MAP_PATHS = 30;
 
 const taxonomyIn = z
   .array(
@@ -72,6 +69,7 @@ const taxonomyIn = z
       en: z.string().trim().min(1).max(80),
       zh: z.string().trim().min(1).max(80),
       keywords: z.array(z.string().trim().min(1).max(40)).max(50),
+      addedBy: z.literal("ai").optional(),
     }),
   )
   .max(40)
@@ -319,7 +317,13 @@ export class GroupsController {
   async putTaxonomy(@Param("slug") slug: string, @Body(new ZodPipe(taxonomyIn)) body: TaxonomyEntry[]) {
     const g = await groupBySlug(slug);
     const db = await getDb();
-    const [row] = await db.update(productGroups).set({ taxonomy: body, updatedAt: new Date() }).where(eq(productGroups.id, g.id)).returning();
+    const before = g.taxonomy as TaxonomyEntry[];
+    // The text editor has no column for addedBy; a line keeps its "added by AI" mark as long as its key stays.
+    const taxonomy = body.map((e) => ({ ...e, addedBy: e.addedBy ?? before.find((b) => b.key === e.key)?.addedBy }));
+    const [row] = await db.update(productGroups).set({ taxonomy, updatedAt: new Date() }).where(eq(productGroups.id, g.id)).returning();
+    // A deleted line's listings would keep a key no lane shows; they go back to be sorted again (free).
+    const removed = before.map((b) => b.key).filter((k) => !taxonomy.some((e) => e.key === k));
+    if (removed.length) await releaseKeys(g.id, removed);
     await applyRules(g.id); // free: a new line sorts the still-unclassified listings it was written for now
     return row.taxonomy;
   }
@@ -330,14 +334,7 @@ export class GroupsController {
   @HttpCode(200)
   async suggestCategories(@Param("slug") slug: string): Promise<CategorySuggestionsResponse> {
     const g = await groupBySlug(slug);
-    const db = await getDb();
-    const rows = await db
-      .select({ title: products.title })
-      .from(products)
-      .where(and(eq(products.productGroupId, g.id), sql`${products.categorySource} is null`, isNotNull(products.title)))
-      .orderBy(sql`${products.latestSoldCount} desc nulls last`)
-      .limit(CATEGORY_SUGGEST_TITLES);
-    const titles = rows.map((r) => r.title!.replace(/\s+/g, " ").trim().slice(0, 200)).filter(Boolean);
+    const titles = await unclassifiedTitles(g.id);
     if (!titles.length) return { suggestions: [], unclassified: 0, costUsd: null };
     await assertAiReady(SKILLS.suggestCategories);
     try {
@@ -374,28 +371,12 @@ export class GroupsController {
   @HttpCode(200)
   async autoMap(@Body(new ZodPipe(z.object({ pg: z.string().optional() }))) body: { pg?: string }): Promise<AutoMapResponse> {
     const g = await groupBySlug(body.pg);
-    const queue = await unmapped(g);
-    if (!queue.length) return { decisions: [], costUsd: null };
+    if (!(await unmapped(g)).length) return { decisions: [], costUsd: null };
     await assertAiReady(SKILLS.matchPaths);
-    const db = await getDb();
-    const rows = await db
-      .select({ platform: products.platform, path: products.platformCategoryPath, title: products.title, key: products.categoryKey, source: products.categorySource })
-      .from(products)
-      .where(and(eq(products.productGroupId, g.id), isNotNull(products.platformCategoryPath)));
-    const briefs: PathBrief[] = queue.slice(0, AUTO_MAP_PATHS).map((u) => {
-      const under = rows.filter((r) => r.platform === u.platform && r.path && pathKey(r.path) === u.path);
-      const ruleSplit: Record<string, number> = {};
-      for (const r of under) if (r.source === "rules" || r.source === "llm") ruleSplit[r.key ?? UNCLASSIFIED] = (ruleSplit[r.key ?? UNCLASSIFIED] ?? 0) + 1;
-      const titles = [...new Set(under.map((r) => (r.title ?? "").replace(/\s+/g, " ").trim().slice(0, 120)).filter(Boolean))].slice(0, 6);
-      return { ...u, titles, ruleSplit };
-    });
-    let res: AutoMapResponse;
     try {
-      res = await matchPlatformPaths(g.taxonomy as TaxonomyEntry[], briefs);
+      return await autoMapPaths(g);
     } catch {
       throw new AppError(502, "errors.catmap.failed");
     }
-    for (const d of res.decisions) await applyCategoryMap(d.platform, d.path, d.categoryKey ?? BROAD_PATH);
-    return res;
   }
 }

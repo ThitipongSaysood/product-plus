@@ -10,7 +10,7 @@ import { platformName } from "../bits";
 import { AnalyseIcon } from "../icons";
 import { JobButton } from "../JobButton";
 
-import { Alert, Button, Card, ComboBox, EmptyState, Field, SectionTitle, TableScroll, TextArea } from "../ui";
+import { Alert, Badge, Button, Card, ComboBox, ConfirmSubmit, EmptyState, Field, SectionTitle, TableScroll, TextArea } from "../ui";
 import { AutoMapButton, BroadPaths } from "./category-map-ai";
 import { CategorySuggest } from "./category-suggest";
 import { GroupFields, useGroupEdit } from "./group-edit";
@@ -168,7 +168,98 @@ export function KeywordsEditor({ pg, keywords, platforms, estimate }: { pg: stri
 }
 
 // ---------- taxonomy ----------
-export function TaxonomyEditor({ pg, taxonomy }: { pg: string; taxonomy: TaxonomyEntry[] }) {
+// The table is what a merchant reads; the one button lets AI do the sorting (jobs/auto-categorize.ts in the api).
+// The text box stays for exact edits, folded under "advanced". The card itself is keyed on the group only, so the
+// AI button keeps its result message when the page refreshes with the categories it added.
+export function TaxonomyEditor({ pg, taxonomy, counts, unclassified }: { pg: string; taxonomy: TaxonomyEntry[]; counts: Record<string, number>; unclassified: number }) {
+  const t = useT();
+  const s = useSaver();
+  const sorted = taxonomy.reduce((n, c) => n + (counts[c.key] ?? 0), 0);
+  const put = (entries: TaxonomyEntry[]) => send<TaxonomyEntry[]>("PUT", `/api/groups/${encodeURIComponent(pg)}/taxonomy`, entries);
+
+  return (
+    <Card>
+      <SectionTitle title={t("taxonomy.title")} sub={t("taxonomy.subAi")} />
+      <div className="ap-taxo__ai">
+        <div className="ox-row">
+          <JobButton
+            kind="categorize"
+            pg={pg}
+            path="/api/jobs/categorize"
+            body={{ pg, mode: "auto" }}
+            label={t("taxonomy.autoRun")}
+            icon={<AnalyseIcon size={16} />}
+            variant="primary"
+            confirm={t("taxonomy.autoConfirm")}
+          />
+          <span className="ox-num">
+            {t("taxonomy.summary", { n: formatNumber(t.locale, taxonomy.length), sorted: formatNumber(t.locale, sorted), left: formatNumber(t.locale, unclassified) })}
+          </span>
+        </div>
+        <div className="ox-help">{t("taxonomy.autoHelp")}</div>
+      </div>
+
+      <TableScroll label={t("taxonomy.title")}>
+        <table className="ox-table ox-table--data">
+          <thead>
+            <tr>
+              <th>{t("taxonomy.colName")}</th>
+              <th>{t("taxonomy.colKeywords")}</th>
+              <th className="is-num">{t("taxonomy.colCount")}</th>
+              <th>{t("common.actions")}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {taxonomy.map((c) => (
+              <tr key={c.key}>
+                <td style={{ minWidth: 180 }}>
+                  <div className="ox-row" style={{ gap: "var(--omnix-space-1)" }}>
+                    <span>{c[t.locale]}</span>
+                    {c.addedBy === "ai" ? <Badge tone="accent">{t("taxonomy.aiAdded")}</Badge> : null}
+                  </div>
+                  <div className="ox-xs ox-muted" translate="no">{c.key}</div>
+                </td>
+                <td style={{ minWidth: 200 }}>
+                  <span className="ox-xs line-clamp-2" lang="zh-CN" translate="no">{c.keywords.join(", ") || "—"}</span>
+                </td>
+                <td className="is-num">{formatNumber(t.locale, counts[c.key] ?? 0)}</td>
+                <td>
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      void s.run(() => put(taxonomy.filter((x) => x.key !== c.key)), t("taxonomy.deleted", { name: c[t.locale] }));
+                    }}
+                  >
+                    <ConfirmSubmit size="sm" variant="secondary" disabled={s.busy} message={t("taxonomy.deleteConfirm", { name: c[t.locale], n: formatNumber(t.locale, counts[c.key] ?? 0) })} aria-label={t("taxonomy.deleteFor", { name: c[t.locale] })}>
+                      {t("taxonomy.delete")}
+                    </ConfirmSubmit>
+                  </form>
+                </td>
+              </tr>
+            ))}
+            <tr>
+              <td className="ox-muted">{t("taxonomy.unclassifiedRow")}</td>
+              <td className="ox-xs ox-muted">{t("taxonomy.unclassifiedHint")}</td>
+              <td className="is-num">{formatNumber(t.locale, unclassified)}</td>
+              <td>
+                <a className="ox-xs" href={`/categories?pg=${encodeURIComponent(pg)}`}>{t("taxonomy.viewProducts")}</a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </TableScroll>
+      <Status msg={s.msg} />
+
+      <details className="ap-kwmore">
+        <summary>{t("taxonomy.advanced")}</summary>
+        <TaxonomyText key={taxonomy.map((c) => c.key).join()} pg={pg} taxonomy={taxonomy} />
+      </details>
+    </Card>
+  );
+}
+
+/** Exact edits as text, one line per category. Keyed on the key list so it re-reads after AI or a delete. */
+function TaxonomyText({ pg, taxonomy }: { pg: string; taxonomy: TaxonomyEntry[] }) {
   const t = useT();
   const s = useSaver();
   const [text, setText] = useState(() => taxonomyToText(taxonomy));
@@ -179,8 +270,7 @@ export function TaxonomyEditor({ pg, taxonomy }: { pg: string; taxonomy: Taxonom
     setText((cur) => (parseTaxonomy(cur).entries.some((e) => e.key === c.key) ? cur : `${cur.trimEnd()}${cur.trim() ? "\n" : ""}${taxonomyToText([c])}`));
 
   return (
-    <Card>
-      <SectionTitle title={t("taxonomy.title")} sub={t("taxonomy.sub")} />
+    <div className="ox-stack">
       <form
         className="ox-stack"
         onSubmit={(e) => {
@@ -201,18 +291,13 @@ export function TaxonomyEditor({ pg, taxonomy }: { pg: string; taxonomy: Taxonom
           <Button type="submit" variant="secondary" disabled={s.busy || parsed.errors.length > 0}>{t("taxonomy.save")}</Button>
           <span className="ox-xs ox-muted">{t("taxonomy.count", { n: parsed.entries.length })}</span>
         </div>
-        {/* Rules and AI sort into the lines above; this asks AI now instead of waiting for the next round. */}
-        <div className="ox-row">
-          <JobButton kind="categorize" pg={pg} path="/api/jobs/categorize" body={{ pg, mode: "pending" }} label={t("taxonomy.aiPending")} icon={<AnalyseIcon size={16} />} size="sm" />
-          <span className="ox-help">{t("taxonomy.aiPendingHelp")}</span>
-        </div>
         <Status msg={s.msg} />
       </form>
       <details className="ap-kwmore">
         <summary>{t("catsug.title")}</summary>
         <CategorySuggest pg={pg} onPick={addLine} />
       </details>
-    </Card>
+    </div>
   );
 }
 

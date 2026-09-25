@@ -19,7 +19,7 @@ export type Currency = "CNY" | "USD";
 
 export type Localized = { th: string; en: string; zh: string };
 
-export type TaxonomyEntry = Localized & { key: string; keywords: string[] };
+export type TaxonomyEntry = Localized & { key: string; keywords: string[]; addedBy?: "ai" }; // addedBy: a line "Let AI sort everything" added
 
 export type ApiError = { error: string };
 

@@ -574,3 +574,4 @@ select.ox-control { appearance: none; padding-right: var(--omnix-space-8); backg
 .ap-kwmore[open] > summary { margin-bottom: var(--omnix-space-3); }
 
 .ap-catmap__list { margin: 0; padding-left: var(--omnix-space-4); display: flex; flex-direction: column; gap: var(--omnix-space-1); }
+.ap-taxo__ai { display: flex; flex-direction: column; gap: var(--omnix-space-2); padding: var(--omnix-space-3) var(--omnix-space-4); background: var(--omnix-accent-soft); border-radius: var(--omnix-radius-lg); }

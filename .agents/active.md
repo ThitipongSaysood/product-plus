@@ -88,6 +88,13 @@ jade, 蓝猩 no material: 1 each; wool ×2 now proposed after 7c829a6 — counts
 Category gaps found, not fixed: no manual category pick anywhere; taxonomy edits don't re-sort already-sorted
 products (retag has no button); category_map is global while taxonomies are per group.
 
+## "Let AI sort everything" (2026-09-25, live)
+Settings › our categories is now a table (name · AI badge · match words · count · delete) with one primary button:
+`jobs/categorize` mode `auto` → `jobs/auto-categorize.ts`: ① autoMapPaths ② suggestCategories, lines ADDED with
+`addedBy: "ai"` ③ runCategorize pending. Text editor + AI suggest moved under "advanced". Deleting a line
+releases its products (`releaseKeys`, manual picks too) and re-runs the rules — fixes gap "taxonomy edits don't
+re-sort". `addedBy` survives text-editor saves (server merges by key). Not yet run against live data.
+
 ## Blockers
 - ⚠️ The api answers without login from the internet (checked 2026-09-25: POST category-suggestions returned 200
   with no cookie) — anyone can start AI jobs. Set `APP_PASSWORD` (and `NODE_ENV=production` now that https is up).
