@@ -287,7 +287,8 @@ credential อยู่ใน `~/.claude` ของ user นั้น และ 
 # รันในฐานะ user ที่จะรัน api (เช่น deploy) ไม่ใช่ root
 curl -fsSL https://claude.ai/install.sh | bash
 claude                                                        # ล็อกอินครั้งเดียว
-claude -p --output-format json --allowed-tools "" 'say ok'    # ต้องได้ JSON ไม่ใช่หน้าให้ล็อกอิน
+echo 'say ok' | claude -p --output-format json --allowed-tools ""   # ต้องได้ JSON ไม่ใช่หน้าให้ล็อกอิน
+claude auth status                                            # authMethod "claude.ai" = ใช้แพ็กเกจ ไม่ใช่ API key
 ```
 
 ถ้า binary ไม่อยู่ใน `PATH` ของ service ให้ตั้ง `CLAUDE_CLI_PATH=/home/deploy/.local/bin/claude`
@@ -478,3 +479,31 @@ git commit -m "Add CI" && git push
 | `APIFY_WEBHOOK_SECRET` | api | — | — | ไม่มี = รอบจบด้วยการ poll |
 | `DB_AUTO_MIGRATE` | api | — | `true` | `false` เมื่อคุม migration เอง |
 | `PGLITE_DIR` | api | — | `<repo>/.pglite` | dev เท่านั้น |
+
+## 14. เครื่อง nineplus (ที่ใช้จริงตอนนี้ — 2026-09-25)
+
+| อะไร | ค่า |
+|---|---|
+| URL | http://product-plus.nineplus.co.th (DNS A → `119.10.140.196`) |
+| OS user | `product` — ไม่มี sudo, ไม่อยู่ในกลุ่ม docker |
+| Apache | vhost `product-plus.nineplus.co.th` (Virtualmin) `ProxyPass / http://localhost:3020/` · `Timeout 300` (≥ 180 วิ ✓) |
+| web / api | `next start` :3020 · `node dist/main.js` :4010 — **api ไม่ได้ตั้ง `NODE_ENV=production`** เพราะ cookie จะเป็น `secure` แล้ว login ผ่าน http ไม่ได้ |
+| DB | `apps/api/.env` → Postgres ที่ใช้ร่วมกับ Ads Plus, schema `product_plus` |
+| AI | `AI_BACKEND=cli` · `~/.local/bin/claude` ล็อกอินด้วยบัญชี claude.ai (แพ็กเกจ ไม่ใช่ API key) |
+| log | `~/logs/product-plus/{api,web}.log` |
+
+อัปเดตโค้ดแล้วเปิดใหม่:
+
+```bash
+cd ~/product-plus && git pull && pnpm install && pnpm build
+deploy/start-nineplus.sh        # ปิดตัวเก่าที่พอร์ต 4010/3020 แล้วเปิดใหม่ รอจน health ตอบ
+```
+
+ให้เปิดเองหลังรีบูต (ทำครั้งเดียว): `crontab -e` แล้วเพิ่ม
+
+```
+@reboot /home/product/product-plus/deploy/start-nineplus.sh >> /home/product/logs/product-plus/boot.log 2>&1
+```
+
+ยังค้าง: cert จริง (Let's Encrypt ผ่าน Virtualmin — ต้องใช้สิทธิ์ admin) → จากนั้นค่อยตั้ง `NODE_ENV=production`
+และ `PUBLIC_URL=https://product-plus.nineplus.co.th` (webhook ของ Apify ส่ง secret ใน URL ห้ามใช้ผ่าน http)

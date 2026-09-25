@@ -15,18 +15,18 @@ Hard cap: **50 results per platform per keyword per run** (actor input AND cut a
 |---|---|---|
 | repo | pnpm monorepo `apps/api` `apps/web` `packages/contracts` | GitHub **ThitipongSaysood/product-plus** (private) — user moved it out of org OMNIX-9Plus 2026-09-24 |
 | backend | **NestJS 12** · TypeScript strict · Drizzle ORM · zod | handoff used Next route handlers; CLAUDE.md mandates NestJS |
-| DB | PostgreSQL (Railway, workspace np-nineplus) · schema `scout` · dev = **PGlite** (no install) | `DATABASE_URL` unset → PGlite at `.pglite/` |
+| DB | PostgreSQL on the shared nineplus server (`omnix_marketing`, schema `product_plus`, migration journal `product_plus.__drizzle_migrations`) · dev = **PGlite** (no install) | `DATABASE_URL` unset → PGlite at `.pglite/`. Same db holds Ads Plus (schemas `adsplus`, `drizzle`) — never touch |
 | frontend | **Next.js 16** App Router · Tailwind 4 · OMNIX tokens (design-system.md §1) · Recharts | no other UI lib |
 | tests | vitest (domain pure functions, normalizers, contrast, rwd audit, dictionary) | |
 | scraping | apify-client · `SOURCE_MODE=mock|apify` | mock is free and default when no token |
-| AI (category layer 3) | Anthropic API (`claude-haiku-4-5`) only if `ANTHROPIC_API_KEY` set | rules-only otherwise |
+| AI (translate, categorize, brand, keywords) | `AI_BACKEND=cli` — the `claude` CLI logged in with the user's claude.ai subscription (no API key) · `sdk` = Anthropic API key | see deploy/README §7 |
 
 Ports (dev): api **4010**, web **3020** (never 3010). Web rewrites `/api/*` → api, so the browser sees one origin.
 
 ## 3. Decisions taken by default (confirm with user — §14 of handoff)
 | # | question | default taken |
 |---|---|---|
-| 1 | where | local dev now; deploy target Railway (np-nineplus) — **not deployed yet** |
+| 1 | where | **deployed 2026-09-25** on the nineplus server (user `product`): http://product-plus.nineplus.co.th · Apache vhost → web :3020 → api :4010 · started by `deploy/start-nineplus.sh` |
 | 2 | Apify account | whatever `APIFY_TOKEN` is set in Settings/env; none set → mock mode |
 | 3 | Apify plan | detected from `GET /v2/users/me` when token exists; else price at **FREE** tier (most expensive, safe) |
 | 4 | keywords | `苹果手表表带` (douyin/1688/xhs) · `apple watch band` region us (temu) — 1 per platform |

@@ -1,10 +1,22 @@
 # Active Task
 
 ## Last Updated
-2026-09-24 evening (Asia/Bangkok) — Postgres setup on the shared server
+2026-09-25 morning (Asia/Bangkok) — deployed at http://product-plus.nineplus.co.th
 
 ## Last Agent
-Claude Opus 5.5 (1M context) — Claude Code desktop, session "keywords: AI translate, textarea, cleanup"
+Claude Opus 5.5 (1M context) — Claude Code VS Code (remote ssh), session "run app + deploy on nineplus"
+
+## Deploy on nineplus (2026-09-25) — details in deploy/README.md §14
+- DNS `product-plus.nineplus.co.th` → 119.10.140.196 (user added the A record). Apache vhost (Virtualmin) → web :3020.
+- Production web (`next start`) + api from `dist/` via `deploy/start-nineplus.sh` (logs `~/logs/product-plus/`).
+  api deliberately WITHOUT `NODE_ENV=production` — secure cookie would break login over http.
+- `~/.local/bin/claude` installed (official installer), logged in with claude.ai **Max** (no API key) → brand +
+  translate jobs ran OK. User wants the subscription, not the API: keep `AI_BACKEND=cli`.
+- FX set from ECB via frankfurter.app, rate date 2026-09-24: `FX_CNY_THB=4.9877`, `FX_USD_THB=33.48`.
+- favicon `apps/web/app/icon.svg` (P+ brand mark).
+- 🔴 **Left for the user** (auto-mode refused the agent): `APP_PASSWORD` + `CRON_SECRET` in `apps/api/.env` and
+  `APP_PASSWORD` in `apps/web/.env.local`, then `deploy/start-nineplus.sh` — the site is public with no password
+  and `APIFY_TOKEN` is set; `@reboot` crontab line (README §14). HTTPS cert needs a Virtualmin admin.
 
 ## Project type
 Next.js 16 (apps/web :3020) + NestJS (apps/api :4010) · pnpm monorepo · **Postgres on the shared server** since
@@ -46,9 +58,9 @@ and the English term (Temu); the whole list is edited as text like the taxonomy.
 ## Blockers
 - **Per-round cap vs cost** (user decides, money setting — never change it without asking):
   `apple-watch-bands` ≈ $1.46/round vs cap $1.00 · `apple-watch` ≈ $13.14/round (9 Keywords) vs cap $4.90.
-- `FX_CNY_THB` = 4.85 is a placeholder — needs the real rate (ตั้งค่า › ระบบ).
-- No `APIFY_TOKEN` in the app; paid runs need the user's explicit OK and a $ cap every time.
-- CI: `gh auth refresh -s workflow`, then move `deploy/ci.yml` into `.github/workflows/`.
+- `APIFY_TOKEN` is now set (DB); paid runs still need the user's explicit OK and a $ cap every time.
+- CI: `gh auth refresh -s workflow`, then move `deploy/ci.yml` into `.github/workflows/` (not before — pushes
+  would be refused for the whole repo). `gh` is not installed on the nineplus server.
 
 ## Next Steps
 1. Ask the user how to fit the cap: raise `apple-watch-bands` to ≥ $1.50 / turn Temu off / result limit 30;
