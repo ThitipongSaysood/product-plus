@@ -23,7 +23,9 @@ async function open() {
     const pg = await import("pg");
     const pool = new pg.default.Pool({ connectionString: process.env.DATABASE_URL, max: 10 });
     const db = drizzle(pool, { schema });
-    if (autoMigrate) await migrate(db, { migrationsFolder: MIGRATIONS_DIR });
+    // The journal lives in our own schema: the shared server's default "drizzle" schema belongs to another
+    // app (Ads Plus), which this user may not write to and must not touch.
+    if (autoMigrate) await migrate(db, { migrationsFolder: MIGRATIONS_DIR, migrationsSchema: "product_plus" });
     return { db, close: () => pool.end(), kind: "pg" as const };
   }
   const { PGlite } = await import("@electric-sql/pglite");

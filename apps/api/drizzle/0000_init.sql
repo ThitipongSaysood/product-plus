@@ -1,4 +1,4 @@
-CREATE SCHEMA "product_plus";
+CREATE SCHEMA IF NOT EXISTS "product_plus";
 --> statement-breakpoint
 CREATE TABLE "product_plus"."actor_evaluations" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
