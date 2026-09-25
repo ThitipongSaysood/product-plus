@@ -29,6 +29,7 @@ export const SKILLS = {
   suggest: "suggest-keywords",
   translateKeyword: "translate-keyword",
   suggestCategories: "suggest-categories",
+  matchPaths: "match-platform-categories",
 } as const;
 export type SkillName = (typeof SKILLS)[keyof typeof SKILLS];
 

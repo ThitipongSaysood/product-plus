@@ -1,6 +1,6 @@
 // Auto-categorization layers 1–2 (handoff §9): platform category map → keyword rules on the title.
 // Layer 3 (LLM) lives in jobs/llm.ts and only sees what these two could not decide.
-import type { CategorySource, CategorySuggestion, TaxonomyEntry } from "@pp/contracts";
+import type { CategorySource, CategorySuggestion, PathDecision, TaxonomyEntry, UnmappedCategory } from "@pp/contracts";
 
 export const UNCLASSIFIED = "unclassified";
 export const UNCLASSIFIED_LABEL = { th: "ยังไม่จัดหมวด", en: "Unclassified", zh: "未分类" };
@@ -33,14 +33,28 @@ export const DEFAULT_TAXONOMY: TaxonomyEntry[] = [
 
 export const pathKey = (path: string[]) => path.join(" > ");
 
-/** Layer 1: longest prefix of the platform path found in category_map (key = `${platform}|${path}`). */
-export function fromPlatformMap(platform: string, path: string[] | null, map: Map<string, string>): string | null {
+/**
+ * category_map value for a platform path the merchant (or the AI) judged too broad to name one of our
+ * categories — "smartwatch bands" holds silicone, metal and leather alike. The longest matching prefix
+ * still wins, so a broad path stops layer 1 and hands the listing to the keyword rules; it also takes the
+ * path out of the unmapped queue. Taxonomy keys cannot start with "_", so it can never collide.
+ */
+export const BROAD_PATH = "_broad";
+
+/** What category_map says about a path: a taxonomy key, BROAD_PATH, or null when nobody decided yet. */
+export function mapDecision(platform: string, path: string[] | null, map: Map<string, string>): string | null {
   if (!path?.length) return null;
   for (let n = path.length; n > 0; n--) {
     const hit = map.get(`${platform}|${pathKey(path.slice(0, n))}`);
     if (hit) return hit;
   }
   return null;
+}
+
+/** Layer 1: longest prefix of the platform path found in category_map (key = `${platform}|${path}`). */
+export function fromPlatformMap(platform: string, path: string[] | null, map: Map<string, string>): string | null {
+  const hit = mapDecision(platform, path, map);
+  return hit === BROAD_PATH ? null : hit;
 }
 
 /** Layer 2: the taxonomy keyword that appears EARLIEST in the title wins; a tie between keys = undecided. */
@@ -101,4 +115,44 @@ export function cleanCategorySuggestions(raw: unknown[], taxonomy: TaxonomyEntry
     out.push({ ...entry, matches: caught.length, examples: distinct.slice(0, 3) });
   }
   return out.sort((a, b) => b.matches - a.matches).slice(0, CATEGORY_SUGGEST_MAX);
+}
+
+/**
+ * Mapping a platform path sends every listing under it to one key, ahead of the keyword rules. So a
+ * mapping is refused when more than a fifth of the listings the rules already sorted under that path went
+ * to a different key: the path is broad, and mapping it would undo correct work. This backs up the AI's
+ * judgement with the one fact that decides it.
+ */
+export const MAP_DISAGREE_MAX = 0.2;
+export function mappingSafe(key: string, ruleSplit: Record<string, number>): boolean {
+  const sorted = Object.entries(ruleSplit).filter(([k]) => k !== UNCLASSIFIED);
+  const total = sorted.reduce((n, [, c]) => n + c, 0);
+  const other = sorted.filter(([k]) => k !== key).reduce((n, [, c]) => n + c, 0);
+  return total === 0 || other / total <= MAP_DISAGREE_MAX;
+}
+
+export type PathBrief = UnmappedCategory & { titles: string[]; ruleSplit: Record<string, number> };
+
+/** AI path decisions → what gets saved. A "map" needs a real taxonomy key AND mappingSafe(); anything else
+ *  the model decided becomes broad (with the reason why). A path the model skipped stays undecided. */
+export function cleanPathDecisions(raw: unknown[], briefs: PathBrief[], keys: string[]): PathDecision[] {
+  const out = new Map<number, PathDecision>();
+  for (const r of raw) {
+    const x = r as { i?: unknown; decision?: unknown; key?: unknown; reasonTh?: unknown } | null;
+    const i = typeof x?.i === "number" ? x.i : -1;
+    const b = briefs[i];
+    if (!b || out.has(i) || (x?.decision !== "map" && x?.decision !== "broad")) continue;
+    const reasonTh = typeof x.reasonTh === "string" ? x.reasonTh.trim().slice(0, 120) : "";
+    const key = typeof x.key === "string" ? x.key : "";
+    const wantsMap = x.decision === "map" && keys.includes(key);
+    const safe = wantsMap && mappingSafe(key, b.ruleSplit);
+    out.set(i, {
+      platform: b.platform,
+      path: b.path,
+      count: b.count,
+      categoryKey: safe ? key : null,
+      reasonTh: wantsMap && !safe ? "catmap.guardBroad" : reasonTh,
+    });
+  }
+  return [...out.values()];
 }

@@ -6,8 +6,8 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { z } from "zod";
-import type { CategorySuggestion, KeywordSuggestionsResponse, TaxonomyEntry } from "@pp/contracts";
-import { cleanCategorySuggestions } from "../domain/categorize.js";
+import type { CategorySuggestion, KeywordSuggestionsResponse, PathDecision, TaxonomyEntry } from "@pp/contracts";
+import { cleanCategorySuggestions, cleanPathDecisions, type PathBrief } from "../domain/categorize.js";
 import { cleanSuggestionLines, cleanTranslations } from "../domain/keywords.js";
 import { getSetting } from "../settings/settings.js";
 import { extractJson, runClaudeCli, skillBody, skillRef, SKILLS, type SkillName } from "./claude-cli.js";
@@ -70,4 +70,15 @@ export async function suggestCategories(taxonomy: TaxonomyEntry[], titles: strin
   const current = taxonomy.map((t) => ({ key: t.key, en: t.en, keywords: t.keywords }));
   const { raw, costUsd } = await askSkill(SKILLS.suggestCategories, { taxonomy: current, titles: [...new Set(titles)] }, "categories", item);
   return { suggestions: cleanCategorySuggestions(raw, taxonomy, titles), costUsd };
+}
+
+/** One call decides every unmapped path: map it to one key, or mark it too broad. */
+export async function matchPlatformPaths(taxonomy: TaxonomyEntry[], briefs: PathBrief[]): Promise<{ decisions: PathDecision[]; costUsd: number | null }> {
+  const item = z.object({ i: z.number().int(), decision: z.enum(["map", "broad"]), key: z.string().max(60).optional(), reasonTh: z.string().max(200) });
+  const data = {
+    taxonomy: taxonomy.map((t) => ({ key: t.key, en: t.en, zh: t.zh })),
+    paths: briefs.map((b, i) => ({ i, platform: b.platform, path: b.path, count: b.count, titles: b.titles, ruleSplit: b.ruleSplit })),
+  };
+  const { raw, costUsd } = await askSkill(SKILLS.matchPaths, data, "results", item);
+  return { decisions: cleanPathDecisions(raw, briefs, taxonomy.map((t) => t.key)), costUsd };
 }

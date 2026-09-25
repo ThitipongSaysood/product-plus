@@ -76,6 +76,16 @@ only keywords literally in a title and lines that catch ≥ 2 distinct titles (`
 `domain/categorize.ts`). UI: "ให้ AI เสนอหมวดใหม่" under the taxonomy editor; tap adds a line, save re-runs the free
 rules (`applyRules`). Tried on the 15 real unclassified listings: 14 s, $0.078 → wool 毛昵 · top-hat horse 礼帽马 · resin 树脂.
 
+## AI platform-category matching (2026-09-25, live)
+7th skill `match-platform-categories` (`POST /category-map/auto`): each unmapped path → one key or `_broad`
+(`BROAD_PATH`, stops layer 1, leaves listings to the rules, leaves the queue; undo = `DELETE /category-map`).
+Server guard `mappingSafe`: refuse a map when > 20 % of rule-sorted listings under the path went elsewhere.
+Dry run on the 5 real paths: all broad (after the skill was told to judge the path name, not the samples —
+the first try mapped 腕表配件 to silicone because both samples were silicone) · control 智能手表保护壳 → case. $0.08.
+Also: taxonomy card "ให้ AI จัดสินค้าที่ยังไม่มีหมวด" = `jobs/categorize` mode `pending` (fill without the 7-day wait).
+Category gaps found, not fixed: no manual category pick anywhere; taxonomy edits don't re-sort already-sorted
+products (retag has no button); category_map is global while taxonomies are per group.
+
 ## Blockers
 - ⚠️ The api answers without login from the internet (checked 2026-09-25: POST category-suggestions returned 200
   with no cookie) — anyone can start AI jobs. Set `APP_PASSWORD` (and `NODE_ENV=production` now that https is up).

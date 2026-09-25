@@ -15,7 +15,7 @@ export function parseTaxonomy(text: string): { entries: TaxonomyEntry[]; errors:
     const cols = line.split("|").map((c) => c.trim());
     if (cols.length < 4 || cols.length > 5) return errors.push({ line: i + 1, reason: "columns" });
     const [key, en, th, zh, kw = ""] = cols;
-    if (!/^[a-z0-9_]+$/.test(key)) return errors.push({ line: i + 1, reason: "key" });
+    if (!/^[a-z0-9_]+$/.test(key) || key.startsWith("_")) return errors.push({ line: i + 1, reason: "key" }); // "_" is kept for the api's "too broad" mark
     if (key === "unclassified") return errors.push({ line: i + 1, reason: "reserved" });
     if (seen.has(key)) return errors.push({ line: i + 1, reason: "duplicate" });
     seen.add(key);

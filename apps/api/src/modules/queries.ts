@@ -20,7 +20,7 @@ import type {
 } from "@pp/contracts";
 import { getDb, type Db } from "../db/client.js";
 import { appSettings, changeEvents, keywords, productGroups, products, productSnapshots, scrapeRuns } from "../db/schema.js";
-import { fromPlatformMap, pathKey, UNCLASSIFIED, UNCLASSIFIED_LABEL } from "../domain/categorize.js";
+import { BROAD_PATH, mapDecision, pathKey, UNCLASSIFIED, UNCLASSIFIED_LABEL } from "../domain/categorize.js";
 import { supplyTerms } from "../domain/normalize/supply.js";
 import { brandMarks } from "../domain/brand.js";
 import { computeTrend } from "../domain/trend.js";
@@ -313,7 +313,8 @@ export async function categories(g: GroupRecord, platform?: string): Promise<Cat
   return { lanes, unmappedCount: (await unmapped(g)).length };
 }
 
-export async function unmapped(g: GroupRecord): Promise<UnmappedCategory[]> {
+/** Platform paths of this group's listings, with what category_map says about each (null = undecided). */
+async function pathsOf(g: GroupRecord) {
   const db = await getDb();
   const map = await loadCategoryMap();
   const rows = await db
@@ -322,9 +323,18 @@ export async function unmapped(g: GroupRecord): Promise<UnmappedCategory[]> {
     .where(and(eq(products.productGroupId, g.id), inArray(products.platform, g.platforms), sql`${products.platformCategoryPath} is not null`))
     .groupBy(products.platform, products.platformCategoryPath);
   return rows
-    .filter((r) => r.path?.length && !fromPlatformMap(r.platform, r.path, map))
-    .map((r) => ({ platform: r.platform as Platform, path: pathKey(r.path!), count: r.n }))
+    .filter((r) => r.path?.length)
+    .map((r) => ({ platform: r.platform as Platform, path: pathKey(r.path!), count: r.n, decision: mapDecision(r.platform, r.path, map) }))
     .sort((a, b) => b.count - a.count);
+}
+
+export async function unmapped(g: GroupRecord): Promise<UnmappedCategory[]> {
+  return (await pathsOf(g)).filter((r) => r.decision === null).map(({ platform, path, count }) => ({ platform, path, count }));
+}
+
+/** Paths judged too broad to map — listed so the decision can be undone. */
+export async function broadPaths(g: GroupRecord): Promise<UnmappedCategory[]> {
+  return (await pathsOf(g)).filter((r) => r.decision === BROAD_PATH).map(({ platform, path, count }) => ({ platform, path, count }));
 }
 
 export async function trends(g: GroupRecord, platform?: string): Promise<TrendsResponse> {

@@ -373,6 +373,12 @@ export type UnmappedCategory = { platform: Platform; path: string; count: number
 export type CategorySuggestion = TaxonomyEntry & { matches: number; examples: string[] };
 export type CategorySuggestionsResponse = { suggestions: CategorySuggestion[]; unclassified: number; costUsd: number | null };
 
+// POST /category-map/auto {pg} — AI decides each unmapped platform path and the decision is saved at once.
+// categoryKey null = "too broad": the path leaves the queue and its listings stay with the keyword rules.
+// GET /category-map/broad?pg= lists those paths; DELETE /category-map?platform=&path= undoes any decision.
+export type PathDecision = { platform: Platform; path: string; count: number; categoryKey: string | null; reasonTh: string };
+export type AutoMapResponse = { decisions: PathDecision[]; costUsd: number | null };
+
 // ---------- keyword suggestions (CONTEXT.md "Keyword suggestion") ----------
 export type KeywordSuggestion = { keyword: string; zh: string | null; en: string | null; glossTh: string }; // one whole line of the keyword list
 // POST /groups/:slug/keyword-suggestions {productName}

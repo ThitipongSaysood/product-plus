@@ -68,7 +68,7 @@ export class JobsController {
 
   @Post("jobs/categorize")
   @HttpCode(200)
-  async categorize(@Body(new ZodPipe(z.object({ pg: z.string().optional(), mode: z.enum(["fill", "retag"]) }))) body: { pg?: string; mode: "fill" | "retag" }) {
+  async categorize(@Body(new ZodPipe(z.object({ pg: z.string().optional(), mode: z.enum(["fill", "pending", "retag"]) }))) body: { pg?: string; mode: "fill" | "pending" | "retag" }) {
     const g = await groupBySlug(body.pg);
     await assertNotRunning(g.id, "categorize");
     const runId = await createRun(await getDb(), { productGroupId: g.id, kind: "categorize", status: "running", step: body.mode });

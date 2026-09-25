@@ -17,3 +17,9 @@ No breaking change to `packages/contracts` is required. Notes for the web side:
    `matches` (listings the line would sort, counted with the same rules) + `examples` (≤ 3 distinct titles).
    Nothing is saved. Error key `errors.catsug.failed`. Additive. `PUT /groups/:slug/taxonomy` now also re-runs the
    free rules (layers 1–2) on products with no category, so a saved line sorts its listings at once.
+9. 2026-09-25 — `POST /api/category-map/auto {pg}` → `AutoMapResponse { decisions: PathDecision[], costUsd }`; AI decides
+   each unmapped path (≤ 30 per call) and every decision is saved. `PathDecision.categoryKey` null = too broad: stored
+   as `_broad` in category_map, layer 1 stops there and the rules decide. `reasonTh` may be the dict key
+   `catmap.guardBroad`. `GET /api/category-map/broad?pg=` → `UnmappedCategory[]`; `DELETE /api/category-map?platform=&path=`
+   undoes any decision. `POST /api/jobs/categorize` accepts mode `pending` (fill without the 7-day retry wait).
+   Taxonomy keys may not start with `_`. Error key `errors.catmap.failed`. Additive.

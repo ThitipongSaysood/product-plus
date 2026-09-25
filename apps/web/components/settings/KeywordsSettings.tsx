@@ -7,8 +7,11 @@ import { useT } from "@/i18n/client";
 import { send } from "@/lib/client-api";
 import { PLATFORM_LIST } from "@/lib/platform";
 import { platformName } from "../bits";
+import { AnalyseIcon } from "../icons";
+import { JobButton } from "../JobButton";
 
 import { Alert, Button, Card, ComboBox, EmptyState, Field, SectionTitle, TableScroll, TextArea } from "../ui";
+import { AutoMapButton, BroadPaths } from "./category-map-ai";
 import { CategorySuggest } from "./category-suggest";
 import { GroupFields, useGroupEdit } from "./group-edit";
 import { keywordsToText, needsTranslation, parseKeywordList, wrongLanguage } from "./keyword-list";
@@ -198,6 +201,11 @@ export function TaxonomyEditor({ pg, taxonomy }: { pg: string; taxonomy: Taxonom
           <Button type="submit" variant="secondary" disabled={s.busy || parsed.errors.length > 0}>{t("taxonomy.save")}</Button>
           <span className="ox-xs ox-muted">{t("taxonomy.count", { n: parsed.entries.length })}</span>
         </div>
+        {/* Rules and AI sort into the lines above; this asks AI now instead of waiting for the next round. */}
+        <div className="ox-row">
+          <JobButton kind="categorize" pg={pg} path="/api/jobs/categorize" body={{ pg, mode: "pending" }} label={t("taxonomy.aiPending")} icon={<AnalyseIcon size={16} />} size="sm" />
+          <span className="ox-help">{t("taxonomy.aiPendingHelp")}</span>
+        </div>
         <Status msg={s.msg} />
       </form>
       <details className="ap-kwmore">
@@ -209,7 +217,7 @@ export function TaxonomyEditor({ pg, taxonomy }: { pg: string; taxonomy: Taxonom
 }
 
 // ---------- unmapped queue ----------
-export function UnmappedQueue({ items: all, taxonomy, platforms }: { items: UnmappedCategory[]; taxonomy: TaxonomyEntry[]; platforms: Platform[] }) {
+export function UnmappedQueue({ pg, items: all, broad, taxonomy, platforms }: { pg: string; items: UnmappedCategory[]; broad: UnmappedCategory[]; taxonomy: TaxonomyEntry[]; platforms: Platform[] }) {
   const items = all.filter((u) => platforms.includes(u.platform));
   const t = useT();
   const s = useSaver();
@@ -268,6 +276,8 @@ export function UnmappedQueue({ items: all, taxonomy, platforms }: { items: Unma
         </TableScroll>
       )}
       <Status msg={s.msg} />
+      {items.length ? <AutoMapButton pg={pg} taxonomy={taxonomy} /> : null}
+      <BroadPaths items={broad} platforms={platforms} />
     </Card>
   );
 }

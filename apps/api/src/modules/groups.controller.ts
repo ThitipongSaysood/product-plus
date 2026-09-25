@@ -2,23 +2,23 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Put, Query } from "@nestjs/common";
 import { and, eq, inArray, isNotNull, notExists, sql } from "drizzle-orm";
 import { z } from "zod";
-import type { CategorySuggestionsResponse, KeywordListResponse, RoundEstimate, KeywordSuggestionsResponse, Platform, TaxonomyEntry } from "@pp/contracts";
+import type { AutoMapResponse, CategorySuggestionsResponse, KeywordListResponse, RoundEstimate, KeywordSuggestionsResponse, Platform, TaxonomyEntry } from "@pp/contracts";
 import { getDb } from "../db/client.js";
 import { keywords, media, productGroups, products, scrapeRuns } from "../db/schema.js";
 import { AppError, notFound } from "../common/errors.js";
 import { ZodPipe } from "../common/http.js";
-import { UNCLASSIFIED } from "../domain/categorize.js";
+import { BROAD_PATH, pathKey, UNCLASSIFIED, type PathBrief } from "../domain/categorize.js";
 import { capsValid, isUniqueViolation, slugify } from "../domain/guards.js";
 import { cleanLineTerms, planKeywordList, roundCostPerKeyword } from "../domain/keywords.js";
 import { PLATFORM_LIST } from "../domain/types.js";
 import { claudeCliVersion, skillPresent, SKILLS } from "../jobs/claude-cli.js";
 import { aiBackend } from "../jobs/llm.js";
-import { suggestCategories, suggestKeywords, translateKeywords } from "../jobs/suggest.js";
+import { matchPlatformPaths, suggestCategories, suggestKeywords, translateKeywords } from "../jobs/suggest.js";
 import { chosenActor, groupMode } from "../jobs/scrape.js";
 import { getSetting } from "../settings/settings.js";
-import { applyCategoryMap, applyRules } from "../jobs/categorize.js";
+import { applyCategoryMap, applyRules, removeCategoryMap } from "../jobs/categorize.js";
 import { groupBySlug } from "../jobs/runs.js";
-import { toGroup, toKeyword, unmapped } from "./queries.js";
+import { broadPaths, toGroup, toKeyword, unmapped } from "./queries.js";
 
 const platform = z.enum(PLATFORM_LIST as ["douyin", "1688", "temu", "xhs"]);
 const slugIn = z.string().trim().regex(/^[a-z0-9]([a-z0-9-]{0,58}[a-z0-9])?$/);
@@ -61,11 +61,13 @@ const keywordListIn = z.object({
 });
 /** Enough titles for patterns to show, few enough for one call to answer inside the web's proxy timeout. */
 const CATEGORY_SUGGEST_TITLES = 80;
+/** One AI call decides at most this many paths; a longer queue is finished by pressing the button again. */
+const AUTO_MAP_PATHS = 30;
 
 const taxonomyIn = z
   .array(
     z.object({
-      key: z.string().regex(/^[a-z0-9_]{1,40}$/).refine((k) => k !== UNCLASSIFIED),
+      key: z.string().regex(/^[a-z0-9_]{1,40}$/).refine((k) => k !== UNCLASSIFIED && !k.startsWith("_")), // "_" = BROAD_PATH
       th: z.string().trim().min(1).max(80),
       en: z.string().trim().min(1).max(80),
       zh: z.string().trim().min(1).max(80),
@@ -75,6 +77,7 @@ const taxonomyIn = z
   .max(40)
   .refine((xs) => new Set(xs.map((x) => x.key)).size === xs.length);
 const mapIn = z.object({ platform, path: z.string().trim().min(1).max(300), categoryKey: z.string().regex(/^[a-z0-9_]{1,40}$/) });
+const pathIn = z.object({ platform, path: z.string().trim().min(1).max(300) });
 
 const isUuid = (id: string) => /^[0-9a-f-]{36}$/i.test(id);
 
@@ -353,5 +356,46 @@ export class GroupsController {
   async putMap(@Body(new ZodPipe(mapIn)) body: z.infer<typeof mapIn>) {
     const updated = await applyCategoryMap(body.platform, body.path, body.categoryKey);
     return { ok: true, updated };
+  }
+
+  @Get("category-map/broad")
+  async broad(@Query("pg") pg?: string) {
+    return broadPaths(await groupBySlug(pg));
+  }
+
+  @Delete("category-map")
+  async deleteMap(@Query(new ZodPipe(pathIn)) q: z.infer<typeof pathIn>) {
+    return { ok: true, released: await removeCategoryMap(q.platform, q.path) };
+  }
+
+  /** AI decides every unmapped path of this group — one key, or too broad — and each decision is saved as
+   *  it would be from the queue by hand. Spends a little on Anthropic (or the local cli); no Apify charge. */
+  @Post("category-map/auto")
+  @HttpCode(200)
+  async autoMap(@Body(new ZodPipe(z.object({ pg: z.string().optional() }))) body: { pg?: string }): Promise<AutoMapResponse> {
+    const g = await groupBySlug(body.pg);
+    const queue = await unmapped(g);
+    if (!queue.length) return { decisions: [], costUsd: null };
+    await assertAiReady(SKILLS.matchPaths);
+    const db = await getDb();
+    const rows = await db
+      .select({ platform: products.platform, path: products.platformCategoryPath, title: products.title, key: products.categoryKey, source: products.categorySource })
+      .from(products)
+      .where(and(eq(products.productGroupId, g.id), isNotNull(products.platformCategoryPath)));
+    const briefs: PathBrief[] = queue.slice(0, AUTO_MAP_PATHS).map((u) => {
+      const under = rows.filter((r) => r.platform === u.platform && r.path && pathKey(r.path) === u.path);
+      const ruleSplit: Record<string, number> = {};
+      for (const r of under) if (r.source === "rules" || r.source === "llm") ruleSplit[r.key ?? UNCLASSIFIED] = (ruleSplit[r.key ?? UNCLASSIFIED] ?? 0) + 1;
+      const titles = [...new Set(under.map((r) => (r.title ?? "").replace(/\s+/g, " ").trim().slice(0, 120)).filter(Boolean))].slice(0, 6);
+      return { ...u, titles, ruleSplit };
+    });
+    let res: AutoMapResponse;
+    try {
+      res = await matchPlatformPaths(g.taxonomy as TaxonomyEntry[], briefs);
+    } catch {
+      throw new AppError(502, "errors.catmap.failed");
+    }
+    for (const d of res.decisions) await applyCategoryMap(d.platform, d.path, d.categoryKey ?? BROAD_PATH);
+    return res;
   }
 }

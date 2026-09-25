@@ -2,7 +2,7 @@ import { and, eq, inArray, isNull, ne, or } from "drizzle-orm";
 import type { TaxonomyEntry } from "@pp/contracts";
 import { getDb } from "../db/client.js";
 import { categoryMap, productGroups, products } from "../db/schema.js";
-import { categorize, pathKey, UNCLASSIFIED } from "../domain/categorize.js";
+import { BROAD_PATH, categorize, pathKey, UNCLASSIFIED } from "../domain/categorize.js";
 import { NOTE } from "../domain/notes.js";
 import { fillEligible } from "../domain/guards.js";
 import { getSetting } from "../settings/settings.js";
@@ -15,8 +15,9 @@ export async function loadCategoryMap() {
   return new Map(rows.map((r) => [`${r.platform}|${r.platformPath}`, r.categoryKey]));
 }
 
-/** fill = only products never decided (category_source null); retag = everything except manual picks. */
-export async function runCategorize(groupId: string, mode: "fill" | "retag", onProgress?: (done: number, total: number) => Promise<void>) {
+/** fill = only products never decided (category_source null), each retried at most once a week; pending = the
+ *  same products at once, on the merchant's request; retag = everything except manual picks. */
+export async function runCategorize(groupId: string, mode: "fill" | "pending" | "retag", onProgress?: (done: number, total: number) => Promise<void>) {
   const db = await getDb();
   const [group] = await db.select().from(productGroups).where(eq(productGroups.id, groupId));
   const taxonomy = group.taxonomy as TaxonomyEntry[];
@@ -34,7 +35,7 @@ export async function runCategorize(groupId: string, mode: "fill" | "retag", onP
     .where(
       and(
         eq(products.productGroupId, groupId),
-        mode === "fill" ? isNull(products.categorySource) : or(isNull(products.categorySource), ne(products.categorySource, "manual")),
+        mode === "retag" ? or(isNull(products.categorySource), ne(products.categorySource, "manual")) : isNull(products.categorySource),
       ),
     )
     .then((rs) => (mode === "fill" ? rs.filter((r) => fillEligible(r, new Date())) : rs)); // fill: skip tries < 7 days old
@@ -130,19 +131,48 @@ async function aiCategorizeBackend(): Promise<{ kind: "sdk"; apiKey: string } | 
   return apiKey ? { kind: "sdk", apiKey } : null;
 }
 
-/** PUT /api/category-map: remember the mapping and re-apply it to every non-manual product with that path. */
+/** Non-manual products of `platform` whose path starts with `path` — the ones a category_map row governs. */
+async function productsUnder(platform: string, path: string) {
+  const db = await getDb();
+  const segs = path.split(" > ");
+  const cands = await db
+    .select({ id: products.id, groupId: products.productGroupId, path: products.platformCategoryPath, source: products.categorySource })
+    .from(products)
+    .where(eq(products.platform, platform));
+  return cands.filter((c) => c.source !== "manual" && c.path && pathKey(c.path.slice(0, segs.length)) === path);
+}
+
+/** Products a mapping had sorted go back to the keyword rules (free), group by group. */
+async function releaseToRules(under: Awaited<ReturnType<typeof productsUnder>>) {
+  const mapped = under.filter((c) => c.source === "platform");
+  if (!mapped.length) return 0;
+  const db = await getDb();
+  await db
+    .update(products)
+    .set({ categoryKey: UNCLASSIFIED, categorySource: null, categoryTaggedAt: null })
+    .where(inArray(products.id, mapped.map((c) => c.id)));
+  for (const g of new Set(mapped.map((c) => c.groupId))) await applyRules(g);
+  return mapped.length;
+}
+
+/** PUT /api/category-map: remember the mapping and re-apply it to every non-manual product with that path.
+ *  BROAD_PATH records "too broad to map": nothing is forced, and listings a mapping had sorted return to the rules. */
 export async function applyCategoryMap(platform: string, path: string, categoryKey: string) {
   const db = await getDb();
   await db
     .insert(categoryMap)
     .values({ platform, platformPath: path, categoryKey })
     .onConflictDoUpdate({ target: [categoryMap.platform, categoryMap.platformPath], set: { categoryKey } });
-  const segs = path.split(" > ");
-  const cands = await db
-    .select({ id: products.id, path: products.platformCategoryPath, source: products.categorySource })
-    .from(products)
-    .where(eq(products.platform, platform));
-  const ids = cands.filter((c) => c.source !== "manual" && c.path && pathKey(c.path.slice(0, segs.length)) === path).map((c) => c.id);
+  const under = await productsUnder(platform, path);
+  if (categoryKey === BROAD_PATH) return releaseToRules(under);
+  const ids = under.map((c) => c.id);
   if (ids.length) await db.update(products).set({ categoryKey, categorySource: "platform", categoryTaggedAt: new Date() }).where(inArray(products.id, ids));
   return ids.length;
+}
+
+/** DELETE /api/category-map: forget a decision; the path goes back to the unmapped queue. */
+export async function removeCategoryMap(platform: string, path: string) {
+  const db = await getDb();
+  await db.delete(categoryMap).where(and(eq(categoryMap.platform, platform), eq(categoryMap.platformPath, path)));
+  return releaseToRules(await productsUnder(platform, path));
 }
