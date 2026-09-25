@@ -124,6 +124,16 @@ export type ProductsQuery = {
 
 export type Paged<T> = { items: T[]; page: number; pageSize: number; total: number };
 
+export type FxRate = { rate: number; updatedAt: string };
+
+/** GET /products — a page of cards plus what the list needs around them. */
+export type ProductList = Paged<ProductCard> & {
+  /** Products in the group with no Thai title yet — the translate button only shows when this is > 0. */
+  untranslated: number;
+  /** Hand-set THB rates by currency (CNY, USD); a currency is absent when no rate is set. */
+  fxThb: Partial<Record<"CNY" | "USD", FxRate>>;
+};
+
 export type Snapshot = {
   takenAt: string;
   rank: number | null;
@@ -150,7 +160,7 @@ export type ProductDetail = {
   /** Manually-entered THB rate for this product's currency, so the page can price in the money the
    *  buyer actually spends. Null when no rate is set. `updatedAt` is shown — a hand-set rate goes stale
    *  and must never read as a live quote. */
-  fxThb: { rate: number; updatedAt: string } | null;
+  fxThb: FxRate | null;
   snapshots: Snapshot[];
   salesTrend: { date: string; units: number }[] | null; // Douyin only
   trendDetail: TrendDetail;
@@ -356,6 +366,12 @@ export type BrandItem = {
 export type BrandResponse = { report: BrandReport | null; items: Record<string, BrandItem> };
 
 export type UnmappedCategory = { platform: Platform; path: string; count: number };
+
+// ---------- category suggestions (AI proposes new taxonomy lines for listings no rule caught) ----------
+// POST /groups/:slug/category-suggestions — nothing is saved; a picked line is added to the taxonomy text.
+// `matches` = unclassified listings this line's keywords would sort into it, counted by the same rules.
+export type CategorySuggestion = TaxonomyEntry & { matches: number; examples: string[] };
+export type CategorySuggestionsResponse = { suggestions: CategorySuggestion[]; unclassified: number; costUsd: number | null };
 
 // ---------- keyword suggestions (CONTEXT.md "Keyword suggestion") ----------
 export type KeywordSuggestion = { keyword: string; zh: string | null; en: string | null; glossTh: string }; // one whole line of the keyword list

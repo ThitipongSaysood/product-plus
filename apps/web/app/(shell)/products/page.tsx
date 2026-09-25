@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { Paged, ProductCard } from "@pp/contracts";
+import type { ProductList } from "@pp/contracts";
 import { ApiErrorAlert } from "@/components/bits";
 import { ChevronLeftIcon, ChevronRightIcon } from "@/components/icons";
 import { ProductCardView, categoryLabel } from "@/components/ProductCardView";
@@ -29,11 +29,14 @@ export default async function ProductsPage(props: PageProps<"/products">) {
     page: first(sp.page),
     active: first(sp.active),
   };
-  const [res, g] = await Promise.all([api<Paged<ProductCard>>(`/products${qs(query)}`), loadGroup(pg)]);
+  const [res, g] = await Promise.all([api<ProductList>(`/products${qs(query)}`), loadGroup(pg)]);
   const taxonomy = g.group?.taxonomy ?? [];
   const compact = first(sp.density) === "compact";
   const from = href("/products", sp);
   const hasFilter = Boolean(query.platform || query.category || query.trend || query.period || query.q);
+  const untranslated = res.error ? 0 : res.data.untranslated;
+  // Sold order only needs explaining when it actually spans more than one period.
+  const soldOrderNote = !query.period && (!query.sort || query.sort === "sold");
 
   return (
     <>
@@ -42,18 +45,22 @@ export default async function ProductsPage(props: PageProps<"/products">) {
           <h1 className="ox-page-title">{t("products.title")}</h1>
           <p className="ox-muted">{t("products.sub")}</p>
         </div>
-        <div className="ox-page-head__actions">
-          <JobButton
-            key={`tr-${pg}`}
-            kind="translate"
-            pg={pg}
-            path="/api/jobs/translate"
-            body={{ pg }}
-            label={t("translate.run")}
-            icon={<GlobeIcon size={16} />}
-            confirm={t("translate.confirm")}
-          />
-        </div>
+        {/* Only while something is left to translate — a button that would do nothing only raises the question
+            of what it does. */}
+        {untranslated > 0 ? (
+          <div className="ox-page-head__actions">
+            <JobButton
+              key={`tr-${pg}`}
+              kind="translate"
+              pg={pg}
+              path="/api/jobs/translate"
+              body={{ pg }}
+              label={t("translate.runN", { n: formatNumber(t.locale, untranslated) })}
+              icon={<GlobeIcon size={16} />}
+              confirm={t("translate.confirm")}
+            />
+          </div>
+        ) : null}
       </div>
       <ProductFilters platforms={g.platforms} categories={taxonomy.map((c) => ({ key: c.key, label: { th: c.th, en: c.en, zh: c.zh } }))} />
       {res.error ? (
@@ -61,17 +68,20 @@ export default async function ProductsPage(props: PageProps<"/products">) {
       ) : res.data.items.length === 0 ? (
         <EmptyState
           title={hasFilter ? t("products.emptyFiltered") : t("products.empty")}
-          body={hasFilter ? t("products.emptyFilteredBody") : t("products.emptyBody")}
+          body={query.q ? t("products.emptySearchBody") : hasFilter ? t("products.emptyFilteredBody") : t("products.emptyBody")}
           action={hasFilter
             ? <Link className="ox-btn ox-btn--secondary" href={`/products${qs({ pg })}`}>{t("filter.clear")}</Link>
             : <Link className="ox-btn ox-btn--secondary" href={`/settings/keywords${qs({ pg })}`}>{t("products.goKeywords")}</Link>}
         />
       ) : (
         <>
-          <p className="ox-xs ox-muted ox-num">{t("products.count", { n: formatNumber(t.locale, res.data.total) })}</p>
+          <p className="ox-xs ox-muted ox-num">
+            {t("products.count", { n: formatNumber(t.locale, res.data.total) })}
+            {soldOrderNote ? ` · ${t("products.soldOrder")}` : null}
+          </p>
           <div className={compact ? "ap-wall ap-wall--compact" : "ap-wall"}>
             {res.data.items.map((p) => (
-              <ProductCardView key={p.id} t={t} p={p} pg={pg} from={from} categoryText={categoryLabel(t, p.categoryKey, taxonomy)} />
+              <ProductCardView key={p.id} t={t} p={p} pg={pg} from={from} categoryText={categoryLabel(t, p.categoryKey, taxonomy)} fxThb={res.data.fxThb} />
             ))}
           </div>
           <Pager t={t} sp={sp} page={res.data.page} pageSize={res.data.pageSize} total={res.data.total} />

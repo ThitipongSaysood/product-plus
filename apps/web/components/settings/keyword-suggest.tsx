@@ -3,7 +3,6 @@
 // line (keyword | Chinese term | English term) and tapping it adds that line to the keyword list above. Nothing is saved here — the list is saved as a whole.
 import { useState } from "react";
 import type { KeywordSuggestion, KeywordSuggestionsResponse } from "@pp/contracts";
-import { formatMoney } from "@/i18n";
 import { useT } from "@/i18n/client";
 import { send } from "@/lib/client-api";
 import { AnalyseIcon } from "../icons";
@@ -55,7 +54,7 @@ export function KeywordSuggest({ pg, onPick }: { pg: string; onPick: (s: Keyword
 
       {res && res.suggestions.length ? (
         <div className="ox-stack">
-          <div className="ox-help">{res.costUsd != null ? t("kwsug.aiCost", { cost: formatMoney(t.locale, res.costUsd, "USD") }) : t("kwsug.aiSub")}</div>
+          <div className="ox-help">{t("kwsug.aiSub")}</div>
           <div className="ap-kwsug__chips" role="group" aria-label={t("kwsug.aiTitle")}>
             {res.suggestions.map((s) => (
               <Chip

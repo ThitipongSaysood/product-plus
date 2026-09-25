@@ -55,6 +55,27 @@ and the English term (Temu); the whole list is edited as text like the taxonomy.
   migrated stores skip it). PGlite path unchanged.
 - pnpm 10.34.5 installed in `~/.local/bin` (no sudo, no docker group for `product`).
 
+## AI model (2026-09-25, uncommitted)
+All 5 AI skills now run on `claude-sonnet-5` (user's call). Speed via effort: `LLM_EFFORT` low (translate,
+categorize, keyword AI) · `BRAND_EFFORT` medium — `--effort` on the cli, `output_config.effort` on the sdk
+(`apps/api/src/jobs/llm.ts`). Categorize batches now run concurrently (`pooled`, moved to `claude-cli.ts`).
+Live server is `AI_BACKEND=cli`, no API key. Built + restarted 2026-09-25 (still uncommitted).
+Measured 2026-09-25 (cli, translate-keyword, 3 Thai keywords): Haiku 8.5 s / 11.4 s ($0.019, ~1,000 thinking tokens)
+· Sonnet 5 low 5.4 s cold / 2.8 s warm ($0.197 cold / $0.064 warm, 0 thinking) · Sonnet 5 default 6.6 s ($0.066).
+Each cli call sends ~49K input tokens of Claude Code's own prompt — that, not the model, is the cost.
+
+## Products page usability fixes (2026-09-25, uncommitted) — details in sessions/2026-09-25-1010-products-usability.md
+Review #1–9 fixed: Thai search, sold sort by period block, THB line + price sort in baht, neutral sold chip,
+no "no history" tile, translate button only when titles are left, mobile filter toggle, Temu titles now
+translated (skill rule 7 changed), "ประเมิน Actor" → "ทดสอบแหล่งข้อมูล". Not built/restarted — the live site
+still runs the old code. 5 Temu titles wait for the user to press "แปลชื่อที่เหลือ (5)".
+
+## AI category suggestion (2026-09-25, uncommitted, not deployed)
+6th AI skill `suggest-categories`: reads unclassified titles (≤ 80) and proposes new taxonomy lines; the server keeps
+only keywords literally in a title and lines that catch ≥ 2 distinct titles (`cleanCategorySuggestions`,
+`domain/categorize.ts`). UI: "ให้ AI เสนอหมวดใหม่" under the taxonomy editor; tap adds a line, save re-runs the free
+rules (`applyRules`). Tried on the 15 real unclassified listings: 14 s, $0.078 → wool 毛昵 · top-hat horse 礼帽马 · resin 树脂.
+
 ## Blockers
 - **Per-round cap vs cost** (user decides, money setting — never change it without asking):
   `apple-watch-bands` ≈ $1.46/round vs cap $1.00 · `apple-watch` ≈ $13.14/round (9 Keywords) vs cap $4.90.

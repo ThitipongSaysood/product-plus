@@ -87,6 +87,34 @@ export async function runCategorize(groupId: string, mode: "fill" | "retag", onP
   };
 }
 
+/** Layers 1–2 only, on products nothing has decided yet — free, so it runs whenever the taxonomy is saved
+ *  and a line the merchant just added sorts the listings it was written for without waiting for a round. */
+export async function applyRules(groupId: string): Promise<number> {
+  const db = await getDb();
+  const [group] = await db.select().from(productGroups).where(eq(productGroups.id, groupId));
+  const taxonomy = group.taxonomy as TaxonomyEntry[];
+  const map = await loadCategoryMap();
+  const rows = await db
+    .select({ id: products.id, platform: products.platform, title: products.title, path: products.platformCategoryPath })
+    .from(products)
+    .where(and(eq(products.productGroupId, groupId), isNull(products.categorySource)));
+  const groups = new Map<string, string[]>();
+  for (const r of rows) {
+    const c = categorize({ platform: r.platform, title: r.title, platformCategoryPath: r.path }, map, taxonomy);
+    if (c) groups.set(`${c.key}|${c.source}`, [...(groups.get(`${c.key}|${c.source}`) ?? []), r.id]);
+  }
+  const now = new Date();
+  let n = 0;
+  await db.transaction(async (tx) => {
+    for (const [k, ids] of groups) {
+      const [key, source] = k.split("|");
+      await tx.update(products).set({ categoryKey: key, categorySource: source, categoryTaggedAt: now }).where(inArray(products.id, ids));
+      n += ids.length;
+    }
+  });
+  return n;
+}
+
 /**
  * Which backend layer 3 may use, or null when it cannot run at all. The cli needs both the skill file
  * (it lives outside dist/, so a partial deploy loses it) and a binary that answers --version; checking

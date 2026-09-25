@@ -12,8 +12,9 @@ import { SafeImg } from "./SafeImg";
 /** Thai title when the translate job has produced one, otherwise the scraped original.
  *  `lang` matters: the browser picks a Chinese font for the original and a Thai one for the translation. */
 export function shownTitle(t: T, p: { title: string | null; titleTh?: string | null }): { text: string; lang: string } {
-  if (p.titleTh) return { text: p.titleTh, lang: "th" };
-  return { text: p.title ?? t("product.untitled"), lang: "zh-CN" };
+  if (p.titleTh && p.titleTh !== p.title) return { text: p.titleTh, lang: "th" };
+  // Temu titles are English; tagging them zh-CN would hand them a Chinese font.
+  return { text: p.title ?? t("product.untitled"), lang: p.title && !/[\u3400-\u9fff]/.test(p.title) ? "en" : "zh-CN" };
 }
 
 export function platformName(t: T, p: Platform | string): string {
@@ -28,42 +29,29 @@ export function BrandMark({ t, platform }: { t: T; platform: Platform }) {
   );
 }
 
-/** Sold count ALWAYS states its period (handoff §10.1). */
+/** Sold count ALWAYS states its period (handoff §10.1). The number leads; the period follows it and the
+ *  tooltip says what the period means. Only 30 days is tinted — it is the one recent number. An unknown
+ *  period is neutral, not a warning: nothing is wrong with the product. */
 export function SoldBadge({ t, sold }: { t: T; sold: SoldInfo }) {
   const n = formatNumber(t.locale, sold.count);
   if (sold.count == null) {
     return <span className="ox-badge" title={sold.text ?? undefined}>{t("sold.none")}</span>;
   }
+  const help = (period: "30d" | "lifetime" | "unknown") => [t(`sold.help.${period}`), sold.text].filter(Boolean).join(" — ");
   if (sold.period === "30d") {
-    return <span className="ox-badge ox-badge--accent ox-num" title={sold.text ?? undefined}>{t(sold.lowerBound ? "sold.30dAtLeast" : "sold.30d", { n })}</span>;
+    return <span className="ox-badge ox-badge--accent ox-num" title={help("30d")}>{t(sold.lowerBound ? "sold.30dAtLeast" : "sold.30d", { n })}</span>;
   }
   if (sold.period === "lifetime") {
-    return <span className="ox-badge ox-num" title={sold.text ?? undefined}>{t(sold.lowerBound ? "sold.lifetimeAtLeast" : "sold.lifetime", { n })}</span>;
+    return <span className="ox-badge ox-num" title={help("lifetime")}>{t(sold.lowerBound ? "sold.lifetimeAtLeast" : "sold.lifetime", { n })}</span>;
   }
-  return <span className="ox-badge ox-badge--warning ox-num" title={sold.text ?? undefined}>{t("sold.unknown", { n: sold.lowerBound ? `≥ ${n}` : n })}</span>;
+  return <span className="ox-badge ox-num" title={help("unknown")}>{t("sold.unknown", { n: sold.lowerBound ? `≥ ${n}` : n })}</span>;
 }
 
-export function TrendTile({ t, trend }: { t: T; trend: TrendLabel }) {
-  if (trend === "insufficient_history") {
-    return (
-      <span className="ap-longevity ap-longevity--insufficient" title={t("trend.insufficient_history")}>
-        <span className="ap-longevity__n" aria-hidden="true">—</span>
-        <span className="ap-longevity__label">{t("trend.insufficientShort")}</span>
-      </span>
-    );
-  }
-  const Icon = trend === "rising" ? TrendingUpIcon : trend === "falling" ? TrendingDownIcon : null;
-  return (
-    <span className={cn("ap-longevity", `ap-longevity--${trend}`)}>
-      <span className="ap-longevity__n" aria-hidden="true">{Icon ? <Icon size={26} /> : "→"}</span>
-      <span className="ap-longevity__label">{t(`trend.${trend}`)}</span>
-    </span>
-  );
-}
-
+/** Trend as a small chip with an arrow, so it reads as a fact and not as a button. */
 export function TrendBadge({ t, trend }: { t: T; trend: TrendLabel }) {
   const tone = trend === "rising" ? "ox-badge--accent" : trend === "falling" ? "ox-badge--danger" : "";
-  return <span className={cn("ox-badge", tone)}>{t(`trend.${trend}`)}</span>;
+  const Icon = trend === "rising" ? TrendingUpIcon : trend === "falling" ? TrendingDownIcon : null;
+  return <span className={cn("ox-badge", tone)}>{Icon ? <Icon size={14} /> : null}{t(`trend.${trend}`)}</span>;
 }
 
 export function imageSrc(p: { imageId: string | null; imageSourceUrl?: string | null; imageLost?: boolean }): string | null {

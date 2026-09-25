@@ -13,7 +13,7 @@ import { buildBrief, type BriefInput, scoreCandidates } from "../domain/brand-br
 import { supplyTerms } from "../domain/normalize/supply.js";
 import { getSetting } from "../settings/settings.js";
 import { extractJson, runClaudeCli, skillBody, skillRef, SKILLS } from "./claude-cli.js";
-import { aiBackend, BRAND_MODEL } from "./llm.js";
+import { aiBackend, BRAND_EFFORT, BRAND_MODEL } from "./llm.js";
 
 /** Enough to see the shape of a catalogue without paying for a prompt nobody reads. */
 const MAX_CANDIDATES = 60;
@@ -88,7 +88,7 @@ export async function runBrandScout(groupId: string, lang: Locale = "th"): Promi
   let costUsd: number | null = null;
   if (backend === "cli") {
     const bin = (await getSetting("CLAUDE_CLI_PATH")) ?? "claude";
-    const res = await runClaudeCli(bin, BRAND_MODEL, `/${skillRef(SKILLS.brand)}\n\n${ask}`);
+    const res = await runClaudeCli(bin, BRAND_MODEL, `/${skillRef(SKILLS.brand)}\n\n${ask}`, BRAND_EFFORT);
     text = res.text;
     costUsd = res.costUsd;
   } else {
@@ -101,6 +101,7 @@ export async function runBrandScout(groupId: string, lang: Locale = "th"): Promi
       max_tokens: 4096,
       system: skillBody(SKILLS.brand),
       messages: [{ role: "user", content: ask }],
+      output_config: { effort: BRAND_EFFORT },
     });
     text = res.content.map((c) => (c.type === "text" ? c.text : "")).join("");
   }

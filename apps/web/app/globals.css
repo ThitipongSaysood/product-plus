@@ -363,18 +363,13 @@ select.ox-control { appearance: none; padding-right: var(--omnix-space-8); backg
 .ap-wall__top { position: absolute; top: var(--omnix-space-2); left: var(--omnix-space-2); display: flex; gap: var(--omnix-space-1); flex-wrap: wrap; }
 .ap-wall__title { font-size: var(--omnix-text-sm); line-height: 1.4; min-height: 2.8em; }
 .ap-wall__price { font-weight: 600; font-variant-numeric: tabular-nums; }
-.ap-wall__foot { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--omnix-space-2); margin-top: auto; }
-.ap-wall--compact .ap-wall__foot .ap-longevity { display: none; }
+.ap-wall__foot { display: flex; flex-direction: column; gap: var(--omnix-space-2); margin-top: auto; }
+.ap-wall__prices { display: flex; align-items: baseline; gap: var(--omnix-space-2); flex-wrap: wrap; }
+.ap-wall__facts { display: flex; gap: var(--omnix-space-1); flex-wrap: wrap; }
 
-/* trend tile (ap-longevity style) */
-.ap-longevity { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; width: 80px; height: 64px; flex: 0 0 auto; border-radius: var(--omnix-radius-lg); background: var(--omnix-surface-2); color: var(--omnix-fg); text-align: center; padding: var(--omnix-space-1); }
-.ap-longevity__n { font-size: 28px; font-weight: 600; letter-spacing: -.02em; line-height: 1; font-variant-numeric: tabular-nums; display: inline-flex; align-items: center; }
-.ap-longevity__label { font-size: var(--omnix-text-xs); line-height: 1.2; }
-.ap-longevity--rising { background: var(--omnix-accent); color: var(--omnix-on-accent); }
-.ap-longevity--flat { background: var(--omnix-surface-2); color: var(--omnix-fg); }
-.ap-longevity--falling { background: var(--omnix-danger-bg); color: var(--omnix-danger-fg); }
-.ap-longevity--insufficient { background: var(--omnix-surface); color: var(--omnix-fg-muted); border: 1px dashed var(--omnix-border-strong); }
-.ap-longevity--insufficient .ap-longevity__label { font-size: var(--omnix-text-xs); }
+/* product filters: on phones everything but search folds behind one toggle */
+.ap-filters__toggle { display: none; }
+.ap-filters__more { display: contents; }
 
 /* event feed */
 .ap-feed { display: flex; flex-direction: column; gap: var(--omnix-space-2); }
@@ -536,8 +531,9 @@ select.ox-control { appearance: none; padding-right: var(--omnix-space-8); backg
   .ox-main__inner { padding: var(--omnix-space-4); }
   .ox-main { padding-bottom: calc(56px + env(safe-area-inset-bottom)); }
   .ap-sticky { position: static; } /* a 3-row filter bar pinned on a phone would eat a quarter of the screen */
-  .ap-longevity { width: 64px; height: 56px; }
-  .ap-longevity__n { font-size: 22px; }
+  .ap-filters__toggle { display: inline-flex; }
+  .ap-filters__more { display: none; }
+  .ap-filters__more.is-open { display: flex; flex-wrap: wrap; gap: var(--omnix-space-2); flex: 1 1 100%; }
   .ap-wall__media { height: 160px; }
   .ap-thumb { width: 56px; height: 56px; }
   .ap-media-full { aspect-ratio: 1; }

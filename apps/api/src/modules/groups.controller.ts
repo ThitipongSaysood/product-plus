@@ -2,7 +2,7 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Put, Query } from "@nestjs/common";
 import { and, eq, inArray, isNotNull, notExists, sql } from "drizzle-orm";
 import { z } from "zod";
-import type { KeywordListResponse, RoundEstimate, KeywordSuggestionsResponse, Platform, TaxonomyEntry } from "@pp/contracts";
+import type { CategorySuggestionsResponse, KeywordListResponse, RoundEstimate, KeywordSuggestionsResponse, Platform, TaxonomyEntry } from "@pp/contracts";
 import { getDb } from "../db/client.js";
 import { keywords, media, productGroups, products, scrapeRuns } from "../db/schema.js";
 import { AppError, notFound } from "../common/errors.js";
@@ -13,10 +13,10 @@ import { cleanLineTerms, planKeywordList, roundCostPerKeyword } from "../domain/
 import { PLATFORM_LIST } from "../domain/types.js";
 import { claudeCliVersion, skillPresent, SKILLS } from "../jobs/claude-cli.js";
 import { aiBackend } from "../jobs/llm.js";
-import { suggestKeywords, translateKeywords } from "../jobs/suggest.js";
+import { suggestCategories, suggestKeywords, translateKeywords } from "../jobs/suggest.js";
 import { chosenActor, groupMode } from "../jobs/scrape.js";
 import { getSetting } from "../settings/settings.js";
-import { applyCategoryMap } from "../jobs/categorize.js";
+import { applyCategoryMap, applyRules } from "../jobs/categorize.js";
 import { groupBySlug } from "../jobs/runs.js";
 import { toGroup, toKeyword, unmapped } from "./queries.js";
 
@@ -59,6 +59,9 @@ const termIn = z.string().trim().max(100).nullable().optional().transform((v) =>
 const keywordListIn = z.object({
   items: z.array(z.object({ keyword: z.string().trim().min(1).max(100), zh: termIn, en: termIn })).max(50),
 });
+/** Enough titles for patterns to show, few enough for one call to answer inside the web's proxy timeout. */
+const CATEGORY_SUGGEST_TITLES = 80;
+
 const taxonomyIn = z
   .array(
     z.object({
@@ -314,7 +317,31 @@ export class GroupsController {
     const g = await groupBySlug(slug);
     const db = await getDb();
     const [row] = await db.update(productGroups).set({ taxonomy: body, updatedAt: new Date() }).where(eq(productGroups.id, g.id)).returning();
+    await applyRules(g.id); // free: a new line sorts the still-unclassified listings it was written for now
     return row.taxonomy;
+  }
+
+  /** AI proposes new taxonomy lines for the listings no category caught. Spends a little on Anthropic (or
+   *  the local cli) and saves nothing; with nothing unclassified it answers without calling AI at all. */
+  @Post("groups/:slug/category-suggestions")
+  @HttpCode(200)
+  async suggestCategories(@Param("slug") slug: string): Promise<CategorySuggestionsResponse> {
+    const g = await groupBySlug(slug);
+    const db = await getDb();
+    const rows = await db
+      .select({ title: products.title })
+      .from(products)
+      .where(and(eq(products.productGroupId, g.id), sql`${products.categorySource} is null`, isNotNull(products.title)))
+      .orderBy(sql`${products.latestSoldCount} desc nulls last`)
+      .limit(CATEGORY_SUGGEST_TITLES);
+    const titles = rows.map((r) => r.title!.replace(/\s+/g, " ").trim().slice(0, 200)).filter(Boolean);
+    if (!titles.length) return { suggestions: [], unclassified: 0, costUsd: null };
+    await assertAiReady(SKILLS.suggestCategories);
+    try {
+      return { ...(await suggestCategories(g.taxonomy as TaxonomyEntry[], titles)), unclassified: titles.length };
+    } catch {
+      throw new AppError(502, "errors.catsug.failed");
+    }
   }
 
   @Get("category-map/unmapped")

@@ -1,7 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import type { Group, Keyword, KeywordListResponse, KeywordSuggestion, Platform, RoundEstimate, Schedule, TaxonomyEntry, UnmappedCategory } from "@pp/contracts";
+import type { CategorySuggestion, Group, Keyword, KeywordListResponse, KeywordSuggestion, Platform, RoundEstimate, Schedule, TaxonomyEntry, UnmappedCategory } from "@pp/contracts";
 import { formatMoney, formatNumber } from "@/i18n";
 import { useT } from "@/i18n/client";
 import { send } from "@/lib/client-api";
@@ -9,6 +9,7 @@ import { PLATFORM_LIST } from "@/lib/platform";
 import { platformName } from "../bits";
 
 import { Alert, Button, Card, ComboBox, EmptyState, Field, SectionTitle, TableScroll, TextArea } from "../ui";
+import { CategorySuggest } from "./category-suggest";
 import { GroupFields, useGroupEdit } from "./group-edit";
 import { keywordsToText, needsTranslation, parseKeywordList, wrongLanguage } from "./keyword-list";
 import { KeywordSuggest } from "./keyword-suggest";
@@ -170,6 +171,10 @@ export function TaxonomyEditor({ pg, taxonomy }: { pg: string; taxonomy: Taxonom
   const [text, setText] = useState(() => taxonomyToText(taxonomy));
   const parsed = parseTaxonomy(text);
 
+  /** A suggestion is a whole line; tapping it again does nothing once its key is in the text. */
+  const addLine = (c: CategorySuggestion) =>
+    setText((cur) => (parseTaxonomy(cur).entries.some((e) => e.key === c.key) ? cur : `${cur.trimEnd()}${cur.trim() ? "\n" : ""}${taxonomyToText([c])}`));
+
   return (
     <Card>
       <SectionTitle title={t("taxonomy.title")} sub={t("taxonomy.sub")} />
@@ -195,6 +200,10 @@ export function TaxonomyEditor({ pg, taxonomy }: { pg: string; taxonomy: Taxonom
         </div>
         <Status msg={s.msg} />
       </form>
+      <details className="ap-kwmore">
+        <summary>{t("catsug.title")}</summary>
+        <CategorySuggest pg={pg} onPick={addLine} />
+      </details>
     </Card>
   );
 }

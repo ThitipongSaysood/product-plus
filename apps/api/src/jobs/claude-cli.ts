@@ -28,6 +28,7 @@ export const SKILLS = {
   brand: "brand-candidates",
   suggest: "suggest-keywords",
   translateKeyword: "translate-keyword",
+  suggestCategories: "suggest-categories",
 } as const;
 export type SkillName = (typeof SKILLS)[keyof typeof SKILLS];
 
@@ -55,6 +56,9 @@ export function validCliPath(p: string): boolean {
 }
 
 export type CliResult = { text: string; costUsd: number | null };
+
+/** How hard the model thinks before it answers — the main speed lever on Sonnet 5, which thinks by default. */
+export type Effort = "low" | "medium" | "high";
 
 /** The `--output-format json` envelope. `result` is the assistant's text, often inside a ```json fence. */
 export function parseCliEnvelope(stdout: string): CliResult {
@@ -84,12 +88,13 @@ export function extractJson(text: string): unknown {
 }
 
 /** Run one prompt through the CLI. The prompt goes on stdin so nothing user-supplied reaches argv. */
-export async function runClaudeCli(bin: string, model: string, prompt: string, timeoutMs = CLI_TIMEOUT_MS): Promise<CliResult> {
+export async function runClaudeCli(bin: string, model: string, prompt: string, effort: Effort, timeoutMs = CLI_TIMEOUT_MS): Promise<CliResult> {
   if (!validCliPath(bin)) throw new Error("claude cli: invalid binary path");
   const args = [
     "-p",
     "--output-format", "json",
     "--model", model,
+    "--effort", effort,
     "--allowed-tools", "", // text in, text out: no file, shell or web access, and no tool to invoke another skill
     "--strict-mcp-config", // ignore whatever MCP servers the host has configured
     // Adds our plugin; it does NOT replace what the host account already has. Measured on a dev machine
@@ -155,4 +160,22 @@ export async function claudeCliVersion(bin: string): Promise<string> {
       code === 0 && out.trim() ? resolve(out.trim()) : reject(new Error(`exit ${code}`));
     });
   });
+}
+
+/** Run `jobs` with at most `limit` in flight, keeping results in order. */
+export async function pooled<T>(jobs: (() => Promise<T>)[], limit: number): Promise<PromiseSettledResult<T>[]> {
+  const out: PromiseSettledResult<T>[] = new Array(jobs.length);
+  let next = 0;
+  const worker = async () => {
+    while (next < jobs.length) {
+      const i = next++;
+      try {
+        out[i] = { status: "fulfilled", value: await jobs[i]() };
+      } catch (reason) {
+        out[i] = { status: "rejected", reason };
+      }
+    }
+  };
+  await Promise.all(Array.from({ length: Math.max(1, Math.min(limit, jobs.length)) }, worker));
+  return out;
 }

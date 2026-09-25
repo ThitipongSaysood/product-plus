@@ -53,7 +53,7 @@ describe("validCliPath", () => {
   });
 });
 
-import { pooled } from "../src/jobs/translate.js";
+import { pooled } from "../src/jobs/claude-cli.js";
 import { PLUGIN_DIR, skillBody, skillPath, skillPresent, SKILLS } from "../src/jobs/claude-cli.js";
 import { MAX_PICKS } from "../src/jobs/brand.js";
 

@@ -35,7 +35,9 @@ Chinese listing titles are keyword soup, not sentences. Translating token by tok
 4. **Drop seller filler**: 包邮 (ส่งฟรี), 厂家直销 / 工厂直发 (ขายตรงจากโรงงาน), 高级感, 新款, 爆款.
 5. **Collapse long compatibility lists.** `7/8/9/10/SE/Ultra 42 44 45 49mm` → `Series 7-10 / SE / Ultra`.
 6. **Under 120 characters.**
-7. **Already Thai or English? Return it unchanged.** Do not translate English titles into Thai.
+7. **Already Thai? Return it unchanged.** English titles (Temu) get the same treatment as Chinese ones —
+   a short Thai title under the same rules, brand and model names kept as written. An English title left
+   as-is sits next to Thai ones in the product list and reads as untranslated (usability review 2026-09-25).
 
 ## Vocabulary
 

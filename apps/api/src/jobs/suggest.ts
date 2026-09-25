@@ -1,15 +1,17 @@
-// Two AI keyword jobs (CONTEXT.md): Keyword suggestion (a product name → whole candidate lines) and
-// Keyword translation (Keywords → their Chinese and English Platform terms, all in one call). How each works lives in ONE
+// Three AI suggestion jobs. Two for keywords (CONTEXT.md): Keyword suggestion (a product name → whole candidate lines) and
+// Keyword translation (Keywords → their Chinese and English Platform terms, all in one call); and Category
+// suggestion (listings no rule caught → new taxonomy lines). How each works lives in ONE
 // place — its SKILL.md under apps/api/claude-plugin/skills — sent as the system prompt on "sdk" and loaded
 // as a skill on "cli". Merchant input is untrusted: it travels as data inside a JSON payload.
 import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { z } from "zod";
-import type { KeywordSuggestionsResponse } from "@pp/contracts";
+import type { CategorySuggestion, KeywordSuggestionsResponse, TaxonomyEntry } from "@pp/contracts";
+import { cleanCategorySuggestions } from "../domain/categorize.js";
 import { cleanSuggestionLines, cleanTranslations } from "../domain/keywords.js";
 import { getSetting } from "../settings/settings.js";
 import { extractJson, runClaudeCli, skillBody, skillRef, SKILLS, type SkillName } from "./claude-cli.js";
-import { aiBackend, LLM_MODEL } from "./llm.js";
+import { aiBackend, LLM_EFFORT, LLM_MODEL } from "./llm.js";
 
 /** Keyword jobs answer a waiting browser: stop before the web's 180 s proxy (next.config.ts) so the merchant
  *  gets errors.suggest.failed, not a dropped connection. A cold cli cache measured 14–92 s on 2026-09-24. */
@@ -22,7 +24,7 @@ async function askSkill(skill: SkillName, data: unknown, key: string, item: z.Zo
   const ask = payload(data);
   if ((await aiBackend()) === "cli") {
     const bin = (await getSetting("CLAUDE_CLI_PATH")) ?? "claude";
-    const res = await runClaudeCli(bin, LLM_MODEL, `/${skillRef(skill)}\n\n${ask}`, KEYWORD_AI_TIMEOUT_MS);
+    const res = await runClaudeCli(bin, LLM_MODEL, `/${skillRef(skill)}\n\n${ask}`, LLM_EFFORT, KEYWORD_AI_TIMEOUT_MS);
     const out = extractJson(res.text) as Record<string, unknown> | null;
     // The cli answers in free text; if the model renamed the list, take the first list it returned.
     const list = out?.[key] ?? Object.values(out ?? {}).find(Array.isArray);
@@ -34,7 +36,7 @@ async function askSkill(skill: SkillName, data: unknown, key: string, item: z.Zo
     max_tokens: 2048,
     system: skillBody(skill),
     messages: [{ role: "user", content: ask }],
-    output_config: { format: zodOutputFormat(z.object({ [key]: z.array(item) })) },
+    output_config: { format: zodOutputFormat(z.object({ [key]: z.array(item) })), effort: LLM_EFFORT },
   });
   const parsed = res.parsed_output as Record<string, unknown[]> | null;
   return { raw: res.stop_reason === "refusal" ? [] : (parsed?.[key] ?? []), costUsd: null };
@@ -60,4 +62,12 @@ export async function translateKeywords(list: string[]) {
     costUsd = costUsd == null && again.costUsd == null ? null : (costUsd ?? 0) + (again.costUsd ?? 0);
   }
   return { terms, costUsd };
+}
+
+/** New taxonomy lines for listings no category caught, in ONE call. Titles are scraped data: untrusted. */
+export async function suggestCategories(taxonomy: TaxonomyEntry[], titles: string[]): Promise<{ suggestions: CategorySuggestion[]; costUsd: number | null }> {
+  const item = z.object({ key: z.string().max(60), en: z.string().max(80), th: z.string().max(80), zh: z.string().max(80), keywords: z.array(z.string().max(40)).max(12) });
+  const current = taxonomy.map((t) => ({ key: t.key, en: t.en, keywords: t.keywords }));
+  const { raw, costUsd } = await askSkill(SKILLS.suggestCategories, { taxonomy: current, titles: [...new Set(titles)] }, "categories", item);
+  return { suggestions: cleanCategorySuggestions(raw, taxonomy, titles), costUsd };
 }

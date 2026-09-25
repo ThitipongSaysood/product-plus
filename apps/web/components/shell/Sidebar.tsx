@@ -55,7 +55,7 @@ export function Sidebar({ groups }: { groups: Group[] }) {
           <option value={NEW_GROUP}>{t("groups.newOption")}</option>
         </Select>
         {d?.sourceMode ? (
-          <span className="ox-row">{d.sourceMode === "mock" ? <Badge tone="warning">{t("mock.badge")}</Badge> : <Badge tone="success">{t("mock.realBadge")}</Badge>}
+          <span className="ox-row">{d.sourceMode === "mock" ? <Badge tone="warning">{t("mock.badge")}</Badge> : <Badge tone="success" title={t("mock.realHelp")}>{t("mock.realBadge")}</Badge>}
             {/* Set to real but no token: the stored data IS real, yet nothing new can be pulled. Saying only
                 "real data" here read as reassurance on a system that could not fetch at all. */}
             {d.sourceMode !== "mock" && !d.canFetchReal ? <Badge tone="warning">{t("mock.cannotFetch")}</Badge> : null}</span>

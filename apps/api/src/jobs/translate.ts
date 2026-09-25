@@ -9,16 +9,19 @@
 // Two backends, chosen by the AI_BACKEND setting:
 //   sdk — api.anthropic.com with ANTHROPIC_API_KEY (or an `ant auth login` profile the SDK picks up)
 //   cli — a logged-in `claude` binary on this host; no key, but per-invocation overhead → bigger batches
-import { and, eq, inArray, isNotNull, isNull, ne } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, isNull, ne, or, sql } from "drizzle-orm";
 import { getDb } from "../db/client.js";
 import { products } from "../db/schema.js";
 import { NOTE } from "../domain/notes.js";
 import { getSetting } from "../settings/settings.js";
-import { CLI_BATCH, CLI_CONCURRENCY, extractJson, runClaudeCli, skillRef, SKILLS } from "./claude-cli.js";
-import { aiBackend, llmTranslate, LLM_BATCH, LLM_MODEL } from "./llm.js";
+import { CLI_BATCH, CLI_CONCURRENCY, extractJson, pooled, runClaudeCli, skillRef, SKILLS } from "./claude-cli.js";
+import { aiBackend, llmTranslate, LLM_BATCH, LLM_EFFORT, LLM_MODEL } from "./llm.js";
 
 export const TRANSLATE_LIMIT = 500;
 
+/** No Thai title, or one without a single Thai letter: the skill used to return English (Temu) titles
+ *  as they were, lightly tidied, and those read as untranslated next to Thai ones. */
+export const notTranslated = or(isNull(products.titleTh), sql`${products.titleTh} !~ '[ก-๛]'`)!;
 
 
 type Item = { id: string; title: string };
@@ -32,7 +35,7 @@ export function listPrompt(batch: Item[]): string {
 /** The skill carries the rules and the output shape; the prompt only invokes it and supplies the batch. */
 async function translateViaCli(batch: Item[]): Promise<BatchResult> {
   const bin = (await getSetting("CLAUDE_CLI_PATH")) ?? "claude";
-  const res = await runClaudeCli(bin, LLM_MODEL, `/${skillRef(SKILLS.translate)}\n\n${listPrompt(batch)}`);
+  const res = await runClaudeCli(bin, LLM_MODEL, `/${skillRef(SKILLS.translate)}\n\n${listPrompt(batch)}`, LLM_EFFORT);
   const parsed = extractJson(res.text) as { results?: { i?: unknown; th?: unknown }[] };
   const got = new Map<string, string>();
   for (const r of parsed.results ?? []) {
@@ -41,24 +44,6 @@ async function translateViaCli(batch: Item[]): Promise<BatchResult> {
     if (item && th) got.set(item.id, th.slice(0, 300));
   }
   return { got, costUsd: res.costUsd };
-}
-
-/** Run `jobs` with at most `limit` in flight, keeping results in order. */
-export async function pooled<T>(jobs: (() => Promise<T>)[], limit: number): Promise<PromiseSettledResult<T>[]> {
-  const out: PromiseSettledResult<T>[] = new Array(jobs.length);
-  let next = 0;
-  const worker = async () => {
-    while (next < jobs.length) {
-      const i = next++;
-      try {
-        out[i] = { status: "fulfilled", value: await jobs[i]() };
-      } catch (reason) {
-        out[i] = { status: "rejected", reason };
-      }
-    }
-  };
-  await Promise.all(Array.from({ length: Math.max(1, Math.min(limit, jobs.length)) }, worker));
-  return out;
 }
 
 /** `redo` re-translates titles that already have a Thai version. The rules live in a skill that gets
@@ -80,7 +65,7 @@ export async function runTranslate(
     .where(
       and(
         eq(products.productGroupId, groupId),
-        ...(redo ? [] : [isNull(products.titleTh)]),
+        ...(redo ? [] : [notTranslated]),
         isNotNull(products.title),
         ne(products.title, ""),
       ),
@@ -110,8 +95,8 @@ export async function runTranslate(
     return r;
   };
 
-  // Batches are independent, so they run concurrently — wall-clock is what makes this job feel slow.
-  const settled = await pooled(batches.map(run), backend === "cli" ? CLI_CONCURRENCY : 1);
+  // Batches are independent, so they run concurrently on both backends — wall-clock is what makes this job feel slow.
+  const settled = await pooled(batches.map(run), CLI_CONCURRENCY);
 
   let done = 0;
   let costUsd: number | null = null;

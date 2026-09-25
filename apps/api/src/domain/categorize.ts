@@ -1,6 +1,6 @@
 // Auto-categorization layers 1–2 (handoff §9): platform category map → keyword rules on the title.
 // Layer 3 (LLM) lives in jobs/llm.ts and only sees what these two could not decide.
-import type { CategorySource, TaxonomyEntry } from "@pp/contracts";
+import type { CategorySource, CategorySuggestion, TaxonomyEntry } from "@pp/contracts";
 
 export const UNCLASSIFIED = "unclassified";
 export const UNCLASSIFIED_LABEL = { th: "ยังไม่จัดหมวด", en: "Unclassified", zh: "未分类" };
@@ -69,4 +69,36 @@ export function categorize(
   if (mapped) return { key: mapped, source: "platform" };
   const ruled = fromRules(p.title, taxonomy);
   return ruled ? { key: ruled, source: "rules" } : null;
+}
+
+const CATEGORY_SUGGEST_MAX = 6;
+const nameOf = (v: unknown) => (typeof v === "string" ? v.trim().slice(0, 80) : "");
+
+/**
+ * AI category proposals are only as good as the rules they feed: a keyword counts when it is literally in
+ * one of the unclassified titles (the rules are a substring match), and a line counts when, added to the
+ * taxonomy, the same fromRules() would sort at least 2 different titles into it. The model is told this;
+ * this is where it is enforced, so the count the merchant sees is the effect they get. `titles` has one entry
+ * per listing, so `matches` counts listings; the ≥ 2 is counted on distinct titles.
+ */
+export function cleanCategorySuggestions(raw: unknown[], taxonomy: TaxonomyEntry[], titles: string[]): CategorySuggestion[] {
+  const taken = new Set([...taxonomy.map((t) => t.key), UNCLASSIFIED]);
+  const lower = titles.map((t) => t.toLowerCase());
+  const out: CategorySuggestion[] = [];
+  for (const r of raw) {
+    const x = r as { key?: unknown; en?: unknown; th?: unknown; zh?: unknown; keywords?: unknown } | null;
+    const key = typeof x?.key === "string" ? x.key.trim().toLowerCase() : "";
+    const [en, th, zh] = [nameOf(x?.en), nameOf(x?.th), nameOf(x?.zh)];
+    if (!/^[a-z0-9_]{1,40}$/.test(key) || taken.has(key) || !en || !th || !zh) continue;
+    const words = Array.isArray(x?.keywords) ? x.keywords.filter((k): k is string => typeof k === "string") : [];
+    const keywords = [...new Set(words.map((k) => k.trim()).filter((k) => k && k.length <= 40 && lower.some((t) => t.includes(k.toLowerCase()))))].slice(0, 12);
+    if (!keywords.length) continue;
+    const entry: TaxonomyEntry = { key, en, th, zh, keywords };
+    const caught = titles.filter((t) => fromRules(t, [...taxonomy, entry]) === key);
+    const distinct = [...new Set(caught)]; // one listing relisted under the same title is not a pattern
+    if (distinct.length < 2) continue;
+    taken.add(key);
+    out.push({ ...entry, matches: caught.length, examples: distinct.slice(0, 3) });
+  }
+  return out.sort((a, b) => b.matches - a.matches).slice(0, CATEGORY_SUGGEST_MAX);
 }

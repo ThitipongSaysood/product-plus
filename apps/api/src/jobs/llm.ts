@@ -12,18 +12,19 @@ import { z } from "zod";
 import type { TaxonomyEntry } from "@pp/contracts";
 import { UNCLASSIFIED } from "../domain/categorize.js";
 import { getSetting } from "../settings/settings.js";
-import { CLI_BATCH, extractJson, runClaudeCli, skillBody, skillRef, SKILLS } from "./claude-cli.js";
-
-export const LLM_MODEL = "claude-haiku-4-5";
+import { CLI_BATCH, CLI_CONCURRENCY, extractJson, pooled, runClaudeCli, skillBody, skillRef, SKILLS, type Effort } from "./claude-cli.js";
 
 /**
- * The brand scout gets a stronger model than the other two jobs. Translation and categorisation are
- * high-volume and mechanical — a vocabulary table or a fixed list of keys does most of the work, and
- * Haiku is the right trade there. The brand brief is one call per run and asks for judgement plus prose
- * the merchant actually reads; on Haiku the Thai came back understandable but clumsy ("ฟอร์มเมชคลาสสิก",
- * "ต้องยืนยันจำนวนต่ำ"). One call means the extra cost is small in absolute terms.
+ * Every AI job runs on Sonnet 5 (the user's call, 2026-09-25): Haiku's Thai read clumsy
+ * ("ฟอร์มเมชคลาสสิก", "ต้องยืนยันจำนวนต่ำ"). Sonnet 5 thinks before answering by default, which is
+ * where its extra time goes, so speed is set per job with effort rather than by a smaller model:
+ * translation, categorisation and keyword terms are mechanical (a vocabulary table or a fixed list of
+ * keys does most of the work) and run at low; the brand brief asks for judgement and runs at medium.
  */
-export const BRAND_MODEL = "claude-sonnet-5";
+export const LLM_MODEL = "claude-sonnet-5";
+export const BRAND_MODEL = LLM_MODEL;
+export const LLM_EFFORT: Effort = "low";
+export const BRAND_EFFORT: Effort = "medium";
 export const LLM_BATCH = 25;
 
 export type AiBackend = "sdk" | "cli";
@@ -60,6 +61,16 @@ function collect(out: Map<string, string>, batch: CategorizeItem[], results: { i
   }
 }
 
+const batchesOf = <T>(items: T[], size: number): T[][] =>
+  Array.from({ length: Math.ceil(items.length / size) }, (_, b) => items.slice(b * size, (b + 1) * size));
+
+/** Batches run concurrently, so one failed batch keeps the others' keys (its rows stay unclassified and the
+ *  next run retries them); only when every batch failed does the job report the error. */
+function failIfNothing(settled: PromiseSettledResult<unknown>[], out: Map<string, string>) {
+  const failed = settled.find((s): s is PromiseRejectedResult => s.status === "rejected");
+  if (failed && !out.size) throw failed.reason;
+}
+
 async function categorizeViaSdk(apiKey: string, items: CategorizeItem[], taxonomy: TaxonomyEntry[]): Promise<CategorizeResult> {
   const keys = taxonomy.map((t) => t.key);
   const out = new Map<string, string>();
@@ -67,18 +78,20 @@ async function categorizeViaSdk(apiKey: string, items: CategorizeItem[], taxonom
     results: z.array(z.object({ i: z.number().int(), key: z.enum([UNCLASSIFIED, ...keys] as [string, ...string[]]) })),
   });
   const client = new Anthropic({ apiKey });
-  for (let b = 0; b < items.length; b += LLM_BATCH) {
-    const batch = items.slice(b, b + LLM_BATCH);
-    const res = await client.messages.parse({
-      model: LLM_MODEL,
-      max_tokens: 2048,
-      system: categorizeSystem(),
-      messages: [{ role: "user", content: askOf(taxonomy, batch) }],
-      output_config: { format: zodOutputFormat(schema) },
-    });
-    if (res.stop_reason === "refusal") continue;
-    collect(out, batch, res.parsed_output?.results ?? [], keys);
-  }
+  const settled = await pooled(
+    batchesOf(items, LLM_BATCH).map((batch) => async () => {
+      const res = await client.messages.parse({
+        model: LLM_MODEL,
+        max_tokens: 2048,
+        system: categorizeSystem(),
+        messages: [{ role: "user", content: askOf(taxonomy, batch) }],
+        output_config: { format: zodOutputFormat(schema), effort: LLM_EFFORT },
+      });
+      if (res.stop_reason !== "refusal") collect(out, batch, res.parsed_output?.results ?? [], keys);
+    }),
+    CLI_CONCURRENCY,
+  );
+  failIfNothing(settled, out);
   return { got: out, costUsd: null };
 }
 
@@ -89,13 +102,16 @@ async function categorizeViaCli(bin: string, items: CategorizeItem[], taxonomy: 
   let costUsd: number | null = null;
   // Bigger batches than the sdk path: each `claude -p` re-sends its own system prompt, so the cost is
   // per invocation rather than per title.
-  for (let b = 0; b < items.length; b += CLI_BATCH) {
-    const batch = items.slice(b, b + CLI_BATCH);
-    const res = await runClaudeCli(bin, LLM_MODEL, `/${skillRef(SKILLS.categorize)}\n\n${askOf(taxonomy, batch)}`);
-    if (res.costUsd !== null) costUsd = (costUsd ?? 0) + res.costUsd;
-    const parsed = extractJson(res.text) as { results?: { i?: unknown; key?: unknown }[] };
-    collect(out, batch, parsed.results ?? [], keys);
-  }
+  const settled = await pooled(
+    batchesOf(items, CLI_BATCH).map((batch) => async () => {
+      const res = await runClaudeCli(bin, LLM_MODEL, `/${skillRef(SKILLS.categorize)}\n\n${askOf(taxonomy, batch)}`, LLM_EFFORT);
+      if (res.costUsd !== null) costUsd = (costUsd ?? 0) + res.costUsd;
+      const parsed = extractJson(res.text) as { results?: { i?: unknown; key?: unknown }[] };
+      collect(out, batch, parsed.results ?? [], keys);
+    }),
+    CLI_CONCURRENCY,
+  );
+  failIfNothing(settled, out);
   return { got: out, costUsd };
 }
 
@@ -127,7 +143,7 @@ export async function llmTranslate(apiKey: string, items: { id: string; title: s
       max_tokens: 4096,
       system: translateSystem(),
       messages: [{ role: "user", content: `Listings (index. title):\n${list}\n\nReturn one Thai translation per index.` }],
-      output_config: { format: zodOutputFormat(schema) },
+      output_config: { format: zodOutputFormat(schema), effort: LLM_EFFORT },
     });
     if (res.stop_reason === "refusal") continue;
     for (const r of res.parsed_output?.results ?? []) {

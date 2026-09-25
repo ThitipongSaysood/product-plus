@@ -7,10 +7,10 @@ import type {
   Group,
   Keyword,
   Overview,
-  Paged,
   Platform,
   ProductCard,
   ProductDetail,
+  ProductList,
   ProductsQuery,
   SoldPeriod,
   TaxonomyEntry,
@@ -29,6 +29,7 @@ import { toRunRow, type GroupRecord } from "../jobs/runs.js";
 import { groupMode, monthSpend } from "../jobs/scrape.js";
 import { getSetting } from "../settings/settings.js";
 import { toSnapshotLike } from "../jobs/trend.js";
+import { notTranslated } from "../jobs/translate.js";
 import { notFound } from "../common/errors.js";
 
 type ProductRecord = typeof products.$inferSelect;
@@ -86,8 +87,11 @@ const inGroupPlatforms = (g: GroupRecord, platform?: string) => {
   return inArray(products.platform, wanted.length ? wanted : g.platforms);
 };
 const soldDesc = sql`${products.latestSoldCount} desc nulls last`;
+// A 30-day count, an all-time count and a count of unknown period are different numbers, so the list never
+// ranks one against another: each period is its own block, 30 days first because it is the only recent one.
+const periodFirst = sql`case ${products.latestSoldPeriod} when '30d' then 0 when 'lifetime' then 1 else 2 end`;
 
-export async function listProducts(g: GroupRecord, q: ProductsQuery): Promise<Paged<ProductCard>> {
+export async function listProducts(g: GroupRecord, q: ProductsQuery): Promise<ProductList> {
   const db = await getDb();
   const conds: (SQL | undefined)[] = [eq(products.productGroupId, g.id), inGroupPlatforms(g, q.platform)];
   const cats = csv(q.category);
@@ -95,18 +99,31 @@ export async function listProducts(g: GroupRecord, q: ProductsQuery): Promise<Pa
     conds.push(cats.includes(UNCLASSIFIED) ? or(inArray(products.categoryKey, cats), isNull(products.categoryKey)) : inArray(products.categoryKey, cats));
   if (q.trend) conds.push(eq(products.trendLabel, q.trend));
   if (q.period) conds.push(eq(products.latestSoldPeriod, q.period));
-  if (q.q) conds.push(ilike(products.title, `%${q.q.replace(/[%_\\]/g, (c) => `\\${c}`)}%`));
+  if (q.q) {
+    // The cards show the Thai title, so a Thai search has to reach it — the original stays searchable too.
+    const like = `%${q.q.replace(/[%_\\]/g, (c) => `\\${c}`)}%`;
+    conds.push(or(ilike(products.title, like), ilike(products.titleTh, like)));
+  }
   const active = q.active ?? "1";
   if (active !== "all") conds.push(eq(products.isActive, active === "1"));
   const where = and(...conds);
   const [{ n }] = await db.select({ n: sql<number>`count(*)::int` }).from(products).where(where);
+  const [{ untranslated }] = await db
+    .select({ untranslated: sql<number>`count(*)::int` })
+    .from(products)
+    .where(and(eq(products.productGroupId, g.id), notTranslated, sql`coalesce(${products.title}, '') <> ''`));
+  const [cny, usd] = await Promise.all([fxThb(db, "CNY"), fxThb(db, "USD")]);
   const pages = Math.max(1, Math.ceil(n / PAGE_SIZE));
   const page = Math.min(Math.max(1, Math.floor(Number(q.page) || 1)), pages);
+  // ¥ and $ are only compared once both hand-set rates exist; without them each currency stays its own block.
+  const priceOrder = cny && usd
+    ? [sql`${products.price} * case ${products.currency} when 'USD' then ${usd.rate}::numeric when 'CNY' then ${cny.rate}::numeric else 1 end asc nulls last`]
+    : [asc(products.currency), sql`${products.price} asc nulls last`];
   const order =
     q.sort === "rank" ? [sql`${products.latestRank} asc nulls last`]
-    : q.sort === "price" ? [sql`${products.price} asc nulls last`]
+    : q.sort === "price" ? priceOrder
     : q.sort === "new" ? [desc(products.firstSeenAt)]
-    : [soldDesc];
+    : [periodFirst, soldDesc];
   const rows = await db
     .select()
     .from(products)
@@ -114,7 +131,10 @@ export async function listProducts(g: GroupRecord, q: ProductsQuery): Promise<Pa
     .orderBy(...order, asc(products.id))
     .limit(PAGE_SIZE)
     .offset((page - 1) * PAGE_SIZE);
-  return { items: rows.map(toCard), page, pageSize: PAGE_SIZE, total: n };
+  const fx: ProductList["fxThb"] = {};
+  if (cny) fx.CNY = cny;
+  if (usd) fx.USD = usd;
+  return { items: rows.map(toCard), page, pageSize: PAGE_SIZE, total: n, untranslated, fxThb: fx };
 }
 
 async function eventsFor(where: SQL | undefined, limit: number): Promise<ChangeEvent[]> {
