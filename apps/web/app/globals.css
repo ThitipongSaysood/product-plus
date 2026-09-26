@@ -579,3 +579,14 @@ select.ox-control { appearance: none; padding-right: var(--omnix-space-8); backg
 .ap-taxo__steps { margin: 0; padding-left: var(--omnix-space-5); display: flex; flex-direction: column; gap: var(--omnix-space-1); }
 .ap-taxo__steps li { display: flex; flex-wrap: wrap; column-gap: var(--omnix-space-2); }
 .ap-taxo__sub { font-size: var(--omnix-text-sm); font-weight: 600; margin-top: var(--omnix-space-2); }
+
+/* AI engine chooser (Settings › System): one row per AI_BACKEND value, the whole row is the radio's label */
+.ap-choices { border: 0; margin: 0; padding: 0; min-width: 0; display: flex; flex-direction: column; gap: var(--omnix-space-2); }
+.ap-choice { display: flex; align-items: flex-start; gap: var(--omnix-space-3); padding: var(--omnix-space-3) var(--omnix-space-4); border: 1px solid var(--omnix-border); border-radius: var(--omnix-radius-lg); background: var(--omnix-surface); cursor: pointer; }
+.ap-choice input { width: 16px; height: 16px; margin: 3px 0 0; accent-color: var(--omnix-accent); flex: none; }
+.ap-choice:hover { background: var(--omnix-surface-2); }
+.ap-choice.is-active { border-color: var(--omnix-accent); background: var(--omnix-accent-soft); }
+.ap-choice.is-disabled { cursor: not-allowed; }
+.ap-choice.is-disabled strong, .ap-choice.is-disabled input { opacity: .6; }
+.ap-choice:has(input:focus-visible) { outline: 2px solid var(--omnix-accent); outline-offset: 2px; }
+@media (max-width: 767px) { .ap-choice { min-height: 44px; } }

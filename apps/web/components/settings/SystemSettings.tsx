@@ -86,6 +86,62 @@ export function SettingsTable({ rows }: { rows: SettingRow[] }) {
   );
 }
 
+/** The three values AI_BACKEND accepts, and the key each one needs (the cli needs none). */
+const ENGINES = [
+  { id: "cli", key: null },
+  { id: "openrouter", key: "OPENROUTER_API_KEY" },
+  { id: "sdk", key: "ANTHROPIC_API_KEY" },
+] as const;
+type EngineId = (typeof ENGINES)[number]["id"];
+
+/** Picks AI_BACKEND from a list instead of typing it; an engine whose key is not set cannot be picked. */
+export function AiEngineChooser({ rows }: { rows: SettingRow[] }) {
+  const t = useT();
+  const router = useRouter();
+  const value = rows.find((r) => r.key === "AI_BACKEND")?.value;
+  // Same reading as the api's aiBackend(): anything it does not know means "sdk".
+  const current: EngineId = ENGINES.find((e) => e.id === value)?.id ?? "sdk";
+  const [pick, setPick] = useState<EngineId>(current);
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<{ tone: "success" | "danger"; text: string } | null>(null);
+  const hasKey = (key: string | null) => key === null || rows.some((r) => r.key === key && r.source !== "unset");
+
+  async function save() {
+    setBusy(true);
+    const r = await send("PUT", "/api/settings", { key: "AI_BACKEND", value: pick });
+    setBusy(false);
+    if (r.error) return setMsg({ tone: "danger", text: t.or(r.error, t("errors.http")) });
+    setMsg({ tone: "success", text: t("system.ai.saved", { name: t(`system.ai.${pick}.name`) }) });
+    router.refresh();
+  }
+
+  return (
+    <fieldset className="ap-choices">
+      <legend className="sr-only">{t("system.ai.title")}</legend>
+      {ENGINES.map((e) => {
+        const ready = hasKey(e.key);
+        return (
+          <label key={e.id} className={`ap-choice${pick === e.id ? " is-active" : ""}${ready ? "" : " is-disabled"}`}>
+            <input type="radio" name="ai-engine" value={e.id} checked={pick === e.id} disabled={!ready} onChange={() => { setPick(e.id); setMsg(null); }} />
+            <span className="ox-stack" style={{ gap: 2, flex: 1, minWidth: 0 }}>
+              <span className="ox-row" style={{ gap: 8 }}>
+                <strong>{t(`system.ai.${e.id}.name`)}</strong>
+                {current === e.id ? <span className="ox-badge ox-badge--success">{t("system.ai.inUse")}</span> : null}
+                {!ready ? <span className="ox-badge ox-badge--warning">{t("system.ai.needsKey", { key: e.key ?? "" })}</span> : null}
+              </span>
+              <span className="ox-xs ox-muted">{t(`system.ai.${e.id}.desc`)}</span>
+            </span>
+          </label>
+        );
+      })}
+      <div className="ox-row">
+        <Button variant="primary" onClick={save} disabled={busy || pick === current}>{t("system.ai.use")}</Button>
+        {msg ? <span role="status" className="ox-xs" style={{ color: msg.tone === "success" ? "var(--omnix-success-fg)" : "var(--omnix-danger-fg)" }}>{msg.text}</span> : null}
+      </div>
+    </fieldset>
+  );
+}
+
 export function TestConnection({ service }: { service: "apify" | "anthropic" | "openrouter" }) {
   const t = useT();
   const [busy, setBusy] = useState(false);
