@@ -389,6 +389,7 @@ select.ox-control { appearance: none; padding-right: var(--omnix-space-8); backg
 .ap-board { display: flex; gap: var(--omnix-space-4); overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: var(--omnix-space-2); }
 .ap-lane { flex: 0 0 84vw; scroll-snap-align: start; display: flex; flex-direction: column; background: var(--omnix-surface); border: 1px solid var(--omnix-border); border-radius: var(--omnix-radius-lg); min-width: 0; }
 @media (min-width: 768px) { .ap-lane { flex-basis: 316px; } }
+.ap-lane--offtopic { border-style: dashed; background: var(--omnix-surface-2); }
 .ap-lane__head { padding: var(--omnix-space-3) var(--omnix-space-4); border-bottom: 1px solid var(--omnix-border); display: flex; flex-direction: column; gap: var(--omnix-space-1); }
 .ap-lane__list { display: flex; flex-direction: column; max-height: 62vh; overflow-y: auto; padding: var(--omnix-space-1); }
 .ap-lane__row { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; align-items: center; gap: var(--omnix-space-2); padding: var(--omnix-space-2); border-radius: var(--omnix-radius-md); color: inherit; }
@@ -590,3 +591,26 @@ select.ox-control { appearance: none; padding-right: var(--omnix-space-8); backg
 .ap-choice.is-disabled strong, .ap-choice.is-disabled input { opacity: .6; }
 .ap-choice:has(input:focus-visible) { outline: 2px solid var(--omnix-accent); outline-offset: 2px; }
 @media (max-width: 767px) { .ap-choice { min-height: 44px; } }
+
+/* Sidebar "AI jobs": latest translate / categorize / brand run, each a link to where its result shows */
+.ap-aijobs { display: flex; flex-direction: column; gap: var(--omnix-space-2); font-size: var(--omnix-text-xs); color: var(--omnix-fg-muted); }
+.ap-aijobs ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--omnix-space-1); }
+.ap-aijobs li { display: flex; align-items: flex-start; gap: var(--omnix-space-1); }
+.ap-aijobs li > .ap-aijob { flex: 1; min-width: 0; }
+.ap-aijob__close { flex: none; margin-top: var(--omnix-space-1); }
+.ap-aijobs__empty { color: var(--omnix-fg-muted); }
+.ap-aijob { display: flex; align-items: flex-start; gap: var(--omnix-space-2); padding: var(--omnix-space-2); border-radius: var(--omnix-radius-lg); color: var(--omnix-fg); text-decoration: none; }
+.ap-aijob:hover { background: var(--omnix-surface-2); text-decoration: none; }
+.ap-aijob > svg { flex: none; margin-top: 2px; color: var(--omnix-fg-muted); }
+.ap-aijob__body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--omnix-space-1); }
+.ap-aijob__head { display: flex; align-items: center; justify-content: space-between; gap: var(--omnix-space-2); }
+.ap-aijob__name { font-size: var(--omnix-text-sm); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ap-aijob__meta { color: var(--omnix-fg-muted); }
+/* phones: the sidebar is a top strip — keep only jobs still running there */
+@media (max-width: 767px) {
+  .ox-sidebar .ap-aijobs { flex: 1 1 100%; }
+  .ox-sidebar .ap-aijobs li.is-done, .ox-sidebar .ap-aijobs__empty { display: none; }
+  .ox-sidebar .ap-aijobs:not(:has(li:not(.is-done))) { display: none; }
+  .ap-aijob { min-height: 44px; }
+  .ap-aijob__close { width: 44px; height: 44px; }
+}

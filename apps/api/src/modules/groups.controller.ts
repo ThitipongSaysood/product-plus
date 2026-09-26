@@ -7,7 +7,7 @@ import { getDb } from "../db/client.js";
 import { keywords, media, productGroups, products, scrapeRuns } from "../db/schema.js";
 import { AppError, notFound } from "../common/errors.js";
 import { ZodPipe } from "../common/http.js";
-import { BROAD_PATH, pathKey, UNCLASSIFIED, type PathBrief } from "../domain/categorize.js";
+import { BROAD_PATH, pathKey, RESERVED_KEYS, UNCLASSIFIED, type PathBrief } from "../domain/categorize.js";
 import { capsValid, isUniqueViolation, slugify } from "../domain/guards.js";
 import { cleanLineTerms, planKeywordList, roundCostPerKeyword } from "../domain/keywords.js";
 import { PLATFORM_LIST } from "../domain/types.js";
@@ -64,7 +64,7 @@ const keywordListIn = z.object({
 const taxonomyIn = z
   .array(
     z.object({
-      key: z.string().regex(/^[a-z0-9_]{1,40}$/).refine((k) => k !== UNCLASSIFIED && !k.startsWith("_")), // "_" = BROAD_PATH
+      key: z.string().regex(/^[a-z0-9_]{1,40}$/).refine((k) => !RESERVED_KEYS.includes(k) && !k.startsWith("_")), // "_" = BROAD_PATH
       th: z.string().trim().min(1).max(80),
       en: z.string().trim().min(1).max(80),
       zh: z.string().trim().min(1).max(80),
@@ -338,7 +338,7 @@ export class GroupsController {
     if (!titles.length) return { suggestions: [], unclassified: 0, costUsd: null };
     await assertAiReady(SKILLS.suggestCategories);
     try {
-      return { ...(await suggestCategories(g.taxonomy as TaxonomyEntry[], titles)), unclassified: titles.length };
+      return { ...(await suggestCategories(g.taxonomy as TaxonomyEntry[], titles, g.name)), unclassified: titles.length };
     } catch {
       throw new AppError(502, "errors.catsug.failed");
     }

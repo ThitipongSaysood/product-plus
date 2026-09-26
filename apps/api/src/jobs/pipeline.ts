@@ -8,7 +8,8 @@ import { scrapeRuns } from "../db/schema.js";
 import { NOTE } from "../domain/notes.js";
 import { isUniqueViolation } from "../domain/guards.js";
 import { AppError } from "../common/errors.js";
-import { runCategorize } from "./categorize.js";
+import { runAutoCategorize } from "./auto-categorize.js";
+import { aiCategorizeBackend, runCategorize } from "./categorize.js";
 import { cacheMedia } from "./media.js";
 import { reconcile } from "./reconcile.js";
 import { assertNotRunning, createRun, finishRun, PIPELINE_STEPS, updateRun, type GroupRecord } from "./runs.js";
@@ -71,7 +72,15 @@ async function drive(g: GroupRecord, plan: Awaited<ReturnType<typeof planScrape>
       await reconcile();
     }
   });
-  await step(1, "categorize", () => runCategorize(g.id, "fill"));
+  // With an AI engine ready, a round sorts itself like "Let AI sort everything": new kinds of listing get
+  // new taxonomy lines (marked addedBy "ai", editable in the text box) and everything is sorted into them —
+  // the merchant types a keyword and gets a sorted catalogue. Without one, rules and the platform map only.
+  await step(1, "categorize", async () => {
+    if (!(await aiCategorizeBackend())) return runCategorize(g.id, "fill");
+    const r = await runAutoCategorize(g.id, undefined, "fill");
+    // each AI step catches its own error so the others still run; surface it on the round
+    if (r.failed) throw new Error(r.note ?? "AI sort failed");
+  });
   await step(2, "media", () => cacheMedia(g.id));
   await step(3, "trend", () => refreshTrends(g.id));
 

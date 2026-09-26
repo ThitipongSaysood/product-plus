@@ -11,7 +11,7 @@ import { cleanCategorySuggestions, cleanPathDecisions, type PathBrief } from "..
 import { cleanSuggestionLines, cleanTranslations } from "../domain/keywords.js";
 import { getSetting } from "../settings/settings.js";
 import { extractJson, runClaudeCli, skillBody, skillRef, SKILLS, type SkillName } from "./claude-cli.js";
-import { aiBackend, apiClient, LLM_EFFORT, LLM_MODEL } from "./llm.js";
+import { aiBackend, apiClient, assertComplete, LLM_EFFORT, LLM_MAX_TOKENS, LLM_MODEL } from "./llm.js";
 
 /** Keyword jobs answer a waiting browser: stop before the web's 180 s proxy (next.config.ts) so the merchant
  *  gets errors.suggest.failed, not a dropped connection. A cold cli cache measured 14–92 s on 2026-09-24. */
@@ -34,11 +34,12 @@ async function askSkill(skill: SkillName, data: unknown, key: string, item: z.Zo
   if (!api) throw new AppError(400, "errors.suggest.needsKey");
   const res = await api.client.messages.parse({
     model: api.model(LLM_MODEL),
-    max_tokens: 2048,
+    max_tokens: LLM_MAX_TOKENS,
     system: skillBody(skill),
     messages: [{ role: "user", content: ask }],
     output_config: { format: zodOutputFormat(z.object({ [key]: z.array(item) })), effort: LLM_EFFORT },
   });
+  assertComplete(res);
   const parsed = res.parsed_output as Record<string, unknown[]> | null;
   return { raw: res.stop_reason === "refusal" ? [] : (parsed?.[key] ?? []), costUsd: api.costOf(res) };
 }
@@ -66,10 +67,10 @@ export async function translateKeywords(list: string[]) {
 }
 
 /** New taxonomy lines for listings no category caught, in ONE call. Titles are scraped data: untrusted. */
-export async function suggestCategories(taxonomy: TaxonomyEntry[], titles: string[]): Promise<{ suggestions: CategorySuggestion[]; costUsd: number | null }> {
+export async function suggestCategories(taxonomy: TaxonomyEntry[], titles: string[], group: string): Promise<{ suggestions: CategorySuggestion[]; costUsd: number | null }> {
   const item = z.object({ key: z.string().max(60), en: z.string().max(80), th: z.string().max(80), zh: z.string().max(80), keywords: z.array(z.string().max(40)).max(12) });
   const current = taxonomy.map((t) => ({ key: t.key, en: t.en, keywords: t.keywords }));
-  const { raw, costUsd } = await askSkill(SKILLS.suggestCategories, { taxonomy: current, titles }, "categories", item);
+  const { raw, costUsd } = await askSkill(SKILLS.suggestCategories, { group, taxonomy: current, titles }, "categories", item);
   return { suggestions: cleanCategorySuggestions(raw, taxonomy, titles), costUsd };
 }
 

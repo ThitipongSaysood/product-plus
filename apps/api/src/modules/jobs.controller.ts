@@ -20,7 +20,7 @@ import { aiBackend, apiClient } from "../jobs/llm.js";
 import { claudeCliVersion, skillPresent, SKILLS } from "../jobs/claude-cli.js";
 import { triggerPipeline } from "../jobs/pipeline.js";
 import { reconcile } from "../jobs/reconcile.js";
-import { assertNotRunning, createRun, finishRun, groupBySlug, jobStatus, updateRun } from "../jobs/runs.js";
+import { aiActivity, assertNotRunning, createRun, finishRun, groupBySlug, jobStatus, updateRun } from "../jobs/runs.js";
 import { groupMode, monthSpend } from "../jobs/scrape.js";
 import { apifyStart } from "../sources/apify.js";
 import { getSetting } from "../settings/settings.js";
@@ -146,6 +146,13 @@ export class JobsController {
       .then((r) => finishRun(runId, r.done < r.total ? "suspect" : "succeeded", r.note, { itemsIn: r.total, itemsOut: r.done, costUsd: r.costUsd ?? undefined }))
       .catch((e) => finishRun(runId, "failed", NOTE.stepFailed("translate", String(e?.message ?? e).slice(0, 200))));
     return { runId };
+  }
+
+  /** Sidebar "AI jobs": the latest translate / categorize / brand run of the group. Read-only. */
+  @Get("jobs/activity")
+  async activity(@Query("pg") pg?: string) {
+    void reconcile().catch(() => 0);
+    return aiActivity((await groupBySlug(pg)).id);
   }
 
   @Get("jobs/status")

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ScrollMemory } from "@/components/ScrollMemory";
 import type { ProductList } from "@pp/contracts";
 import { ApiErrorAlert } from "@/components/bits";
 import { ChevronLeftIcon, ChevronRightIcon } from "@/components/icons";
@@ -40,6 +41,7 @@ export default async function ProductsPage(props: PageProps<"/products">) {
 
   return (
     <>
+      <ScrollMemory page={from} />
       <div className="ox-page-head">
         <div>
           <h1 className="ox-page-title">{t("products.title")}</h1>

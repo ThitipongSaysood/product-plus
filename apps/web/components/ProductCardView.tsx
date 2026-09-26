@@ -5,6 +5,7 @@ import { BrandMark, ProductImage, shownTitle, SoldBadge, TrendBadge } from "./bi
 
 export function categoryLabel(t: T, key: string, taxonomy: { key: string; th: string; en: string; zh: string }[]): string {
   if (key === "unclassified") return t("category.unclassified");
+  if (key === "offtopic") return t("category.offtopic");
   const e = taxonomy.find((x) => x.key === key);
   return e ? e[t.locale] : key;
 }

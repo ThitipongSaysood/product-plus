@@ -10,7 +10,7 @@ import Anthropic, { type ClientOptions } from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { z } from "zod";
 import type { TaxonomyEntry } from "@pp/contracts";
-import { UNCLASSIFIED } from "../domain/categorize.js";
+import { OFFTOPIC, UNCLASSIFIED } from "../domain/categorize.js";
 import { getSetting } from "../settings/settings.js";
 import { CLI_BATCH, CLI_CONCURRENCY, extractJson, pooled, runClaudeCli, skillBody, skillRef, SKILLS, type Effort } from "./claude-cli.js";
 
@@ -26,6 +26,18 @@ export const BRAND_MODEL = LLM_MODEL;
 export const LLM_EFFORT: Effort = "low";
 export const BRAND_EFFORT: Effort = "medium";
 export const LLM_BATCH = 25;
+
+/**
+ * Cap for the api engines (sdk, openrouter). Sonnet 5 thinks before it answers and the thinking counts
+ * against max_tokens: at 4096 the brand brief ran out mid-JSON twice (2026-09-26). It is only a ceiling —
+ * the bill follows what is actually used — so it is sized for thinking plus the longest answer.
+ */
+export const LLM_MAX_TOKENS = 16_000;
+
+/** A reply cut off at max_tokens carries a partial answer or none: fail loudly rather than keep half of it. */
+export function assertComplete(res: { stop_reason: string | null }) {
+  if (res.stop_reason === "max_tokens") throw new Error("AI answer hit max_tokens");
+}
 
 export type AiBackend = "sdk" | "openrouter" | "cli";
 
@@ -90,16 +102,18 @@ const legendOf = (taxonomy: TaxonomyEntry[]) =>
 const listOf = (batch: CategorizeItem[]) =>
   batch.map((it, i) => `${i}. ${it.title.replace(/\s+/g, " ").slice(0, 200)}`).join("\n");
 
-const askOf = (taxonomy: TaxonomyEntry[], batch: CategorizeItem[]) =>
-  `Taxonomy keys:\n${legendOf(taxonomy)}\n\nListings (index. title):\n${listOf(batch)}\n\nReturn one result per index.`;
+/** The group's name says what the merchant watches — the yardstick for `offtopic`. It is merchant text,
+ *  so it travels as quoted data like the titles. */
+const askOf = (group: string, taxonomy: TaxonomyEntry[], batch: CategorizeItem[]) =>
+  `Product group (what this merchant watches): ${JSON.stringify(group)}\n\nTaxonomy keys:\n${legendOf(taxonomy)}\n\nListings (index. title):\n${listOf(batch)}\n\nReturn one result per index.`;
 
-/** Keeps only keys that exist in this group's taxonomy — the model is asked for them, but a wrong or
- *  hallucinated key must never reach the database. UNCLASSIFIED is dropped so the row is retried. */
+/** Keeps only keys that exist in this group's taxonomy, plus OFFTOPIC — the model is asked for them, but a
+ *  wrong or hallucinated key must never reach the database. UNCLASSIFIED is dropped so the row is retried. */
 function collect(out: Map<string, string>, batch: CategorizeItem[], results: { i?: unknown; key?: unknown }[], keys: string[]) {
   for (const r of results) {
     const item = typeof r.i === "number" ? batch[r.i] : undefined;
     const key = typeof r.key === "string" ? r.key : "";
-    if (item && key !== UNCLASSIFIED && keys.includes(key)) out.set(item.id, key);
+    if (item && key !== UNCLASSIFIED && (key === OFFTOPIC || keys.includes(key))) out.set(item.id, key);
   }
 }
 
@@ -113,23 +127,24 @@ function failIfNothing(settled: PromiseSettledResult<unknown>[], out: Map<string
   if (failed && !out.size) throw failed.reason;
 }
 
-async function categorizeViaApi(api: ApiClient, items: CategorizeItem[], taxonomy: TaxonomyEntry[]): Promise<CategorizeResult> {
+async function categorizeViaApi(api: ApiClient, group: string, items: CategorizeItem[], taxonomy: TaxonomyEntry[]): Promise<CategorizeResult> {
   const keys = taxonomy.map((t) => t.key);
   const out = new Map<string, string>();
   let costUsd: number | null = null;
   const schema = z.object({
-    results: z.array(z.object({ i: z.number().int(), key: z.enum([UNCLASSIFIED, ...keys] as [string, ...string[]]) })),
+    results: z.array(z.object({ i: z.number().int(), key: z.enum([UNCLASSIFIED, OFFTOPIC, ...keys] as [string, ...string[]]) })),
   });
   const settled = await pooled(
     batchesOf(items, LLM_BATCH).map((batch) => async () => {
       const res = await api.client.messages.parse({
         model: api.model(LLM_MODEL),
-        max_tokens: 2048,
+        max_tokens: LLM_MAX_TOKENS,
         system: categorizeSystem(),
-        messages: [{ role: "user", content: askOf(taxonomy, batch) }],
+        messages: [{ role: "user", content: askOf(group, taxonomy, batch) }],
         output_config: { format: zodOutputFormat(schema), effort: LLM_EFFORT },
       });
       costUsd = addCost(costUsd, api.costOf(res));
+      assertComplete(res);
       if (res.stop_reason !== "refusal") collect(out, batch, res.parsed_output?.results ?? [], keys);
     }),
     CLI_CONCURRENCY,
@@ -139,7 +154,7 @@ async function categorizeViaApi(api: ApiClient, items: CategorizeItem[], taxonom
 }
 
 /** The skill carries the rules and the output shape; the prompt only invokes it and supplies the batch. */
-async function categorizeViaCli(bin: string, items: CategorizeItem[], taxonomy: TaxonomyEntry[]): Promise<CategorizeResult> {
+async function categorizeViaCli(bin: string, group: string, items: CategorizeItem[], taxonomy: TaxonomyEntry[]): Promise<CategorizeResult> {
   const keys = taxonomy.map((t) => t.key);
   const out = new Map<string, string>();
   let costUsd: number | null = null;
@@ -147,7 +162,7 @@ async function categorizeViaCli(bin: string, items: CategorizeItem[], taxonomy: 
   // per invocation rather than per title.
   const settled = await pooled(
     batchesOf(items, CLI_BATCH).map((batch) => async () => {
-      const res = await runClaudeCli(bin, LLM_MODEL, `/${skillRef(SKILLS.categorize)}\n\n${askOf(taxonomy, batch)}`, LLM_EFFORT);
+      const res = await runClaudeCli(bin, LLM_MODEL, `/${skillRef(SKILLS.categorize)}\n\n${askOf(group, taxonomy, batch)}`, LLM_EFFORT);
       if (res.costUsd !== null) costUsd = (costUsd ?? 0) + res.costUsd;
       const parsed = extractJson(res.text) as { results?: { i?: unknown; key?: unknown }[] };
       collect(out, batch, parsed.results ?? [], keys);
@@ -162,11 +177,12 @@ export async function llmCategorize(
   backend: { kind: "api"; api: ApiClient } | { kind: "cli"; bin: string },
   items: CategorizeItem[],
   taxonomy: TaxonomyEntry[],
+  group: string,
 ): Promise<CategorizeResult> {
   if (!taxonomy.length || !items.length) return { got: new Map(), costUsd: null };
   return backend.kind === "cli"
-    ? categorizeViaCli(backend.bin, items, taxonomy)
-    : categorizeViaApi(backend.api, items, taxonomy);
+    ? categorizeViaCli(backend.bin, group, items, taxonomy)
+    : categorizeViaApi(backend.api, group, items, taxonomy);
 }
 
 /** Same rules the cli backend loads as a skill — SKILL.md is the single source of truth for both. */
@@ -183,12 +199,13 @@ export async function llmTranslate(api: ApiClient, items: { id: string; title: s
     const list = batch.map((it, i) => `${i}. ${it.title.replace(/\s+/g, " ").slice(0, 200)}`).join("\n");
     const res = await api.client.messages.parse({
       model: api.model(LLM_MODEL),
-      max_tokens: 4096,
+      max_tokens: LLM_MAX_TOKENS,
       system: translateSystem(),
       messages: [{ role: "user", content: `Listings (index. title):\n${list}\n\nReturn one Thai translation per index.` }],
       output_config: { format: zodOutputFormat(schema), effort: LLM_EFFORT },
     });
     costUsd = addCost(costUsd, api.costOf(res));
+    assertComplete(res);
     if (res.stop_reason === "refusal") continue;
     for (const r of res.parsed_output?.results ?? []) {
       const item = batch[r.i];

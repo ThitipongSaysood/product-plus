@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { CategoriesResponse } from "@pp/contracts";
 import { ApiErrorAlert, platformName, ProductImage, shownTitle, SoldBadge } from "@/components/bits";
 import { PlatformFilter } from "@/components/PlatformFilter";
+import { ScrollMemory } from "@/components/ScrollMemory";
 import { Alert, EmptyState } from "@/components/ui";
 import { formatNumber, formatPercent } from "@/i18n";
 import { getT } from "@/i18n/server";
@@ -19,6 +20,7 @@ export default async function CategoriesPage(props: PageProps<"/categories">) {
 
   return (
     <>
+      <ScrollMemory page={from} />
       <div className="ox-page-head">
         <div>
           <h1 className="ox-page-title">{t("categories.title")}</h1>
@@ -36,11 +38,12 @@ export default async function CategoriesPage(props: PageProps<"/categories">) {
           {res.data.lanes.length === 0 ? (
             <EmptyState title={t("categories.empty")} body={t("categories.emptyBody")} action={<Link className="ox-btn ox-btn--secondary" href={`/settings/keywords${qs({ pg })}`}>{t("categories.goTaxonomy")}</Link>} />
           ) : (
-            <div className="ap-board" role="list" aria-label={t("categories.title")}>
+            <div className="ap-board" role="list" aria-label={t("categories.title")} data-scroll-key="board">
               {res.data.lanes.map((lane) => (
-                <section key={lane.key} className="ap-lane" role="listitem" aria-label={lane.label[t.locale]}>
+                <section key={lane.key} className={lane.key === "offtopic" ? "ap-lane ap-lane--offtopic" : "ap-lane"} role="listitem" aria-label={lane.label[t.locale]}>
                   <div className="ap-lane__head">
-                    <strong>{lane.key === "unclassified" ? t("category.unclassified") : lane.label[t.locale]}</strong>
+                    <strong>{lane.key === "unclassified" ? t("category.unclassified") : lane.key === "offtopic" ? t("category.offtopic") : lane.label[t.locale]}</strong>
+                    {lane.key === "offtopic" ? <span className="ox-xs ox-muted">{t("categories.offtopicNote")}</span> : null}
                     <div className="ox-row ox-xs ox-muted ox-num">
                       <span>{t("categories.count", { n: formatNumber(t.locale, lane.count) })}</span>
                       <span aria-hidden="true">·</span>
@@ -50,7 +53,7 @@ export default async function CategoriesPage(props: PageProps<"/categories">) {
                     </div>
                     {lane.share != null ? <span className="ox-bar" style={{ width: `${Math.max(2, lane.share * 100)}%` }} aria-hidden="true" /> : null}
                   </div>
-                  <div className="ap-lane__list">
+                  <div className="ap-lane__list" data-scroll-key={`lane:${lane.key}`}>
                     {lane.products.length === 0 ? <p className="ox-xs ox-muted" style={{ padding: 8 }}>{t("categories.laneEmpty")}</p> : null}
                     {lane.products.map((p) => (
                       <Link key={p.id} className="ap-lane__row" href={`/products/${encodeURIComponent(p.id)}?pg=${encodeURIComponent(pg)}&from=${encodeURIComponent(from)}`}>

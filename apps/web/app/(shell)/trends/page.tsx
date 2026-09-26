@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ScrollMemory } from "@/components/ScrollMemory";
 import type { TrendRow, TrendsResponse } from "@pp/contracts";
 import { ApiErrorAlert, BrandMark, shownTitle, SoldBadge } from "@/components/bits";
 import { HBarChart } from "@/components/charts";
@@ -20,6 +21,7 @@ export default async function TrendsPage(props: PageProps<"/trends">) {
 
   return (
     <>
+      <ScrollMemory page={from} />
       <div className="ox-page-head">
         <div>
           <h1 className="ox-page-title">{t("trends.title")}</h1>

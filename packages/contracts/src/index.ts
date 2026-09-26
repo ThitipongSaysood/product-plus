@@ -300,6 +300,23 @@ export type JobStatus = {
   last: { runId: string; status: RunStatus; finishedAt: string | null; note: string | null } | null;
 };
 
+/** Background AI jobs the sidebar tracks while the merchant moves between pages. */
+export const AI_RUN_KINDS = ["translate", "categorize", "brand"] as const;
+export type AiRunKind = (typeof AI_RUN_KINDS)[number];
+
+/** The latest run of each AI job in the group within the activity window; running ones carry progress. */
+export type AiActivityItem = {
+  runId: string;
+  kind: AiRunKind;
+  status: RunStatus;
+  startedAt: string;
+  finishedAt: string | null;
+  progress: JobProgress | null;
+  note: string | null;
+  costUsd: number | null;
+};
+export type AiActivity = { items: AiActivityItem[] };
+
 export type TriggerResult = {
   runId: string | null;
   started: { platform: Platform; keyword: string }[];
@@ -323,6 +340,8 @@ export type BrandReport = {
   avoid: { id: string; reason: string }[];
   generatedAt: string;
   model: string;
+  /** The AI_BACKEND that wrote it. Optional: reports before 2026-09-26 do not say. */
+  engine?: "cli" | "openrouter" | "sdk";
   /** Which language the prose is in. A report is not re-translated when the ui language changes. */
   lang: Locale;
   candidateCount: number;

@@ -7,6 +7,7 @@ import { formatAgo } from "@/i18n";
 import { useT } from "@/i18n/client";
 import { cn } from "@/lib/cn";
 import { BudgetMeter } from "../BudgetMeter";
+import { AiActivity } from "./AiActivity";
 import { RefreshIcon } from "../icons";
 import { JobButton } from "../JobButton";
 import { Badge, Select } from "../ui";
@@ -78,6 +79,7 @@ export function Sidebar({ groups }: { groups: Group[] }) {
         ))}
       </nav>
       <div className="ox-sidebar__foot">
+        {current ? <AiActivity pg={current} /> : null}
         <div className="ap-jobstatus">
           <span className="ox-label-caps">{t("sync.title")}</span>
           <span>{t("sync.last", { ago: d?.lastRunAt ? formatAgo(t.locale, d.lastRunAt) : t("sync.never") })}</span>

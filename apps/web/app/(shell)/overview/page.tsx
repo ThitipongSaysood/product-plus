@@ -1,4 +1,5 @@
 import type { Overview } from "@pp/contracts";
+import { ScrollMemory } from "@/components/ScrollMemory";
 import { ApiErrorAlert, noteToText, platformName } from "@/components/bits";
 import { EventFeed, RunsTable } from "@/components/feeds";
 import { Legend, LineChart, type Series } from "@/components/charts";
@@ -41,6 +42,7 @@ export default async function OverviewPage(props: PageProps<"/overview">) {
 
   return (
     <>
+      <ScrollMemory page={from} />
       {head}
 
       <div className="ap-summary">

@@ -43,7 +43,7 @@ export function ProductFilters({ categories, platforms }: { categories: { key: s
   const density = sp.get("density") === "compact" ? "compact" : "grid";
   const count = (n: number) => (n ? ` · ${n}` : "");
   const activeCount = selPlatforms.length + cats.length + (trend ? 1 : 0) + (period ? 1 : 0) + (sort !== "sold" ? 1 : 0);
-  const catLabel = (k: string) => categories.find((c) => c.key === k)?.label[t.locale] ?? (k === "unclassified" ? t("category.unclassified") : k);
+  const catLabel = (k: string) => categories.find((c) => c.key === k)?.label[t.locale] ?? (k === "unclassified" ? t("category.unclassified") : k === "offtopic" ? t("category.offtopic") : k);
 
   return (
     <div className="ap-sticky">
@@ -86,7 +86,7 @@ export function ProductFilters({ categories, platforms }: { categories: { key: s
           </Dropdown>
 
           <Dropdown label={`${t("filter.category")}${count(cats.length)}`} active={cats.length > 0} width={220}>
-            {() => [...categories.map((c) => c.key), "unclassified"].map((k) => (
+            {() => [...categories.map((c) => c.key), "unclassified", "offtopic"].map((k) => (
               <button key={k} type="button" role="menuitemcheckbox" aria-checked={cats.includes(k)} className="ap-dropdown__item" onClick={() => toggleCsv("category", k)}>
                 {catLabel(k)}
               </button>

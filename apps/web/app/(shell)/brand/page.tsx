@@ -99,7 +99,7 @@ export default async function BrandPage(props: PageProps<"/brand">) {
       <Card>
         <p className="ox-prose">{r.summary}</p>
         <div className="ox-xs ox-muted" style={{ marginTop: "var(--omnix-space-3)" }}>
-          {t("brand.generatedAt", { at: formatDateTime(t.locale, r.generatedAt), n: formatNumber(t.locale, r.candidateCount), model: r.model })}
+          {t("brand.generatedAt", { at: formatDateTime(t.locale, r.generatedAt), n: formatNumber(t.locale, r.candidateCount), model: r.engine ? `${r.model} · ${t(`system.ai.${r.engine}.name`)}` : r.model })}
         </div>
         {r.lang !== t.locale ? <div className="ox-xs ox-muted">{t("brand.otherLang", { lang: t(`lang.${r.lang}`) })}</div> : null}
       </Card>

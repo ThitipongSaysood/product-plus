@@ -5,18 +5,34 @@
 // "brand", body in `report`) — that table already carries a jsonb column, a cost, a note and a
 // one-at-a-time guard. It gains one nullable jsonb column for the body rather than a whole table,
 // which would duplicate the status, cost and timing it already tracks.
-import { and, desc, eq, inArray } from "drizzle-orm";
+import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
+import { and, desc, eq, inArray, isNull, ne, or } from "drizzle-orm";
+import { z } from "zod";
 import type { BrandItem, BrandReport, BrandResponse, Locale, Platform, SoldPeriod, TaxonomyEntry, TrendLabel } from "@pp/contracts";
 import { getDb } from "../db/client.js";
 import { productGroups, products, scrapeRuns } from "../db/schema.js";
 import { buildBrief, type BriefInput, scoreCandidates } from "../domain/brand-brief.js";
+import { OFFTOPIC } from "../domain/categorize.js";
 import { supplyTerms } from "../domain/normalize/supply.js";
 import { getSetting } from "../settings/settings.js";
 import { extractJson, runClaudeCli, skillBody, skillRef, SKILLS } from "./claude-cli.js";
-import { aiBackend, apiClient, BRAND_EFFORT, BRAND_MODEL } from "./llm.js";
+import { aiBackend, apiClient, BRAND_EFFORT, BRAND_MODEL, LLM_MAX_TOKENS } from "./llm.js";
 
 /** Enough to see the shape of a catalogue without paying for a prompt nobody reads. */
 const MAX_CANDIDATES = 60;
+
+/** The shape brand-candidates/SKILL.md asks for; sanitize() still re-checks every field and id. */
+const BRAND_SCHEMA = z.object({
+  summary: z.string(),
+  picks: z.array(z.object({
+    id: z.string(),
+    why: z.string(),
+    pros: z.array(z.string()),
+    cons: z.array(z.string()),
+    confidence: z.enum(["high", "medium", "low"]),
+  })),
+  avoid: z.array(z.object({ id: z.string(), reason: z.string() })),
+});
 
 /** Upper bound on what reaches the page. Keep in step with the cap written in brand-candidates/SKILL.md. */
 export const MAX_PICKS = 12;
@@ -24,7 +40,11 @@ export const MAX_PICKS = 12;
 export async function loadBriefInput(groupId: string): Promise<{ rows: BriefInput[]; taxonomy: TaxonomyEntry[]; name: string }> {
   const db = await getDb();
   const [group] = await db.select().from(productGroups).where(eq(productGroups.id, groupId));
-  const rs = await db.select().from(products).where(and(eq(products.productGroupId, groupId), eq(products.isActive, true)));
+  // off-topic listings (a snack caught by "苹果") are never a branding candidate
+  const rs = await db
+    .select()
+    .from(products)
+    .where(and(eq(products.productGroupId, groupId), eq(products.isActive, true), or(isNull(products.categoryKey), ne(products.categoryKey, OFFTOPIC))));
   const rows: BriefInput[] = rs.map((p) => {
     const supply = supplyTerms(p.platform as Platform, p.raw);
     return {
@@ -83,30 +103,34 @@ export async function runBrandScout(groupId: string, lang: Locale = "th"): Promi
   }
 
   const ask = JSON.stringify(brief);
-  const backend = await aiBackend();
-  let text: string;
+  const engine = await aiBackend();
+  let answer: unknown;
   let costUsd: number | null = null;
-  if (backend === "cli") {
+  if (engine === "cli") {
     const bin = (await getSetting("CLAUDE_CLI_PATH")) ?? "claude";
     const res = await runClaudeCli(bin, BRAND_MODEL, `/${skillRef(SKILLS.brand)}\n\n${ask}`, BRAND_EFFORT);
-    text = res.text;
+    answer = extractJson(res.text);
     costUsd = res.costUsd;
   } else {
     const api = await apiClient();
     if (!api) return { report: null, costUsd: null, note: "brand.needsKey" };
-    const res = await api.client.messages.create({
+    // Structured output: the reply is the report's JSON or nothing, never prose with JSON inside.
+    const res = await api.client.messages.parse({
       model: api.model(BRAND_MODEL),
-      max_tokens: 4096,
+      max_tokens: LLM_MAX_TOKENS,
       system: skillBody(SKILLS.brand),
       messages: [{ role: "user", content: ask }],
-      output_config: { effort: BRAND_EFFORT },
+      output_config: { format: zodOutputFormat(BRAND_SCHEMA), effort: BRAND_EFFORT },
     });
-    text = res.content.map((c) => (c.type === "text" ? c.text : "")).join("");
     costUsd = api.costOf(res);
+    // Paid for either way, so the run keeps its cost instead of failing without one.
+    if (res.stop_reason === "max_tokens") return { report: null, costUsd, note: "brand.truncated" };
+    if (res.stop_reason === "refusal" || !res.parsed_output) return { report: null, costUsd, note: "brand.noAnswer" };
+    answer = res.parsed_output;
   }
 
   const ids = new Set(brief.candidates.map((c) => c.id));
-  const body = sanitize(extractJson(text), ids);
+  const body = sanitize(answer, ids);
   // Scored from the same brief the model read, but never sent to it: the skill's job is the judgement
   // a number cannot make, and a model handed a score tends to restate it as prose instead.
   const all = scoreCandidates(brief);
@@ -115,6 +139,7 @@ export async function runBrandScout(groupId: string, lang: Locale = "th"): Promi
     ...body,
     generatedAt: new Date().toISOString(),
     model: BRAND_MODEL,
+    engine,
     lang,
     candidateCount: brief.candidates.length,
     excluded: brief.excluded,

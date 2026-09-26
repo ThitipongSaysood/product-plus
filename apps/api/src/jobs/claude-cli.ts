@@ -84,7 +84,7 @@ export function extractJson(text: string): unknown {
   const body = (fenced ? fenced[1] : text).trim();
   const start = body.indexOf("{");
   const end = body.lastIndexOf("}");
-  if (start < 0 || end <= start) throw new Error("claude cli: no JSON object in the answer");
+  if (start < 0 || end <= start) throw new Error("no JSON object in the AI answer");
   return JSON.parse(body.slice(start, end + 1));
 }
 

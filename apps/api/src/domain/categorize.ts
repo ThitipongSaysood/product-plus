@@ -4,6 +4,13 @@ import type { CategorySource, CategorySuggestion, PathDecision, TaxonomyEntry, U
 
 export const UNCLASSIFIED = "unclassified";
 export const UNCLASSIFIED_LABEL = { th: "ยังไม่จัดหมวด", en: "Unclassified", zh: "未分类" };
+/** Layer 3's answer for a listing that is not the group's kind of product at all (a snack caught by
+ *  "苹果", a laptop mouse). Stored like a key, so it is decided once; kept out of every count, share,
+ *  trend and brand brief, and shown in a lane of its own so the merchant can see what was set aside. */
+export const OFFTOPIC = "offtopic";
+export const OFFTOPIC_LABEL = { th: "ไม่เกี่ยวข้อง", en: "Off-topic", zh: "不相关" };
+/** Keys no taxonomy line may use. */
+export const RESERVED_KEYS = [UNCLASSIFIED, OFFTOPIC];
 
 /** Handoff §9 proposal + additions from the real smoke rows of 2026-09-24 (beaded/jewelry bands, films). */
 export const DEFAULT_TAXONOMY: TaxonomyEntry[] = [
@@ -86,6 +93,8 @@ export function categorize(
 }
 
 const CATEGORY_SUGGEST_MAX = 6;
+/** A new group starts with no taxonomy: its first set may be larger, so one round sorts most listings. */
+const FIRST_TAXONOMY_MAX = 10;
 const nameOf = (v: unknown) => (typeof v === "string" ? v.trim().slice(0, 80) : "");
 
 /**
@@ -96,7 +105,7 @@ const nameOf = (v: unknown) => (typeof v === "string" ? v.trim().slice(0, 80) : 
  * listing: two listings can share a title (colour variants of one shop — seen on XHS) and both count.
  */
 export function cleanCategorySuggestions(raw: unknown[], taxonomy: TaxonomyEntry[], titles: string[]): CategorySuggestion[] {
-  const taken = new Set([...taxonomy.map((t) => t.key), UNCLASSIFIED]);
+  const taken = new Set([...taxonomy.map((t) => t.key), ...RESERVED_KEYS]);
   const lower = titles.map((t) => t.toLowerCase());
   const out: CategorySuggestion[] = [];
   for (const r of raw) {
@@ -113,7 +122,7 @@ export function cleanCategorySuggestions(raw: unknown[], taxonomy: TaxonomyEntry
     taken.add(key);
     out.push({ ...entry, matches: caught.length, examples: [...new Set(caught)].slice(0, 3) });
   }
-  return out.sort((a, b) => b.matches - a.matches).slice(0, CATEGORY_SUGGEST_MAX);
+  return out.sort((a, b) => b.matches - a.matches).slice(0, taxonomy.length ? CATEGORY_SUGGEST_MAX : FIRST_TAXONOMY_MAX);
 }
 
 /**

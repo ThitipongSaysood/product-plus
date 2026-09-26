@@ -1,5 +1,5 @@
 // Read-side queries → contract shapes.
-import { and, asc, desc, eq, gte, ilike, inArray, isNull, or, sql, type SQL } from "drizzle-orm";
+import { and, asc, desc, eq, gte, ilike, inArray, isNull, ne, or, sql, type SQL } from "drizzle-orm";
 import type {
   CategoriesResponse,
   CategoryLane,
@@ -20,7 +20,7 @@ import type {
 } from "@pp/contracts";
 import { getDb, type Db } from "../db/client.js";
 import { appSettings, changeEvents, keywords, productGroups, products, productSnapshots, scrapeRuns } from "../db/schema.js";
-import { BROAD_PATH, mapDecision, pathKey, UNCLASSIFIED, UNCLASSIFIED_LABEL } from "../domain/categorize.js";
+import { BROAD_PATH, mapDecision, OFFTOPIC, OFFTOPIC_LABEL, pathKey, UNCLASSIFIED, UNCLASSIFIED_LABEL } from "../domain/categorize.js";
 import { supplyTerms } from "../domain/normalize/supply.js";
 import { brandMarks } from "../domain/brand.js";
 import { computeTrend } from "../domain/trend.js";
@@ -33,6 +33,10 @@ import { notTranslated } from "../jobs/translate.js";
 import { notFound } from "../common/errors.js";
 
 type ProductRecord = typeof products.$inferSelect;
+
+/** Listings layer 3 set aside as not the group's kind of product: out of counts, trends and shares. */
+const onTopic = or(isNull(products.categoryKey), ne(products.categoryKey, OFFTOPIC))!;
+
 export const PAGE_SIZE = 48;
 
 export const toGroup = (g: GroupRecord): Group => ({
@@ -238,7 +242,7 @@ export async function overview(g: GroupRecord): Promise<Overview> {
   for (const r of scrapes) if (!latest.has(`${r.platform}|${r.keyword}`)) latest.set(`${r.platform}|${r.keyword}`, r);
   const alerts = [...latest.values()].filter((r) => r.status === "suspect" || r.status === "failed").map(toRunRow);
 
-  const act = and(eq(products.productGroupId, g.id), eq(products.isActive, true), inArray(products.platform, g.platforms));
+  const act = and(eq(products.productGroupId, g.id), eq(products.isActive, true), inArray(products.platform, g.platforms), onTopic);
   const [k] = await db
     .select({
       tracked: sql<number>`count(*)::int`,
@@ -297,8 +301,12 @@ export async function categories(g: GroupRecord, platform?: string): Promise<Cat
     .where(and(eq(products.productGroupId, g.id), eq(products.isActive, true), inGroupPlatforms(g, platform)))
     .orderBy(soldDesc);
   const tax = g.taxonomy as TaxonomyEntry[];
-  const lanesDef = [...tax.map((t) => ({ key: t.key, label: { th: t.th, en: t.en, zh: t.zh } })), { key: UNCLASSIFIED, label: UNCLASSIFIED_LABEL }];
-  const known = new Set(tax.map((t) => t.key));
+  const lanesDef = [
+    ...tax.map((t) => ({ key: t.key, label: { th: t.th, en: t.en, zh: t.zh } })),
+    { key: UNCLASSIFIED, label: UNCLASSIFIED_LABEL },
+    { key: OFFTOPIC, label: OFFTOPIC_LABEL },
+  ];
+  const known = new Set([...tax.map((t) => t.key), OFFTOPIC]);
   const keyOf = (p: ProductRecord) => (p.categoryKey && known.has(p.categoryKey) ? p.categoryKey : UNCLASSIFIED);
   const sold30 = (ps: ProductRecord[]) => {
     const xs = ps.filter((p) => p.latestSoldPeriod === "30d" && p.latestSoldCount !== null);
@@ -308,8 +316,9 @@ export async function categories(g: GroupRecord, platform?: string): Promise<Cat
     const ps = rows.filter((p) => keyOf(p) === l.key);
     return { key: l.key, label: l.label, count: ps.length, soldTotal: sold30(ps), share: null, products: ps.slice(0, 30).map(toCard) };
   });
-  const all = lanes.reduce((s, l) => s + (l.soldTotal ?? 0), 0);
-  for (const l of lanes) l.share = all > 0 && l.soldTotal !== null ? l.soldTotal / all : null;
+  // shares are of what the group watches: the off-topic lane is shown, never part of the whole
+  const all = lanes.reduce((s, l) => s + (l.key === OFFTOPIC ? 0 : (l.soldTotal ?? 0)), 0);
+  for (const l of lanes) l.share = all > 0 && l.soldTotal !== null && l.key !== OFFTOPIC ? l.soldTotal / all : null;
   return { lanes, unmappedCount: (await unmapped(g)).length };
 }
 
@@ -342,7 +351,7 @@ export async function trends(g: GroupRecord, platform?: string): Promise<TrendsR
   const rows = await db
     .select()
     .from(products)
-    .where(and(eq(products.productGroupId, g.id), eq(products.isActive, true), inGroupPlatforms(g, platform)));
+    .where(and(eq(products.productGroupId, g.id), eq(products.isActive, true), inGroupPlatforms(g, platform), onTopic));
   const changePct = (p: ProductRecord): number | null => {
     const base = p.trendDeltaSold !== null && p.latestSoldCount !== null ? p.latestSoldCount - p.trendDeltaSold : null;
     if (base !== null && base > 0) return p.trendDeltaSold! / base;

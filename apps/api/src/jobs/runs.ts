@@ -1,5 +1,5 @@
-import { and, desc, eq, inArray, isNull, or } from "drizzle-orm";
-import type { JobProgress, JobStatus, RunKind, RunRow, RunStatus } from "@pp/contracts";
+import { and, desc, eq, gte, inArray, isNull, or } from "drizzle-orm";
+import { AI_RUN_KINDS, type AiActivity, type AiRunKind, type JobProgress, type JobStatus, type RunKind, type RunRow, type RunStatus } from "@pp/contracts";
 import { getDb, type DbOrTx } from "../db/client.js";
 import { productGroups, scrapeRuns } from "../db/schema.js";
 import { AppError } from "../common/errors.js";
@@ -96,4 +96,40 @@ export async function jobStatus(groupId: string | null, kind: RunKind): Promise<
 export async function assertNotRunning(groupId: string | null, kind: RunKind) {
   const s = await jobStatus(groupId, kind);
   if (s.running) throw new AppError(400, "errors.job.alreadyRunning", { progress: s.running });
+}
+
+/** How far back the sidebar looks: long enough to see this morning's jobs, short enough to stay a to-do list. */
+const ACTIVITY_WINDOW_MS = 24 * 3600_000;
+
+/** Latest run of each AI job in the group (top-level only — a pipeline's own steps are its business),
+ *  running ones first, then newest first. */
+export async function aiActivity(groupId: string, now = Date.now()): Promise<AiActivity> {
+  const db = await getDb();
+  const rows = await db
+    .select()
+    .from(scrapeRuns)
+    .where(
+      and(
+        eq(scrapeRuns.productGroupId, groupId),
+        inArray(scrapeRuns.kind, [...AI_RUN_KINDS]),
+        isNull(scrapeRuns.parentRunId),
+        gte(scrapeRuns.startedAt, new Date(now - ACTIVITY_WINDOW_MS)),
+      ),
+    )
+    .orderBy(desc(scrapeRuns.startedAt));
+  const latest = new Map<string, RunRecord>();
+  for (const r of rows) if (!latest.has(r.kind)) latest.set(r.kind, r);
+  const items = [...latest.values()]
+    .sort((a, b) => Number(b.status === "running") - Number(a.status === "running") || b.startedAt.getTime() - a.startedAt.getTime())
+    .map((r) => ({
+      runId: r.id,
+      kind: r.kind as AiRunKind,
+      status: r.status as RunStatus,
+      startedAt: r.startedAt.toISOString(),
+      finishedAt: r.finishedAt?.toISOString() ?? null,
+      progress: r.status === "running" ? progressOf(r) : null,
+      note: r.note,
+      costUsd: r.costUsd,
+    }));
+  return { items };
 }

@@ -72,7 +72,12 @@ async function groupOf(groupId: string) {
 
 export const AUTO_STEPS = 3;
 
-export async function runAutoCategorize(groupId: string, onProgress?: (done: number, total: number) => Promise<void>) {
+/** `sortMode` "fill" (the round) skips listings AI already looked at this week; the button re-asks them all. */
+export async function runAutoCategorize(
+  groupId: string,
+  onProgress?: (done: number, total: number) => Promise<void>,
+  sortMode: "pending" | "fill" = "pending",
+) {
   const before = await countUnclassified(groupId);
   let costUsd: number | null = null;
   const addCost = (c: number | null) => {
@@ -99,7 +104,7 @@ export async function runAutoCategorize(groupId: string, onProgress?: (done: num
     const taxonomy = g.taxonomy as TaxonomyEntry[];
     const titles = await unclassifiedTitles(groupId);
     if (titles.length >= 2 && taxonomy.length < TAXONOMY_MAX) {
-      const r = await suggestCategories(taxonomy, titles);
+      const r = await suggestCategories(taxonomy, titles, g.name);
       addCost(r.costUsd);
       const lines: TaxonomyEntry[] = r.suggestions
         .slice(0, TAXONOMY_MAX - taxonomy.length)
@@ -116,7 +121,7 @@ export async function runAutoCategorize(groupId: string, onProgress?: (done: num
   }
 
   await onProgress?.(2, AUTO_STEPS);
-  const r = await runCategorize(groupId, "pending");
+  const r = await runCategorize(groupId, sortMode);
   addCost(r.costUsd);
   if (r.failed) failed.push("sorting: AI failed");
 

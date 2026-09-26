@@ -5,6 +5,7 @@ import type { JobProgress, JobStatus, RunKind, TriggerResult } from "@pp/contrac
 import { formatAgo, formatNumber, type T } from "@/i18n";
 import { useT } from "@/i18n/client";
 import { send } from "@/lib/client-api";
+import { JOBS_CHANGED } from "@/lib/job-events";
 import { noteToText, platformName } from "./bits";
 import { Button, ProgressBar } from "./ui";
 
@@ -104,6 +105,7 @@ export function JobButton({ kind, pg, path, body, label, icon, variant = "second
       }
       setMessage({ tone: "warn", text: t("job.someSkipped", { n: res.skipped.length, why }) });
     }
+    window.dispatchEvent(new Event(JOBS_CHANGED)); // sidebar "AI jobs" looks again now
     polling.current = true;
     setRunning({ shape: "time", pct: null, startedAt: new Date().toISOString(), runId: res.runId ?? "" });
     timer.current = setTimeout(poll, 1000);

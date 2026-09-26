@@ -57,7 +57,7 @@ export async function runCategorize(groupId: string, mode: "fill" | "pending" | 
   const backend = await aiCategorizeBackend();
   if (backend && forLlm.length) {
     try {
-      const r = await llmCategorize(backend, forLlm, taxonomy);
+      const r = await llmCategorize(backend, forLlm, taxonomy, group.name);
       for (const [id, key] of r.got) decided.set(id, { key, source: "llm" });
       llmCount = r.got.size;
       llmCostUsd = r.costUsd;
@@ -121,7 +121,8 @@ export async function applyRules(groupId: string): Promise<number> {
  * (it lives outside dist/, so a partial deploy loses it) and a binary that answers --version; checking
  * here keeps a broken host from turning every categorize run red.
  */
-async function aiCategorizeBackend(): Promise<{ kind: "api"; api: ApiClient } | { kind: "cli"; bin: string } | null> {
+/** Exported for the round: it only runs the AI steps when one of these is ready. */
+export async function aiCategorizeBackend(): Promise<{ kind: "api"; api: ApiClient } | { kind: "cli"; bin: string } | null> {
   if ((await aiBackend()) === "cli") {
     if (!skillPresent(SKILLS.categorize)) return null;
     const bin = (await getSetting("CLAUDE_CLI_PATH")) ?? "claude";
