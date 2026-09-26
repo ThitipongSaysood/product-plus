@@ -16,7 +16,7 @@ import { runAutoCategorize } from "../jobs/auto-categorize.js";
 import { runCategorize } from "../jobs/categorize.js";
 import { runTranslate } from "../jobs/translate.js";
 import { latestBrandReport, runBrandScout } from "../jobs/brand.js";
-import { aiBackend } from "../jobs/llm.js";
+import { aiBackend, apiClient } from "../jobs/llm.js";
 import { claudeCliVersion, skillPresent, SKILLS } from "../jobs/claude-cli.js";
 import { triggerPipeline } from "../jobs/pipeline.js";
 import { reconcile } from "../jobs/reconcile.js";
@@ -98,7 +98,7 @@ export class JobsController {
       await claudeCliVersion(bin).catch(() => {
         throw new AppError(400, "errors.brand.noCli");
       });
-    } else if (!(await getSetting("ANTHROPIC_API_KEY"))) {
+    } else if (!(await apiClient())) {
       throw new AppError(400, "errors.brand.needsKey");
     }
     await assertNotRunning(g.id, "brand");
@@ -137,7 +137,7 @@ export class JobsController {
       await claudeCliVersion(bin).catch(() => {
         throw new AppError(400, "errors.translate.noCli");
       });
-    } else if (!(await getSetting("ANTHROPIC_API_KEY"))) {
+    } else if (!(await apiClient())) {
       throw new AppError(400, "errors.translate.needsKey");
     }
     await assertNotRunning(g.id, "translate");

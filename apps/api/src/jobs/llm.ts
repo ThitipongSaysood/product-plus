@@ -2,11 +2,11 @@
 // Structured output restricted to the taxonomy keys. A refusal / failure leaves the product
 // unclassified so the next run retries it. Titles are scraped data → treated as untrusted.
 //
-// Two backends, same rules: "sdk" calls api.anthropic.com with a key, "cli" shells out to a logged-in
-// `claude` on this host. How to classify lives in ONE place —
+// Three backends, same rules: "sdk" calls api.anthropic.com with a key, "openrouter" the same Messages API
+// through openrouter.ai with its key, "cli" shells out to a logged-in `claude` on this host. How to classify lives in ONE place —
 // apps/api/claude-plugin/skills/categorize-listings/SKILL.md — which the cli loads as a skill and the
 // sdk sends as its system prompt, so editing the skill changes both without a TypeScript change.
-import Anthropic from "@anthropic-ai/sdk";
+import Anthropic, { type ClientOptions } from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { z } from "zod";
 import type { TaxonomyEntry } from "@pp/contracts";
@@ -27,13 +27,55 @@ export const LLM_EFFORT: Effort = "low";
 export const BRAND_EFFORT: Effort = "medium";
 export const LLM_BATCH = 25;
 
-export type AiBackend = "sdk" | "cli";
+export type AiBackend = "sdk" | "openrouter" | "cli";
 
 /** One switch for every AI job. Defaults to the cli when no api key is set, because a logged-in
  *  `claude` on the host needs no secret and is what this deploy actually has. */
 export async function aiBackend(): Promise<AiBackend> {
-  return (await getSetting("AI_BACKEND")) === "cli" ? "cli" : "sdk";
+  const v = await getSetting("AI_BACKEND");
+  return v === "cli" || v === "openrouter" ? v : "sdk";
 }
+
+/**
+ * OpenRouter speaks the Anthropic Messages API at /api/v1/messages — output_config.format and effort
+ * included (checked against https://openrouter.ai/openapi.json, 2026-09-26) — so the same SDK calls work
+ * with a different base URL, a Bearer key and the `anthropic/` model prefix. Its usage block also
+ * carries the billed `cost` in USD, which api.anthropic.com does not.
+ */
+const OPENROUTER_BASE_URL = "https://openrouter.ai/api";
+
+/** A Messages client for the two api-key backends. `model` maps our model id to the provider's. */
+export type ApiClient = { client: Anthropic; model: (id: string) => string; costOf: (res: { usage: object }) => number | null };
+
+type ClientOpts = Pick<ClientOptions, "timeout" | "fetch">;
+
+export function openRouterClient(key: string, opts: ClientOpts = {}): ApiClient {
+  return {
+    // apiKey null: otherwise the SDK also sends ANTHROPIC_API_KEY from the environment as x-api-key.
+    client: new Anthropic({ apiKey: null, authToken: key, baseURL: OPENROUTER_BASE_URL, defaultHeaders: { "X-Title": "Product Plus" }, ...opts }),
+    model: (id) => `anthropic/${id}`,
+    costOf: (res) => {
+      const cost = (res.usage as { cost?: unknown }).cost;
+      return typeof cost === "number" ? cost : null;
+    },
+  };
+}
+
+/** The api-key client for the configured backend, or null when it is the cli or its key is not set. */
+export async function apiClient(opts: ClientOpts = {}): Promise<ApiClient | null> {
+  const backend = await aiBackend();
+  if (backend === "cli") return null;
+  if (backend === "openrouter") {
+    const key = await getSetting("OPENROUTER_API_KEY");
+    return key ? openRouterClient(key, opts) : null;
+  }
+  const key = await getSetting("ANTHROPIC_API_KEY");
+  if (!key) return null;
+  return { client: new Anthropic({ apiKey: key, ...opts }), model: (id) => id, costOf: () => null };
+}
+
+/** Adds two nullable costs; null only when both are unknown. */
+export const addCost = (a: number | null, b: number | null) => (a === null && b === null ? null : (a ?? 0) + (b ?? 0));
 
 /** Same rules the cli backend loads as a skill — SKILL.md is the single source of truth for both. */
 const categorizeSystem = (): string => skillBody(SKILLS.categorize);
@@ -71,28 +113,29 @@ function failIfNothing(settled: PromiseSettledResult<unknown>[], out: Map<string
   if (failed && !out.size) throw failed.reason;
 }
 
-async function categorizeViaSdk(apiKey: string, items: CategorizeItem[], taxonomy: TaxonomyEntry[]): Promise<CategorizeResult> {
+async function categorizeViaApi(api: ApiClient, items: CategorizeItem[], taxonomy: TaxonomyEntry[]): Promise<CategorizeResult> {
   const keys = taxonomy.map((t) => t.key);
   const out = new Map<string, string>();
+  let costUsd: number | null = null;
   const schema = z.object({
     results: z.array(z.object({ i: z.number().int(), key: z.enum([UNCLASSIFIED, ...keys] as [string, ...string[]]) })),
   });
-  const client = new Anthropic({ apiKey });
   const settled = await pooled(
     batchesOf(items, LLM_BATCH).map((batch) => async () => {
-      const res = await client.messages.parse({
-        model: LLM_MODEL,
+      const res = await api.client.messages.parse({
+        model: api.model(LLM_MODEL),
         max_tokens: 2048,
         system: categorizeSystem(),
         messages: [{ role: "user", content: askOf(taxonomy, batch) }],
         output_config: { format: zodOutputFormat(schema), effort: LLM_EFFORT },
       });
+      costUsd = addCost(costUsd, api.costOf(res));
       if (res.stop_reason !== "refusal") collect(out, batch, res.parsed_output?.results ?? [], keys);
     }),
     CLI_CONCURRENCY,
   );
   failIfNothing(settled, out);
-  return { got: out, costUsd: null };
+  return { got: out, costUsd };
 }
 
 /** The skill carries the rules and the output shape; the prompt only invokes it and supplies the batch. */
@@ -116,35 +159,36 @@ async function categorizeViaCli(bin: string, items: CategorizeItem[], taxonomy: 
 }
 
 export async function llmCategorize(
-  backend: { kind: "sdk"; apiKey: string } | { kind: "cli"; bin: string },
+  backend: { kind: "api"; api: ApiClient } | { kind: "cli"; bin: string },
   items: CategorizeItem[],
   taxonomy: TaxonomyEntry[],
 ): Promise<CategorizeResult> {
   if (!taxonomy.length || !items.length) return { got: new Map(), costUsd: null };
   return backend.kind === "cli"
     ? categorizeViaCli(backend.bin, items, taxonomy)
-    : categorizeViaSdk(backend.apiKey, items, taxonomy);
+    : categorizeViaApi(backend.api, items, taxonomy);
 }
 
 /** Same rules the cli backend loads as a skill — SKILL.md is the single source of truth for both. */
 const translateSystem = (): string => skillBody(SKILLS.translate);
 
 /** Thai titles for Chinese listings. Same batching and refusal handling as llmCategorize. */
-export async function llmTranslate(apiKey: string, items: { id: string; title: string }[]) {
+export async function llmTranslate(api: ApiClient, items: { id: string; title: string }[]) {
   const out = new Map<string, string>();
-  if (!items.length) return out;
+  let costUsd: number | null = null;
+  if (!items.length) return { got: out, costUsd };
   const schema = z.object({ results: z.array(z.object({ i: z.number().int(), th: z.string().max(300) })) });
-  const client = new Anthropic({ apiKey });
   for (let b = 0; b < items.length; b += LLM_BATCH) {
     const batch = items.slice(b, b + LLM_BATCH);
     const list = batch.map((it, i) => `${i}. ${it.title.replace(/\s+/g, " ").slice(0, 200)}`).join("\n");
-    const res = await client.messages.parse({
-      model: LLM_MODEL,
+    const res = await api.client.messages.parse({
+      model: api.model(LLM_MODEL),
       max_tokens: 4096,
       system: translateSystem(),
       messages: [{ role: "user", content: `Listings (index. title):\n${list}\n\nReturn one Thai translation per index.` }],
       output_config: { format: zodOutputFormat(schema), effort: LLM_EFFORT },
     });
+    costUsd = addCost(costUsd, api.costOf(res));
     if (res.stop_reason === "refusal") continue;
     for (const r of res.parsed_output?.results ?? []) {
       const item = batch[r.i];
@@ -152,5 +196,5 @@ export async function llmTranslate(apiKey: string, items: { id: string; title: s
       if (item && th) out.set(item.id, th.slice(0, 300));
     }
   }
-  return out;
+  return { got: out, costUsd };
 }

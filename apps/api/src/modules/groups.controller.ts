@@ -12,7 +12,7 @@ import { capsValid, isUniqueViolation, slugify } from "../domain/guards.js";
 import { cleanLineTerms, planKeywordList, roundCostPerKeyword } from "../domain/keywords.js";
 import { PLATFORM_LIST } from "../domain/types.js";
 import { claudeCliVersion, skillPresent, SKILLS } from "../jobs/claude-cli.js";
-import { aiBackend } from "../jobs/llm.js";
+import { aiBackend, apiClient } from "../jobs/llm.js";
 import { matchPlatformPaths, suggestCategories, suggestKeywords, translateKeywords } from "../jobs/suggest.js";
 import { chosenActor, groupMode } from "../jobs/scrape.js";
 import { getSetting } from "../settings/settings.js";
@@ -86,7 +86,7 @@ async function assertAiReady(skill: (typeof SKILLS)[keyof typeof SKILLS]) {
     await claudeCliVersion((await getSetting("CLAUDE_CLI_PATH")) ?? "claude").catch(() => {
       throw new AppError(400, "errors.suggest.noCli");
     });
-  } else if (!(await getSetting("ANTHROPIC_API_KEY"))) {
+  } else if (!(await apiClient())) {
     throw new AppError(400, "errors.suggest.needsKey");
   }
 }

@@ -7,7 +7,7 @@ import { getDb } from "../db/client.js";
 import { media, scrapeRuns } from "../db/schema.js";
 import { AppError } from "../common/errors.js";
 import { cronAuthorized, safeEqual, issueSession, SESSION_COOKIE, ZodPipe } from "../common/http.js";
-import { entryFor, getSetting, listSettings, saveSetting, sourceMode, testService } from "../settings/settings.js";
+import { entryFor, getSetting, listSettings, saveSetting, sourceMode, TEST_SERVICES, testService, type TestService } from "../settings/settings.js";
 import { mockSvg } from "../sources/mock.js";
 import { apifyFetch } from "../sources/apify.js";
 import { finishApifyRun } from "../jobs/reconcile.js";
@@ -81,7 +81,7 @@ export class SystemController {
 
   @Post("settings/test")
   @HttpCode(200)
-  test(@Body(new ZodPipe(z.object({ service: z.enum(["apify", "anthropic"]) }))) body: { service: "apify" | "anthropic" }) {
+  test(@Body(new ZodPipe(z.object({ service: z.enum(TEST_SERVICES) }))) body: { service: TestService }) {
     return testService(body.service);
   }
 

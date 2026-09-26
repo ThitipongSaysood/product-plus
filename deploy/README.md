@@ -125,7 +125,8 @@ Railway ใช้ตัวแปรอ้างอิงได้: `DATABASE_URL
 |---|---|
 | `APIFY_TOKEN` | ดึงข้อมูลจริงไม่ได้ · ปุ่มสโมกเทสต์ปิด · **ใส่ผ่านหน้า ตั้งค่า › ระบบ ก็ได้** |
 | `ANTHROPIC_API_KEY` | งาน AI ต้องใช้ backend `cli` แทน (§7) |
-| `AI_BACKEND` | เลือกเองเป็น `sdk` เมื่อมี key, `cli` เมื่อไม่มี |
+| `OPENROUTER_API_KEY` | ใช้เมื่อ `AI_BACKEND=openrouter` (§7.1) |
+| `AI_BACKEND` | เลือกเองเป็น `sdk` เมื่อมี `ANTHROPIC_API_KEY`, `openrouter` เมื่อมีแค่ `OPENROUTER_API_KEY`, `cli` เมื่อไม่มีคีย์ |
 | `CLAUDE_CLI_PATH` | ค่าเริ่มต้น `claude` (ใช้เมื่อ `AI_BACKEND=cli`) |
 | `PUBLIC_URL` + `APIFY_WEBHOOK_SECRET` | ไม่มี webhook — รอบที่รันจะจบด้วยการ poll แทน ช้ากว่าแต่ทำงานได้ |
 | `DB_AUTO_MIGRATE` | ค่าเริ่มต้น `true` ตั้ง `false` เมื่อต้องการคุม migration เอง |
@@ -273,9 +274,11 @@ pnpm --filter @pp/api evaluate
 | ค่า | ต้องมี | หมายเหตุ |
 |---|---|---|
 | `sdk` | `ANTHROPIC_API_KEY` | เรียก api.anthropic.com ตรง ๆ ไม่มี overhead **เหมาะกับ Railway / คอนเทนเนอร์** |
+| `openrouter` | `OPENROUTER_API_KEY` | Claude รุ่นเดียวกันผ่าน openrouter.ai (Messages API เดียวกัน รุ่น `anthropic/claude-sonnet-5`) · **บันทึกค่าใช้จ่ายจริงต่อรอบได้** (`usage.cost`) · ตั้งวงเงินของคีย์ที่ OpenRouter ได้ · ปุ่ม "ทดสอบ OpenRouter" บอกยอดใช้และวงเงินที่เหลือ |
 | `cli` | `claude` ที่ล็อกอินค้างบนเครื่อง | ไม่ต้องมีคีย์ **ต้องมี home directory ถาวร → ใช้กับ VPS เท่านั้น** |
 
-ไม่ตั้ง = เลือกเองเป็น `sdk` เมื่อมี key, `cli` เมื่อไม่มี
+ไม่ตั้ง = เลือกเองเป็น `sdk` เมื่อมี `ANTHROPIC_API_KEY`, `openrouter` เมื่อมีแค่ `OPENROUTER_API_KEY`, `cli` เมื่อไม่มีคีย์เลย
+`sdk` และ `openrouter` จ่ายตามการใช้จริง ส่วน `cli` ที่ล็อกอินด้วยบัญชี claude.ai นับเป็นโควตาแพ็กเกจ
 
 ### 7.2 🔴 ถ้าใช้ `cli` — สามเรื่องที่พลาดบ่อย
 
@@ -473,7 +476,8 @@ git commit -m "Add CI" && git push
 | `PORT` | ทั้งคู่ | — | api 4010 | แพลตฟอร์มมักตั้งให้เอง |
 | `APIFY_TOKEN` | api | — | — | ใส่ผ่านหน้าเว็บก็ได้ |
 | `ANTHROPIC_API_KEY` | api | — | — | จำเป็นเมื่อ `AI_BACKEND=sdk` |
-| `AI_BACKEND` | api | — | `sdk` ถ้ามี key ไม่งั้น `cli` | คุมทั้งห้างาน AI |
+| `OPENROUTER_API_KEY` | api | — | — | จำเป็นเมื่อ `AI_BACKEND=openrouter` |
+| `AI_BACKEND` | api | — | `sdk` / `openrouter` ตามคีย์ที่มี ไม่งั้น `cli` | คุมทั้งห้างาน AI |
 | `CLAUDE_CLI_PATH` | api | — | `claude` | ใช้เมื่อ `AI_BACKEND=cli` |
 | `PUBLIC_URL` | api | — | — | คู่กับ `APIFY_WEBHOOK_SECRET` |
 | `APIFY_WEBHOOK_SECRET` | api | — | — | ไม่มี = รอบจบด้วยการ poll |

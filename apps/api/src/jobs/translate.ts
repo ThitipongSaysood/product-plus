@@ -6,8 +6,9 @@
 // The cli backend loads it as a Claude Code skill; the sdk backend sends the same text as its system
 // prompt. Edit the skill to change the wording — no TypeScript change needed.
 //
-// Two backends, chosen by the AI_BACKEND setting:
-//   sdk — api.anthropic.com with ANTHROPIC_API_KEY (or an `ant auth login` profile the SDK picks up)
+// Three backends, chosen by the AI_BACKEND setting:
+//   sdk        — api.anthropic.com with ANTHROPIC_API_KEY
+//   openrouter — the same Messages API through openrouter.ai with OPENROUTER_API_KEY (reports its cost)
 //   cli — a logged-in `claude` binary on this host; no key, but per-invocation overhead → bigger batches
 import { and, eq, inArray, isNotNull, isNull, ne, or, sql } from "drizzle-orm";
 import { getDb } from "../db/client.js";
@@ -15,7 +16,7 @@ import { products } from "../db/schema.js";
 import { NOTE } from "../domain/notes.js";
 import { getSetting } from "../settings/settings.js";
 import { CLI_BATCH, CLI_CONCURRENCY, extractJson, pooled, runClaudeCli, skillRef, SKILLS } from "./claude-cli.js";
-import { aiBackend, llmTranslate, LLM_BATCH, LLM_EFFORT, LLM_MODEL } from "./llm.js";
+import { aiBackend, apiClient, llmTranslate, LLM_BATCH, LLM_EFFORT, LLM_MODEL } from "./llm.js";
 
 export const TRANSLATE_LIMIT = 500;
 
@@ -56,8 +57,8 @@ export async function runTranslate(
 ) {
   const db = await getDb();
   const backend = await aiBackend();
-  const apiKey = await getSetting("ANTHROPIC_API_KEY");
-  if (backend === "sdk" && !apiKey) return { total: 0, done: 0, costUsd: null, note: NOTE.translateFailed("ANTHROPIC_API_KEY is not set") };
+  const api = await apiClient();
+  if (backend !== "cli" && !api) return { total: 0, done: 0, costUsd: null, note: NOTE.translateFailed(`${backend === "openrouter" ? "OPENROUTER_API_KEY" : "ANTHROPIC_API_KEY"} is not set`) };
 
   const todo = await db
     .select({ id: products.id, title: products.title })
@@ -83,7 +84,7 @@ export async function runTranslate(
   // the next run picks up only what is still missing.
   const run = (batch: Item[]) => async (): Promise<BatchResult> => {
     const r: BatchResult =
-      backend === "cli" ? await translateViaCli(batch) : { got: await llmTranslate(apiKey!, batch), costUsd: null };
+      backend === "cli" ? await translateViaCli(batch) : await llmTranslate(api!, batch);
     const now = new Date();
     const byText = new Map<string, string[]>();
     for (const [id, th] of r.got) byText.set(th, [...(byText.get(th) ?? []), id]);

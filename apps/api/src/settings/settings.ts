@@ -13,10 +13,17 @@ export const CATALOG: Entry[] = [
   { key: "APIFY_WEBHOOK_SECRET", group: "apify", secret: true, envOnly: false },
   { key: "SOURCE_MODE", group: "apify", secret: false, envOnly: false, fallback: async () => ((await getSetting("APIFY_TOKEN")) ? "apify" : "mock") },
   { key: "ANTHROPIC_API_KEY", group: "ai", secret: true, envOnly: false },
-  // Governs every AI job (translate + categorize). "sdk" calls api.anthropic.com with a key;
-  // "cli" shells out to a logged-in `claude` on this host
+  { key: "OPENROUTER_API_KEY", group: "ai", secret: true, envOnly: false },
+  // Governs every AI job. "sdk" calls api.anthropic.com with a key; "openrouter" the same Messages API
+  // through openrouter.ai with its key; "cli" shells out to a logged-in `claude` on this host
   // (no key needed, but each invocation re-sends Claude Code's own system prompt — batch big).
-  { key: "AI_BACKEND", group: "ai", secret: false, envOnly: false, fallback: async () => ((await getSetting("ANTHROPIC_API_KEY")) ? "sdk" : "cli") },
+  {
+    key: "AI_BACKEND",
+    group: "ai",
+    secret: false,
+    envOnly: false,
+    fallback: async () => ((await getSetting("ANTHROPIC_API_KEY")) ? "sdk" : (await getSetting("OPENROUTER_API_KEY")) ? "openrouter" : "cli"),
+  },
   { key: "CLAUDE_CLI_PATH", group: "ai", secret: false, envOnly: false, fallback: async () => "claude" },
   // Hand-entered because a live FX feed is another dependency to run and pay for; the settings row's
   // own updatedAt is what the UI shows, so a forgotten rate is visible rather than silently wrong.
@@ -116,9 +123,14 @@ export async function saveSetting(key: string, value: string | null) {
   cache = null;
 }
 
+export const TEST_SERVICES = ["apify", "anthropic", "openrouter"] as const;
+export type TestService = (typeof TEST_SERVICES)[number];
+
+const KEY_OF: Record<TestService, string> = { apify: "APIFY_TOKEN", anthropic: "ANTHROPIC_API_KEY", openrouter: "OPENROUTER_API_KEY" };
+
 /** Cheapest authenticated endpoint per service. Apify also tells us the plan tier (pricing). */
-export async function testService(service: "apify" | "anthropic"): Promise<{ ok: boolean; detail: string }> {
-  const key = await getSetting(service === "apify" ? "APIFY_TOKEN" : "ANTHROPIC_API_KEY");
+export async function testService(service: TestService): Promise<{ ok: boolean; detail: string }> {
+  const key = await getSetting(KEY_OF[service]);
   if (!key) return { ok: false, detail: "settings.test.noKey" };
   try {
     if (service === "apify") {
@@ -126,6 +138,14 @@ export async function testService(service: "apify" | "anthropic"): Promise<{ ok:
       if (!r.ok) return { ok: false, detail: `HTTP ${r.status}` };
       const d = ((await r.json()) as { data?: { username?: string; plan?: { id?: string } } }).data;
       return { ok: true, detail: `${d?.username ?? "?"} · plan ${d?.plan?.id ?? "?"}` };
+    }
+    if (service === "openrouter") {
+      // GET /key answers for any valid key and shows what it may still spend (limit_remaining; null = no cap).
+      const r = await fetch("https://openrouter.ai/api/v1/key", { headers: { Authorization: `Bearer ${key}` }, signal: AbortSignal.timeout(10_000) });
+      if (!r.ok) return { ok: false, detail: `HTTP ${r.status}` };
+      const d = ((await r.json()) as { data?: { label?: string; usage?: number; limit_remaining?: number | null } }).data;
+      const left = d?.limit_remaining == null ? "no limit" : `$${d.limit_remaining.toFixed(2)} left`;
+      return { ok: true, detail: `${d?.label ?? "key"} · used $${(d?.usage ?? 0).toFixed(2)} · ${left}` };
     }
     const r = await fetch("https://api.anthropic.com/v1/models?limit=1", {
       headers: { "x-api-key": key, "anthropic-version": "2023-06-01" },

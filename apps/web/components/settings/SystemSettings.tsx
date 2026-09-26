@@ -86,7 +86,7 @@ export function SettingsTable({ rows }: { rows: SettingRow[] }) {
   );
 }
 
-export function TestConnection({ service }: { service: "apify" | "anthropic" }) {
+export function TestConnection({ service }: { service: "apify" | "anthropic" | "openrouter" }) {
   const t = useT();
   const [busy, setBusy] = useState(false);
   const [res, setRes] = useState<{ ok: boolean; detail: string } | null>(null);

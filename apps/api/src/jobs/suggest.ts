@@ -1,17 +1,17 @@
 // Three AI suggestion jobs. Two for keywords (CONTEXT.md): Keyword suggestion (a product name → whole candidate lines) and
 // Keyword translation (Keywords → their Chinese and English Platform terms, all in one call); and Category
 // suggestion (listings no rule caught → new taxonomy lines). How each works lives in ONE
-// place — its SKILL.md under apps/api/claude-plugin/skills — sent as the system prompt on "sdk" and loaded
+// place — its SKILL.md under apps/api/claude-plugin/skills — sent as the system prompt on "sdk"/"openrouter" and loaded
 // as a skill on "cli". Merchant input is untrusted: it travels as data inside a JSON payload.
-import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { z } from "zod";
 import type { CategorySuggestion, KeywordSuggestionsResponse, PathDecision, TaxonomyEntry } from "@pp/contracts";
+import { AppError } from "../common/errors.js";
 import { cleanCategorySuggestions, cleanPathDecisions, type PathBrief } from "../domain/categorize.js";
 import { cleanSuggestionLines, cleanTranslations } from "../domain/keywords.js";
 import { getSetting } from "../settings/settings.js";
 import { extractJson, runClaudeCli, skillBody, skillRef, SKILLS, type SkillName } from "./claude-cli.js";
-import { aiBackend, LLM_EFFORT, LLM_MODEL } from "./llm.js";
+import { aiBackend, apiClient, LLM_EFFORT, LLM_MODEL } from "./llm.js";
 
 /** Keyword jobs answer a waiting browser: stop before the web's 180 s proxy (next.config.ts) so the merchant
  *  gets errors.suggest.failed, not a dropped connection. A cold cli cache measured 14–92 s on 2026-09-24. */
@@ -30,16 +30,17 @@ async function askSkill(skill: SkillName, data: unknown, key: string, item: z.Zo
     const list = out?.[key] ?? Object.values(out ?? {}).find(Array.isArray);
     return { raw: Array.isArray(list) ? list : [], costUsd: res.costUsd };
   }
-  const client = new Anthropic({ apiKey: (await getSetting("ANTHROPIC_API_KEY")) ?? undefined, timeout: KEYWORD_AI_TIMEOUT_MS });
-  const res = await client.messages.parse({
-    model: LLM_MODEL,
+  const api = await apiClient({ timeout: KEYWORD_AI_TIMEOUT_MS });
+  if (!api) throw new AppError(400, "errors.suggest.needsKey");
+  const res = await api.client.messages.parse({
+    model: api.model(LLM_MODEL),
     max_tokens: 2048,
     system: skillBody(skill),
     messages: [{ role: "user", content: ask }],
     output_config: { format: zodOutputFormat(z.object({ [key]: z.array(item) })), effort: LLM_EFFORT },
   });
   const parsed = res.parsed_output as Record<string, unknown[]> | null;
-  return { raw: res.stop_reason === "refusal" ? [] : (parsed?.[key] ?? []), costUsd: null };
+  return { raw: res.stop_reason === "refusal" ? [] : (parsed?.[key] ?? []), costUsd: api.costOf(res) };
 }
 
 export async function suggestKeywords(productName: string, existingLabels: string[]): Promise<KeywordSuggestionsResponse> {

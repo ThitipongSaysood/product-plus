@@ -6,7 +6,7 @@ import { BROAD_PATH, categorize, pathKey, UNCLASSIFIED } from "../domain/categor
 import { NOTE } from "../domain/notes.js";
 import { fillEligible } from "../domain/guards.js";
 import { getSetting } from "../settings/settings.js";
-import { aiBackend, llmCategorize } from "./llm.js";
+import { aiBackend, apiClient, llmCategorize, type ApiClient } from "./llm.js";
 import { claudeCliVersion, skillPresent, SKILLS } from "./claude-cli.js";
 
 export async function loadCategoryMap() {
@@ -121,14 +121,14 @@ export async function applyRules(groupId: string): Promise<number> {
  * (it lives outside dist/, so a partial deploy loses it) and a binary that answers --version; checking
  * here keeps a broken host from turning every categorize run red.
  */
-async function aiCategorizeBackend(): Promise<{ kind: "sdk"; apiKey: string } | { kind: "cli"; bin: string } | null> {
+async function aiCategorizeBackend(): Promise<{ kind: "api"; api: ApiClient } | { kind: "cli"; bin: string } | null> {
   if ((await aiBackend()) === "cli") {
     if (!skillPresent(SKILLS.categorize)) return null;
     const bin = (await getSetting("CLAUDE_CLI_PATH")) ?? "claude";
     return (await claudeCliVersion(bin).then(() => true).catch(() => false)) ? { kind: "cli", bin } : null;
   }
-  const apiKey = await getSetting("ANTHROPIC_API_KEY");
-  return apiKey ? { kind: "sdk", apiKey } : null;
+  const api = await apiClient();
+  return api ? { kind: "api", api } : null;
 }
 
 /** Products filed under taxonomy keys that no longer exist lose them (manual picks too — their key is gone);

@@ -13,7 +13,7 @@ import { buildBrief, type BriefInput, scoreCandidates } from "../domain/brand-br
 import { supplyTerms } from "../domain/normalize/supply.js";
 import { getSetting } from "../settings/settings.js";
 import { extractJson, runClaudeCli, skillBody, skillRef, SKILLS } from "./claude-cli.js";
-import { aiBackend, BRAND_EFFORT, BRAND_MODEL } from "./llm.js";
+import { aiBackend, apiClient, BRAND_EFFORT, BRAND_MODEL } from "./llm.js";
 
 /** Enough to see the shape of a catalogue without paying for a prompt nobody reads. */
 const MAX_CANDIDATES = 60;
@@ -92,18 +92,17 @@ export async function runBrandScout(groupId: string, lang: Locale = "th"): Promi
     text = res.text;
     costUsd = res.costUsd;
   } else {
-    const apiKey = await getSetting("ANTHROPIC_API_KEY");
-    if (!apiKey) return { report: null, costUsd: null, note: "brand.needsKey" };
-    const { default: Anthropic } = await import("@anthropic-ai/sdk");
-    const client = new Anthropic({ apiKey });
-    const res = await client.messages.create({
-      model: BRAND_MODEL,
+    const api = await apiClient();
+    if (!api) return { report: null, costUsd: null, note: "brand.needsKey" };
+    const res = await api.client.messages.create({
+      model: api.model(BRAND_MODEL),
       max_tokens: 4096,
       system: skillBody(SKILLS.brand),
       messages: [{ role: "user", content: ask }],
       output_config: { effort: BRAND_EFFORT },
     });
     text = res.content.map((c) => (c.type === "text" ? c.text : "")).join("");
+    costUsd = api.costOf(res);
   }
 
   const ids = new Set(brief.candidates.map((c) => c.id));

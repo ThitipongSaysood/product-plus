@@ -21,6 +21,7 @@ export default async function SystemSettingsPage() {
         <div className="ox-row" style={{ alignItems: "flex-start", gap: 16 }}>
           <TestConnection service="apify" />
           <TestConnection service="anthropic" />
+          <TestConnection service="openrouter" />
         </div>
       </Card>
       {res.error ? <ApiErrorAlert t={t} error={res.error} /> : <SettingsTable rows={res.data} />}

@@ -19,7 +19,7 @@ Hard cap: **50 results per platform per keyword per run** (actor input AND cut a
 | frontend | **Next.js 16** App Router · Tailwind 4 · OMNIX tokens (design-system.md §1) · Recharts | no other UI lib |
 | tests | vitest (domain pure functions, normalizers, contrast, rwd audit, dictionary) | |
 | scraping | apify-client · `SOURCE_MODE=mock|apify` | mock is free and default when no token |
-| AI (translate, categorize, brand, keywords) | `AI_BACKEND=cli` — the `claude` CLI logged in with the user's claude.ai subscription (no API key) · `sdk` = Anthropic API key | see deploy/README §7 |
+| AI (translate, categorize, brand, keywords) | `AI_BACKEND=cli` — the `claude` CLI logged in with the user's claude.ai subscription (no API key) · `sdk` = Anthropic API key · `openrouter` = the same Claude models through openrouter.ai with `OPENROUTER_API_KEY` | see deploy/README §7 |
 
 Ports (dev): api **4010**, web **3020** (never 3010). Web rewrites `/api/*` → api, so the browser sees one origin.
 
